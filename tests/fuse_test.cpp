@@ -32,6 +32,8 @@ struct ExpectedState {
     bool IFF1, IFF2;
     uint8_t IM;
     bool HALT;
+    // Memory changes: address and expected byte value
+    std::vector<std::pair<uint16_t, uint8_t>> memoryChanges;
 };
 
 class FuseTest {
@@ -48,76 +50,97 @@ public:
             return false;
         }
 
+        std::vector<std::string> lines;
         std::string line;
-        TestCase currentTest;
-        int lineCount = 0;
-
+        
+        // Read all lines first
         while (std::getline(file, line)) {
-            // Skip empty lines
-            if (line.empty()) {
-                continue;
-            }
-
-            // Simple state machine based on line count within test block
-            if (currentTest.name.empty()) {
-                // First line is test name
-                currentTest.name = line;
-                lineCount = 1;
-            } else if (lineCount == 1) {
-                // Second line is register values
-                std::istringstream iss(line);
-                for (int i = 0; i < 13; i++) {
-                    unsigned int temp;
-                    iss >> std::hex >> temp;
-                    currentTest.registers[i] = static_cast<uint16_t>(temp);
+            lines.push_back(line);
+        }
+        file.close();
+        
+        // Process blocks separated by empty lines
+        std::vector<std::string> currentBlock;
+        for (size_t i = 0; i < lines.size(); i++) {
+            if (lines[i].empty()) {
+                // Empty line - process the current block if it's not empty
+                if (!currentBlock.empty()) {
+                    processInputBlock(currentBlock);
+                    currentBlock.clear();
                 }
-                lineCount = 2;
-            } else if (lineCount == 2) {
-                // Third line is I, R, IFF1, IFF2, IM, HALT, tstates
-                std::istringstream iss(line);
-                int iff1, iff2, halt;
-                unsigned int tempI, tempR, tempIM, temptstates;
-                iss >> std::hex >> tempI >> std::hex >> tempR >> 
-                     std::dec >> iff1 >> std::dec >> iff2 >> std::dec >> tempIM >> 
-                     std::dec >> halt >> std::dec >> temptstates;
-                currentTest.I = static_cast<uint8_t>(tempI);
-                currentTest.R = static_cast<uint8_t>(tempR);
-                currentTest.IM = static_cast<uint8_t>(tempIM);
-                currentTest.IFF1 = (iff1 != 0);
-                currentTest.IFF2 = (iff2 != 0);
-                currentTest.HALT = (halt != 0);
-                currentTest.tstates = static_cast<int>(temptstates);
-                lineCount = 3;
             } else {
-                // Memory data lines
-                if (line == "-1") {
-                    // End of test block
-                    testCases.push_back(currentTest);
-                    
-                    // Reset for next test
-                    currentTest = TestCase();
-                    lineCount = 0;
-                } else {
-                    // Memory data: address followed by bytes
-                    std::istringstream iss(line);
-                    uint16_t address;
-                    iss >> std::hex >> address;
-                    
-                    std::vector<uint8_t> bytes;
-                    uint16_t value;
-                    while (iss >> std::hex >> value) {
-                        bytes.push_back(static_cast<uint8_t>(value));
-                    }
-                    
-                    if (!bytes.empty()) {
-                        currentTest.memoryBlocks.push_back({address, bytes});
-                    }
-                }
+                // Non-empty line - add to current block
+                currentBlock.push_back(lines[i]);
             }
         }
-
-        file.close();
+        
+        // Process the last block if it's not empty
+        if (!currentBlock.empty()) {
+            processInputBlock(currentBlock);
+        }
+        
         return true;
+    }
+    
+    void processInputBlock(const std::vector<std::string>& block) {
+        if (block.empty()) return;
+        
+        TestCase test;
+        int lineIndex = 0;
+        
+        // First line is always the test name
+        test.name = block[lineIndex++];
+        
+        // Second line is register values (13 hex values)
+        if (lineIndex < (int)block.size()) {
+            std::istringstream iss(block[lineIndex]);
+            for (int i = 0; i < 13; i++) {
+                unsigned int temp;
+                iss >> std::hex >> temp;
+                test.registers[i] = static_cast<uint16_t>(temp);
+            }
+            lineIndex++;
+        }
+        
+        // Third line is I, R, IFF1, IFF2, IM, HALT, tstates
+        if (lineIndex < (int)block.size()) {
+            std::istringstream iss(block[lineIndex]);
+            int iff1, iff2, halt;
+            unsigned int tempI, tempR, tempIM, temptstates;
+            iss >> std::hex >> tempI >> std::hex >> tempR >> 
+                 std::dec >> iff1 >> std::dec >> iff2 >> std::dec >> tempIM >> 
+                 std::dec >> halt >> std::dec >> temptstates;
+            test.I = static_cast<uint8_t>(tempI);
+            test.R = static_cast<uint8_t>(tempR);
+            test.IM = static_cast<uint8_t>(tempIM);
+            test.IFF1 = (iff1 != 0);
+            test.IFF2 = (iff2 != 0);
+            test.HALT = (halt != 0);
+            test.tstates = static_cast<int>(temptstates);
+            lineIndex++;
+        }
+        
+        // Remaining lines are memory data until we hit -1
+        while (lineIndex < (int)block.size() && block[lineIndex] != "-1") {
+            // Memory data: address followed by bytes
+            std::istringstream iss(block[lineIndex]);
+            uint16_t address;
+            iss >> std::hex >> address;
+            
+            std::vector<uint8_t> bytes;
+            uint16_t value;
+            while (iss >> std::hex >> value) {
+                bytes.push_back(static_cast<uint8_t>(value));
+            }
+            
+            if (!bytes.empty()) {
+                test.memoryBlocks.push_back({address, bytes});
+            }
+            lineIndex++;
+        }
+        
+        // Add to test cases
+        testCases.push_back(test);
     }
 
     bool parseExpectedFile(const std::string& filename) {
@@ -215,6 +238,26 @@ public:
             expected.IFF1 = (iff1 != 0);
             expected.IFF2 = (iff2 != 0);
             expected.HALT = (halt != 0);
+            lineIndex++;
+        }
+        
+        // Parse memory change lines (address byte -1 format)
+        while (lineIndex < (int)block.size()) {
+            // Check if this line contains memory change data (ends with -1)
+            if (block[lineIndex].find("-1") != std::string::npos) {
+                std::istringstream iss(block[lineIndex]);
+                uint16_t address;
+                uint16_t byteValue;
+                std::string minusOne;
+                
+                // Parse: address byte -1
+                if (iss >> std::hex >> address >> std::hex >> byteValue >> minusOne) {
+                    if (minusOne == "-1") {
+                        expected.memoryChanges.push_back({address, static_cast<uint8_t>(byteValue)});
+                    }
+                }
+            }
+            lineIndex++;
         }
         
         // Add to expected states
@@ -266,7 +309,7 @@ public:
         std::cout << std::dec; // Reset to decimal to avoid affecting other output
     }
 
-    bool compareResults(const TestCase& test, const Z80& cpu) {
+    bool compareResults(const TestCase& test, const Z80& cpu, Memory& memory) {
         // Find expected state for this test
         auto it = std::find_if(expectedStates.begin(), expectedStates.end(),
                               [&test](const ExpectedState& es) { return es.testName == test.name; });
@@ -344,6 +387,23 @@ public:
                                 (expected.HALT ? "1" : "0") + ")");
         }
         
+        // Compare memory changes
+        for (const auto& memChange : expected.memoryChanges) {
+            uint16_t address = memChange.first;
+            uint8_t expectedByte = memChange.second;
+            uint8_t actualByte = memory.ReadByte(address);
+            
+            if (actualByte != expectedByte) {
+                std::stringstream actualStr, expectedStr;
+                actualStr << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << (int)actualByte;
+                expectedStr << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << (int)expectedByte;
+                differences.push_back(std::string("MEM[") + 
+                                    std::to_string(address) + "](" + 
+                                    actualStr.str() + "!=" + 
+                                    expectedStr.str() + ")");
+            }
+        }
+        
         // If no differences, return true
         if (differences.empty()) {
             return true; // All match
@@ -402,7 +462,7 @@ public:
         }
         
         // Compare results
-        return compareResults(test, cpu);
+        return compareResults(test, cpu, memory);
     }
 
     void runAllTests() {
