@@ -397,8 +397,10 @@ public:
                 std::stringstream actualStr, expectedStr;
                 actualStr << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << (int)actualByte;
                 expectedStr << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << (int)expectedByte;
+                std::stringstream addrStr;
+                addrStr << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << address;
                 differences.push_back(std::string("MEM[") + 
-                                    std::to_string(address) + "](" + 
+                                    addrStr.str() + "](" + 
                                     actualStr.str() + "!=" + 
                                     expectedStr.str() + ")");
             }
