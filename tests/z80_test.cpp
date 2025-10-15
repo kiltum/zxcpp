@@ -6,8 +6,11 @@ int main() {
     // Create a memory instance
     Memory mem;
     
-    // Create a Z80 instance with the memory pointer
-    Z80 cpu(&mem);
+    // Create a port instance
+    Port port;
+    
+    // Create a Z80 instance with the memory and port pointers
+    Z80 cpu(&mem, &port);
     
     // Test that we can access the memory through the Z80 class
     // (This would normally be done within Z80 methods)

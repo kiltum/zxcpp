@@ -3,10 +3,12 @@
 
 #include <cstdint>
 #include "memory.hpp"
+#include "port.hpp"
 
 class Z80 {
 private:
     Memory* memory;  // Pointer to memory instance
+    Port* port;      // Pointer to port instance
 
 public:
     // Main register set
@@ -140,7 +142,7 @@ public:
     uint8_t& L_ = registers_.L_;
     
     // Constructor
-    Z80(Memory* mem);
+    Z80(Memory* mem, Port* port);
     
     // Execute one instruction and return number of ticks consumed
     int ExecuteOneInstruction();

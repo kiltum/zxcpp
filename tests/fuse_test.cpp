@@ -50,81 +50,67 @@ public:
 
         std::string line;
         TestCase currentTest;
-        bool readingMemory = false;
-        std::vector<uint8_t> currentMemoryBytes;
-        uint16_t currentAddress = 0;
+        int lineCount = 0;
 
         while (std::getline(file, line)) {
             // Skip empty lines
             if (line.empty()) {
-                if (readingMemory && !currentMemoryBytes.empty()) {
-                    currentTest.memoryBlocks.push_back({currentAddress, currentMemoryBytes});
-                    currentMemoryBytes.clear();
-                    readingMemory = false;
-                }
                 continue;
             }
 
-            if (!readingMemory) {
-                // Test name
-                if (currentTest.name.empty()) {
-                    currentTest.name = line;
-                }
-                // Register values
-                else if (currentTest.registers[0] == 0 && currentTest.registers[1] == 0) {
-                    std::istringstream iss(line);
-                    for (int i = 0; i < 13; i++) {
-                        unsigned int temp;
-                        iss >> std::hex >> temp;
-                        currentTest.registers[i] = static_cast<uint16_t>(temp);
-                    }
-                }
-                // I, R, IFF1, IFF2, IM, HALT, tstates
-                else {
-                    std::istringstream iss(line);
-                    int iff1, iff2, halt;
-                    unsigned int tempI, tempR, tempIM;
-                    iss >> std::hex >> tempI >> std::hex >> tempR >> 
-                         std::dec >> iff1 >> std::dec >> iff2 >> std::dec >> tempIM >> 
-                         std::dec >> halt >> std::dec >> currentTest.tstates;
-                    currentTest.I = static_cast<uint8_t>(tempI);
-                    currentTest.R = static_cast<uint8_t>(tempR);
-                    currentTest.IM = static_cast<uint8_t>(tempIM);
-                    currentTest.IFF1 = (iff1 != 0);
-                    currentTest.IFF2 = (iff2 != 0);
-                    currentTest.HALT = (halt != 0);
-                    
-                    // Next line should be memory data
-                    readingMemory = true;
-                }
-            } else {
-                // Memory data
+            // Simple state machine based on line count within test block
+            if (currentTest.name.empty()) {
+                // First line is test name
+                currentTest.name = line;
+                lineCount = 1;
+            } else if (lineCount == 1) {
+                // Second line is register values
                 std::istringstream iss(line);
-                std::string token;
-                iss >> token;
-                
-                if (token == "-1") {
+                for (int i = 0; i < 13; i++) {
+                    unsigned int temp;
+                    iss >> std::hex >> temp;
+                    currentTest.registers[i] = static_cast<uint16_t>(temp);
+                }
+                lineCount = 2;
+            } else if (lineCount == 2) {
+                // Third line is I, R, IFF1, IFF2, IM, HALT, tstates
+                std::istringstream iss(line);
+                int iff1, iff2, halt;
+                unsigned int tempI, tempR, tempIM, temptstates;
+                iss >> std::hex >> tempI >> std::hex >> tempR >> 
+                     std::dec >> iff1 >> std::dec >> iff2 >> std::dec >> tempIM >> 
+                     std::dec >> halt >> std::dec >> temptstates;
+                currentTest.I = static_cast<uint8_t>(tempI);
+                currentTest.R = static_cast<uint8_t>(tempR);
+                currentTest.IM = static_cast<uint8_t>(tempIM);
+                currentTest.IFF1 = (iff1 != 0);
+                currentTest.IFF2 = (iff2 != 0);
+                currentTest.HALT = (halt != 0);
+                currentTest.tstates = static_cast<int>(temptstates);
+                lineCount = 3;
+            } else {
+                // Memory data lines
+                if (line == "-1") {
                     // End of test block
-                    if (!currentMemoryBytes.empty()) {
-                        currentTest.memoryBlocks.push_back({currentAddress, currentMemoryBytes});
-                    }
                     testCases.push_back(currentTest);
                     
                     // Reset for next test
                     currentTest = TestCase();
-                    currentMemoryBytes.clear();
-                    readingMemory = false;
+                    lineCount = 0;
                 } else {
-                    // Memory address or data
-                    uint16_t value;
-                    std::istringstream(token) >> std::hex >> value;
+                    // Memory data: address followed by bytes
+                    std::istringstream iss(line);
+                    uint16_t address;
+                    iss >> std::hex >> address;
                     
-                    if (currentMemoryBytes.empty()) {
-                        // This is the address
-                        currentAddress = value;
-                    } else {
-                        // This is data
-                        currentMemoryBytes.push_back(static_cast<uint8_t>(value));
+                    std::vector<uint8_t> bytes;
+                    uint16_t value;
+                    while (iss >> std::hex >> value) {
+                        bytes.push_back(static_cast<uint8_t>(value));
+                    }
+                    
+                    if (!bytes.empty()) {
+                        currentTest.memoryBlocks.push_back({address, bytes});
                     }
                 }
             }
@@ -141,87 +127,98 @@ public:
             return false;
         }
 
+        std::vector<std::string> lines;
         std::string line;
-        ExpectedState currentExpected;
-        bool readingRegisters = false;
         
+        // Read all lines first
         while (std::getline(file, line)) {
-            // Store all lines for reference
-            expectedResults.push_back(line);
-            
-            // Skip lines with MR, MW, PR, PW (memory read/write operations)
-            if (line.find("MR ") != std::string::npos || 
-                line.find("MW ") != std::string::npos ||
-                line.find("PR ") != std::string::npos ||
-                line.find("PW ") != std::string::npos) {
-                continue;
-            }
-            
-            // Check if this is a test name (all digits)
-            bool isTestName = true;
-            for (char c : line) {
-                if (!std::isdigit(c) && !std::isspace(c)) {
-                    isTestName = false;
-                    break;
+            lines.push_back(line);
+        }
+        file.close();
+        
+        // Process blocks separated by empty lines
+        std::vector<std::string> currentBlock;
+        for (size_t i = 0; i < lines.size(); i++) {
+            if (lines[i].empty()) {
+                // Empty line - process the current block if it's not empty
+                if (!currentBlock.empty()) {
+                    processExpectedBlock(currentBlock);
+                    currentBlock.clear();
                 }
-            }
-            
-            if (isTestName && !line.empty()) {
-                // This is a new test block
-                if (!currentExpected.testName.empty()) {
-                    // Save previous expected state
-                    expectedStates.push_back(currentExpected);
-                }
-                
-                // Start new expected state
-                currentExpected = ExpectedState();
-                currentExpected.testName = line;
-                readingRegisters = true;
-                continue;
-            }
-            
-            // If we're reading registers and the line contains register values
-            if (readingRegisters && !line.empty() && line[0] != ' ') {
-                std::istringstream iss(line);
-                std::string token;
-                
-                // Try to parse register values
-                if (iss >> std::hex >> currentExpected.I >> std::hex >> currentExpected.R) {
-                    int iff1, iff2, halt;
-                    unsigned int tempIM;
-                    if (iss >> std::dec >> iff1 >> std::dec >> iff2 >> std::dec >> tempIM >> std::dec >> halt) {
-                        currentExpected.IM = static_cast<uint8_t>(tempIM);
-                        currentExpected.IFF1 = (iff1 != 0);
-                        currentExpected.IFF2 = (iff2 != 0);
-                        currentExpected.HALT = (halt != 0);
-                        readingRegisters = false;
-                        continue;
-                    }
-                }
-                
-                // Try to parse main registers (AF, BC, DE, HL, AF_, BC_, DE_, HL_, IX, IY, SP, PC, MEMPTR)
-                std::istringstream regIss(line);
-                bool parsedRegisters = true;
-                for (int i = 0; i < 13; i++) {
-                    if (!(regIss >> std::hex >> currentExpected.registers[i])) {
-                        parsedRegisters = false;
-                        break;
-                    }
-                }
-                
-                if (parsedRegisters) {
-                    continue;
-                }
+            } else {
+                // Non-empty line - add to current block
+                currentBlock.push_back(lines[i]);
             }
         }
         
-        // Save the last expected state
-        if (!currentExpected.testName.empty()) {
-            expectedStates.push_back(currentExpected);
+        // Process the last block if it's not empty
+        if (!currentBlock.empty()) {
+            processExpectedBlock(currentBlock);
         }
-
-        file.close();
+        
         return true;
+    }
+    
+    void processExpectedBlock(const std::vector<std::string>& block) {
+        if (block.empty()) return;
+        
+        ExpectedState expected;
+        int lineIndex = 0;
+        
+        // First line is always the test name
+        expected.testName = block[lineIndex++];
+        
+        // Skip event lines (MR, MW, PR, PW, MC, PC)
+        while (lineIndex < (int)block.size() && 
+               (block[lineIndex].find("MR ") != std::string::npos || 
+                block[lineIndex].find("MW ") != std::string::npos ||
+                block[lineIndex].find("PR ") != std::string::npos ||
+                block[lineIndex].find("PW ") != std::string::npos ||
+                block[lineIndex].find("MC ") != std::string::npos ||
+                block[lineIndex].find("PC ") != std::string::npos)) {
+            lineIndex++;
+        }
+        
+        // Next line should be register values (13 hex values)
+        if (lineIndex < (int)block.size()) {
+            std::istringstream iss(block[lineIndex]);
+            for (int i = 0; i < 13; i++) {
+                unsigned int temp;
+                iss >> std::hex >> temp;
+                expected.registers[i] = static_cast<uint16_t>(temp);
+            }
+            lineIndex++;
+        }
+        
+        // Skip event lines again
+        while (lineIndex < (int)block.size() && 
+               (block[lineIndex].find("MR ") != std::string::npos || 
+                block[lineIndex].find("MW ") != std::string::npos ||
+                block[lineIndex].find("PR ") != std::string::npos ||
+                block[lineIndex].find("PW ") != std::string::npos ||
+                block[lineIndex].find("MC ") != std::string::npos ||
+                block[lineIndex].find("PC ") != std::string::npos)) {
+            lineIndex++;
+        }
+        
+        // Next line should be I, R, IFF1, IFF2, IM, HALT
+        if (lineIndex < (int)block.size()) {
+            std::istringstream iss(block[lineIndex]);
+            int iff1, iff2, halt;
+            unsigned int tempI, tempR, tempIM;
+            iss >> std::hex >> tempI >> std::hex >> tempR >> 
+                 std::dec >> iff1 >> std::dec >> iff2 >> std::dec >> tempIM >> 
+                 std::dec >> halt;
+            expected.I = static_cast<uint8_t>(tempI);
+            expected.R = static_cast<uint8_t>(tempR);
+            expected.IM = static_cast<uint8_t>(tempIM);
+            expected.IFF1 = (iff1 != 0);
+            expected.IFF2 = (iff2 != 0);
+            expected.HALT = (halt != 0);
+        }
+        
+        // Add to expected states
+        expectedStates.push_back(expected);
     }
 
     void initializeCPU(Z80& cpu, Memory& memory, Port& port, const TestCase& test) {
@@ -362,9 +359,9 @@ public:
         
         // Print three-line comparison
         std::cout << "            AF   BC   DE   HL   AF'  BC'  DE'  HL'  IX   IY   SP   PC   MEM  IM R  1 2 I H" << std::endl;
-        printRegisterState("  Initial ", test.registers, test.IM, test.R, test.IFF1, test.IFF2, test.I, test.HALT);
-        printRegisterState("  Expected", expected.registers, expected.IM, expected.R, expected.IFF1, expected.IFF2, expected.I, expected.HALT);
-        printRegisterState("  Actual  ", actualRegisters, cpu.IM, cpu.R, cpu.IFF1, cpu.IFF2, cpu.I, cpu.HALT);
+        printRegisterState("  Initial ", test.registers, test.I, test.R, test.IFF1, test.IFF2, test.IM, test.HALT);
+        printRegisterState("  Expected", expected.registers, expected.I, expected.R, expected.IFF1, expected.IFF2, expected.IM, expected.HALT);
+        printRegisterState("  Actual  ", actualRegisters, cpu.I, cpu.R, cpu.IFF1, cpu.IFF2, cpu.IM, cpu.HALT);
         
         return false;
     }
@@ -375,7 +372,7 @@ public:
         // Create instances
         Memory memory;
         Port port;
-        Z80 cpu(&memory);
+        Z80 cpu(&memory, &port);
         
         // Initialize CPU state
         initializeCPU(cpu, memory, port, test);

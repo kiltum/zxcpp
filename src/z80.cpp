@@ -1,8 +1,9 @@
 #include "z80.hpp"
 
-Z80::Z80(Memory* mem) {
-    // Store the memory pointer
+Z80::Z80(Memory* mem, Port* port) {
+    // Store the memory and port pointers
     memory = mem;
+    this->port = port;
     
     // Initialize main registers to zero
     AF = 0;
@@ -38,5 +39,7 @@ Z80::Z80(Memory* mem) {
 int Z80::ExecuteOneInstruction() {
     // Placeholder implementation
     // Returns number of ticks consumed by the instruction
-    return 0;
+    PC++;
+    R++;
+    return 4;
 }
