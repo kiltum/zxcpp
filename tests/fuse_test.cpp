@@ -467,7 +467,7 @@ public:
         return compareResults(test, cpu, memory);
     }
 
-    void runAllTests() {
+    void runAllTests(bool failFast = false) {
         std::cout << "Running " << testCases.size() << " tests..." << std::endl;
         
         int passed = 0;
@@ -480,6 +480,13 @@ public:
             } else {
                 failed++;
                 std::cout << "  FAILED" << std::endl;
+                
+                // If failFast is enabled, stop on first failure
+                if (failFast) {
+                    std::cout << "Fail-fast mode enabled. Stopping on first failure." << std::endl;
+                    std::cout << "Tests completed: " << passed << " passed, " << failed << " failed" << std::endl;
+                    return;
+                }
             }
         }
         
@@ -487,7 +494,16 @@ public:
     }
 };
 
-int main() {
+int main(int argc, char* argv[]) {
+    bool failFast = false;
+    
+    // Parse command line arguments
+    for (int i = 1; i < argc; i++) {
+        if (std::string(argv[i]) == "--failfast" || std::string(argv[i]) == "-f") {
+            failFast = true;
+        }
+    }
+    
     FuseTest tester;
     
     // Parse input file
@@ -501,7 +517,7 @@ int main() {
     }
     
     // Run all tests
-    tester.runAllTests();
+    tester.runAllTests(failFast);
     
     return 0;
 }
