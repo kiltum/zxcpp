@@ -170,6 +170,18 @@ private:
     uint8_t res(uint8_t bitNum, uint8_t value);
     uint8_t set(uint8_t bitNum, uint8_t value);
     
+    // DD opcode helper functions
+    uint16_t add16IX(uint16_t a, uint16_t b);
+    uint8_t GetIXH();
+    uint8_t GetIXL();
+    void SetIXH(uint8_t value);
+    void SetIXL(uint8_t value);
+    int executeIncDecIndexed(bool isInc);
+    int executeLoadFromIndexed(uint8_t reg);
+    int executeStoreToIndexed(uint8_t value);
+    int executeALUIndexed(uint8_t opType);
+    int executeDDCBOpcode();
+    
     int ExecuteOpcode();
     int ExecuteCBOpcode();
     int ExecuteDDOpcode();
