@@ -5,6 +5,8 @@
 int Z80::ExecuteDDOpcode() {
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
+    // R should not be incremented twice (already incremented in ExecuteOneInstruction for DD prefix)
+    //R = (R & 0x80) | ((R - 1) & 0x7F);
     R++;
     switch (opcode) {
     // Load instructions
@@ -301,6 +303,7 @@ int Z80::ExecuteDDOpcode() {
     case 0xdd:
         return 8;
     default:
+        PC--;
         return ExecuteOpcode();
         //panic(fmt.Sprintf("DD unexpected code %x", opcode))
     }

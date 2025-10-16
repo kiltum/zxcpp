@@ -5,6 +5,8 @@
 int Z80::ExecuteFDOpcode() {
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
+    // R should not be incremented twice (already incremented in ExecuteOneInstruction for FD prefix)
+    //R = (R & 0x80) | ((R - 1) & 0x7F);
     R++;
     switch (opcode) {
     // Load instructions
@@ -295,6 +297,7 @@ int Z80::ExecuteFDOpcode() {
         // Takes 8 cycles total (4 for FD prefix fetch + 4 for 00 opcode fetch)
         return 8;
     default:
+        PC--;
         // Unimplemented opcode - treat as regular opcode
         // This handles cases where FD is followed by a normal opcode
         return ExecuteOpcode();

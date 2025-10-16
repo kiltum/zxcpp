@@ -3,9 +3,11 @@
 
 // Implementation of CB prefixed Z80 opcodes (bit manipulation instructions)
 int Z80::ExecuteCBOpcode() {
-    R++;
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
+    // R should not be incremented twice (already incremented in ExecuteOneInstruction for CB prefix)
+    ///R = (R & 0x80) | ((R - 1) & 0x7F);
+    R++;
     
     // Handle rotate and shift instructions (0x00-0x3F)
     if (opcode <= 0x3F) {

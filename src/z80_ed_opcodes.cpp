@@ -5,6 +5,8 @@
 int Z80::ExecuteEDOpcode() {
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
+    // R should not be incremented twice (already incremented in ExecuteOneInstruction for ED prefix)
+    //R = (R & 0x80) | ((R - 1) & 0x7F);
     R++;
     switch (opcode) {
     // Block transfer instructions
