@@ -110,6 +110,29 @@ public:
     // Execute one instruction and return number of ticks consumed
     int ExecuteOneInstruction();
     
+    // Flag update functions
+    void UpdateSZFlags(uint8_t result);
+    void UpdatePVFlags(uint8_t result);
+    void UpdateSZXYPVFlags(uint8_t result);
+    void UpdateFlags3and5FromValue(uint8_t value);
+    void UpdateFlags3and5FromAddress(uint16_t address);
+    void UpdateSZXYFlags(uint8_t result);
+    void UpdateXYFlags(uint8_t result);
+    
+    // Flag manipulation functions
+    bool GetFlag(uint8_t flag);
+    void SetFlag(uint8_t flag, bool state);
+    void ClearFlag(uint8_t flag);
+    void ClearAllFlags();
+    
+    // Helper functions
+    uint8_t ReadImmediateByte();
+    uint16_t ReadImmediateWord();
+    int8_t ReadDisplacement();
+    uint8_t ReadOpcode();
+    void Push(uint16_t value);
+    uint16_t Pop();
+    
 private:
 };
 

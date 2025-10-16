@@ -74,3 +74,133 @@ int Z80::ExecuteOneInstruction() {
             return ExecuteOpcode(this);
     }
 }
+
+// UpdateSZFlags updates the S and Z flags based on an 8-bit result
+void Z80::UpdateSZFlags(uint8_t result) {
+    SetFlag(FLAG_S, (result & 0x80) != 0);
+    SetFlag(FLAG_Z, result == 0);
+}
+
+// UpdatePVFlags updates the P/V flag based on an 8-bit result (parity calculation)
+void Z80::UpdatePVFlags(uint8_t result) {
+    // Calculate parity (even number of 1-bits = 1, odd = 0)
+    uint8_t parity = 1;
+    for (int i = 0; i < 8; i++) {
+        parity ^= (result >> i) & 1;
+    }
+    SetFlag(FLAG_PV, parity != 0);
+}
+
+// UpdateSZXYPVFlags updates the S, Z, X, Y, P/V flags based on an 8-bit result
+void Z80::UpdateSZXYPVFlags(uint8_t result) {
+    SetFlag(FLAG_S, (result & 0x80) != 0);
+    SetFlag(FLAG_Z, result == 0);
+    SetFlag(FLAG_X, (result & FLAG_X) != 0);
+    SetFlag(FLAG_Y, (result & FLAG_Y) != 0);
+
+    // Calculate parity (even number of 1-bits = 1, odd = 0)
+    uint8_t parity = 1;
+    for (int i = 0; i < 8; i++) {
+        parity ^= (result >> i) & 1;
+    }
+    SetFlag(FLAG_PV, parity != 0);
+}
+
+// UpdateFlags3and5FromValue updates the X and Y flags from an 8-bit value
+void Z80::UpdateFlags3and5FromValue(uint8_t value) {
+    SetFlag(FLAG_X, (value & FLAG_X) != 0);
+    SetFlag(FLAG_Y, (value & FLAG_Y) != 0);
+}
+
+// UpdateFlags3and5FromAddress updates the X and Y flags from the high byte of an address
+void Z80::UpdateFlags3and5FromAddress(uint16_t address) {
+    SetFlag(FLAG_X, ((address >> 8) & FLAG_X) != 0);
+    SetFlag(FLAG_Y, ((address >> 8) & FLAG_Y) != 0);
+}
+
+// UpdateSZXYFlags updates the S, Z, X, Y flags based on an 8-bit result
+void Z80::UpdateSZXYFlags(uint8_t result) {
+    SetFlag(FLAG_S, (result & 0x80) != 0);
+    SetFlag(FLAG_Z, result == 0);
+    SetFlag(FLAG_X, (result & FLAG_X) != 0);
+    SetFlag(FLAG_Y, (result & FLAG_Y) != 0);
+}
+
+// UpdateXYFlags updates the undocumented X and Y flags based on an 8-bit result
+void Z80::UpdateXYFlags(uint8_t result) {
+    SetFlag(FLAG_X, (result & FLAG_X) != 0);
+    SetFlag(FLAG_Y, (result & FLAG_Y) != 0);
+}
+
+// GetFlag returns the state of a specific flag
+bool Z80::GetFlag(uint8_t flag) {
+    return (F & flag) != 0;
+}
+
+// SetFlag sets a flag to a specific state
+void Z80::SetFlag(uint8_t flag, bool state) {
+    if (state) {
+        F |= flag;
+    } else {
+        F &= ~flag;
+    }
+}
+
+// ClearFlag clears a specific flag
+void Z80::ClearFlag(uint8_t flag) {
+    F &= ~flag;
+}
+
+// ClearAllFlags clears all flags
+void Z80::ClearAllFlags() {
+    F = 0;
+}
+
+
+// ReadImmediateByte reads the next byte from memory at PC and increments PC
+uint8_t Z80::ReadImmediateByte() {
+    uint8_t value = memory->ReadByte(PC);
+    PC++;
+    return value;
+}
+
+// ReadImmediateWord reads the next word from memory at PC and increments PC by 2
+uint16_t Z80::ReadImmediateWord() {
+    uint8_t lo = memory->ReadByte(PC);
+    PC++;
+    uint8_t hi = memory->ReadByte(PC);
+    PC++;
+    return (uint16_t(hi) << 8) | uint16_t(lo);
+}
+
+// ReadDisplacement reads an 8-bit signed displacement value
+int8_t Z80::ReadDisplacement() {
+    int8_t value = int8_t(memory->ReadByte(PC));
+    PC++;
+    return value;
+}
+
+// ReadOpcode reads the next opcode from memory at PC and increments PC
+uint8_t Z80::ReadOpcode() {
+    uint8_t opcode = memory->ReadByte(PC);
+    PC++;
+    // Increment R register (memory refresh) for each opcode fetch
+    // Note: R is a 7-bit register, bit 7 remains unchanged
+    R = (R & 0x80) | ((R + 1) & 0x7F);
+    return opcode;
+}
+
+// Push pushes a 16-bit value onto the stack
+void Z80::Push(uint16_t value) {
+    SP -= 2;
+    memory->WriteWord(SP, value);
+}
+
+// Pop pops a 16-bit value from the stack
+uint16_t Z80::Pop() {
+    // Read low byte first, then high byte (little-endian)
+    uint8_t lo = memory->ReadByte(SP);
+    uint8_t hi = memory->ReadByte(SP + 1);
+    SP += 2;
+    return (uint16_t(hi) << 8) | uint16_t(lo);
+}
