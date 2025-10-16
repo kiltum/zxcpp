@@ -27,11 +27,12 @@ struct ExpectedState {
     std::string testName;
     // Register values: AF, BC, DE, HL, AF_, BC_, DE_, HL_, IX, IY, SP, PC, MEMPTR
     uint16_t registers[13];
-    // I, R, IFF1, IFF2, IM, HALT
+    // I, R, IFF1, IFF2, IM, HALT, tstates
     uint8_t I, R;
     bool IFF1, IFF2;
     uint8_t IM;
     bool HALT;
+    int tstates;
     // Memory changes: address and expected byte value
     std::vector<std::pair<uint16_t, uint8_t>> memoryChanges;
 };
@@ -224,20 +225,21 @@ public:
             lineIndex++;
         }
         
-        // Next line should be I, R, IFF1, IFF2, IM, HALT
+        // Next line should be I, R, IFF1, IFF2, IM, HALT, tstates
         if (lineIndex < (int)block.size()) {
             std::istringstream iss(block[lineIndex]);
-            int iff1, iff2, halt;
+            int iff1, iff2, halt, temptstates;
             unsigned int tempI, tempR, tempIM;
             iss >> std::hex >> tempI >> std::hex >> tempR >> 
                  std::dec >> iff1 >> std::dec >> iff2 >> std::dec >> tempIM >> 
-                 std::dec >> halt;
+                 std::dec >> halt >> std::dec >> temptstates;
             expected.I = static_cast<uint8_t>(tempI);
             expected.R = static_cast<uint8_t>(tempR);
             expected.IM = static_cast<uint8_t>(tempIM);
             expected.IFF1 = (iff1 != 0);
             expected.IFF2 = (iff2 != 0);
             expected.HALT = (halt != 0);
+            expected.tstates = static_cast<int>(temptstates);
             lineIndex++;
         }
         
@@ -309,7 +311,7 @@ public:
         std::cout << std::dec; // Reset to decimal to avoid affecting other output
     }
 
-    bool compareResults(const TestCase& test, const Z80& cpu, Memory& memory) {
+    bool compareResults(const TestCase& test, const Z80& cpu, Memory& memory, int totalTStates) {
         // Find expected state for this test
         auto it = std::find_if(expectedStates.begin(), expectedStates.end(),
                               [&test](const ExpectedState& es) { return es.testName == test.name; });
@@ -406,6 +408,16 @@ public:
             }
         }
         
+        // Compare T-states
+        if (totalTStates != expected.tstates) {
+            std::stringstream actualStr, expectedStr;
+            actualStr << std::dec << totalTStates;
+            expectedStr << std::dec << expected.tstates;
+            differences.push_back(std::string("T_STATES(") + 
+                                actualStr.str() + "!=" + 
+                                expectedStr.str() + ")");
+        }
+        
         // If no differences, return true
         if (differences.empty()) {
             return true; // All match
@@ -463,8 +475,8 @@ public:
             totalTStates += tstates;
         }
         
-        // Compare results
-        return compareResults(test, cpu, memory);
+        // Compare results including tstates
+        return compareResults(test, cpu, memory, totalTStates);
     }
 
     void runAllTests(bool failFast = false) {
