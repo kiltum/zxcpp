@@ -5,7 +5,7 @@
 int Z80::ExecuteFDOpcode() {
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
-    
+    R++;
     switch (opcode) {
     // Load instructions
     case 0x09: // ADD IY, BC

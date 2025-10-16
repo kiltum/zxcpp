@@ -5,7 +5,7 @@
 int Z80::ExecuteEDOpcode() {
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
-    
+    R++;
     switch (opcode) {
     // Block transfer instructions
     case 0xA0: // LDI

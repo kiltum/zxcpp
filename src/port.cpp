@@ -40,5 +40,5 @@ uint8_t Port::Read(uint16_t port) {
     }
     
     // Return 0 if no handler is registered for this port
-    return 0;
+    return uint8_t(port >> 8);
 }
