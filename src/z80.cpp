@@ -323,27 +323,28 @@ void Z80::rra() {
 void Z80::daa() {
     uint8_t temp = A;
     uint8_t correction = 0;
-    bool carry = GetFlag(FLAG_C);
 
     if (GetFlag(FLAG_H) || (A & 0x0F) > 9) {
-        correction |= 0x06;
-    }
-    if (carry || A > 0x99) {
-        correction |= 0x60;
+        correction += 0x06;
     }
 
-    if (GetFlag(FLAG_N)) {
+    if (A > 0x99 || GetFlag(FLAG_C)) {
+        correction += 0x60;
+        SetFlag(FLAG_C, true);
+    }
+
+    bool isSubtraction = GetFlag(FLAG_N);
+    if (isSubtraction) {
+        SetFlag(FLAG_H, GetFlag(FLAG_H) && (A & 0x0F) < 0x06);
         A -= correction;
     } else {
+        SetFlag(FLAG_H, (A & 0x0F) > 9);
         A += correction;
     }
 
     SetFlag(FLAG_S, (A & 0x80) != 0);
     SetFlag(FLAG_Z, A == 0);
-    SetFlag(FLAG_H, ((temp ^ correction ^ A) & 0x10) != 0);
     SetFlag(FLAG_PV, parity(A));
-    SetFlag(FLAG_C, carry || (correction & 0x60) != 0);
-    // Set X and Y flags from result
     SetFlag(FLAG_X, (A & FLAG_X) != 0);
     SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
 }
