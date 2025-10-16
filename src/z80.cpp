@@ -1,4 +1,12 @@
 #include "z80.hpp"
+#include "memory.hpp"
+#include "port.hpp"
+#include "z80_opcodes.hpp"
+#include "z80_dd_opcodes.hpp"
+#include "z80_fd_opcodes.hpp"
+#include "z80_cb_opcodes.hpp"
+#include "z80_ed_opcodes.hpp"
+#include "z80_fdcb_opcodes.hpp"
 
 Z80::Z80(Memory* mem, Port* port) {
     // Store the memory and port pointers
@@ -37,9 +45,32 @@ Z80::Z80(Memory* mem, Port* port) {
 }
 
 int Z80::ExecuteOneInstruction() {
-    // Placeholder implementation
-    // Returns number of ticks consumed by the instruction
-    PC++;
-    R++;
-    return 4;
+    // Read the first opcode byte
+    uint8_t opcode = memory->ReadByte(PC);
+    
+    // Handle prefix opcodes
+    switch (opcode) {
+        case 0xDD: // DD prefix (IX instructions)
+            // Increment PC past the prefix
+            PC++;
+            return ExecuteDDOpcode(this);
+            
+        case 0xFD: // FD prefix (IY instructions)
+            // Increment PC past the prefix
+            PC++;
+            return ExecuteFDOpcode(this);
+            
+        case 0xCB: // CB prefix (bit manipulation instructions)
+            // Increment PC past the prefix
+            PC++;
+            return ExecuteCBOpcode(this);
+            
+        case 0xED: // ED prefix (extended instructions)
+            // Increment PC past the prefix
+            PC++;
+            return ExecuteEDOpcode(this);
+            
+        default: // Regular opcode
+            return ExecuteOpcode(this);
+    }
 }

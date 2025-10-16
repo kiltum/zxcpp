@@ -5,12 +5,21 @@
 #include "memory.hpp"
 #include "port.hpp"
 
+// Z80 Flag Definitions
+#define FLAG_S  0x80  // Sign Flag (S) - bit 7
+#define FLAG_Z  0x40  // Zero Flag (Z) - bit 6
+#define FLAG_Y  0x20  // Bit 5 (Y) - bit 5
+#define FLAG_H  0x10  // Half Carry Flag (H) - bit 4
+#define FLAG_X  0x08  // Bit 3 (X) - bit 3
+#define FLAG_PV 0x04  // Parity/Overflow Flag (P/V) - bit 2
+#define FLAG_N  0x02  // Add/Subtract Flag (N) - bit 1
+#define FLAG_C  0x01  // Carry Flag (C) - bit 0
+
 class Z80 {
-private:
+public:
     Memory* memory;  // Pointer to memory instance
     Port* port;      // Pointer to port instance
 
-public:
     // Main register set
     union {
         struct {
@@ -100,6 +109,8 @@ public:
     
     // Execute one instruction and return number of ticks consumed
     int ExecuteOneInstruction();
+    
+private:
 };
 
 #endif // Z80_HPP
