@@ -156,6 +156,20 @@ private:
     void or8(uint8_t value);
     void cp8(uint8_t value);
     
+    // CB opcode helper functions
+    uint8_t rlc(uint8_t value);
+    uint8_t rrc(uint8_t value);
+    uint8_t rl(uint8_t value);
+    uint8_t rr(uint8_t value);
+    uint8_t sla(uint8_t value);
+    uint8_t sra(uint8_t value);
+    uint8_t sll(uint8_t value);
+    uint8_t srl(uint8_t value);
+    void bit(uint8_t bitNum, uint8_t value);
+    void bitMem(uint8_t bitNum, uint8_t value, uint8_t addrHi);
+    uint8_t res(uint8_t bitNum, uint8_t value);
+    uint8_t set(uint8_t bitNum, uint8_t value);
+    
     int ExecuteOpcode();
     int ExecuteCBOpcode();
     int ExecuteDDOpcode();
