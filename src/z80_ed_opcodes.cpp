@@ -119,7 +119,8 @@ int Z80::ExecuteEDOpcode() {
     case 0x4F: // LD R, A
         // R register is only 7 bits, bit 7 remains unchanged
         R = (R & 0x80) | (A & 0x7F);
-        //R = A; // fix zen80 tests
+        //gs
+        R = A; // fix zen80 tests
         return 9;
     case 0x50: // IN D, (C)
         return executeIN(2);
