@@ -110,6 +110,9 @@ public:
     // Execute one instruction and return number of ticks consumed
     int ExecuteOneInstruction();
     
+    // Handle interrupt processing
+    int HandleInterrupt();
+    
 private:
 // Flag update functions
     void UpdateSZFlags(uint8_t result);

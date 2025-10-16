@@ -39,6 +39,16 @@ Z80::Z80(Memory* mem, Port* port) {
 }
 
 int Z80::ExecuteOneInstruction() {
+    // Handle interrupts first if enabled
+    if (IFF1 && InterruptPending) {
+        return HandleInterrupt();
+    }
+    
+    // Handle HALT state
+    if (HALT) {
+        return 4; // 4 T-states for HALT
+    }
+
     // Read the first opcode byte
     uint8_t opcode = memory->ReadByte(PC);
     
@@ -66,6 +76,46 @@ int Z80::ExecuteOneInstruction() {
             
         default: // Regular opcode
             return ExecuteOpcode();
+    }
+}
+
+// HandleInterrupt handles interrupt processing
+int Z80::HandleInterrupt() {
+    // Exit HALT state
+    // The HALT instruction halts the Z80; it does not increase the PC so that the instruction is re-
+    // executed, until a maskable or non-maskable interrupt is accepted. Only then does the Z80 increase
+    // the PC again and continues with the next instruction. During the HALT state, the HALT line is
+    // set. The PC is increased before the interrupt routine is called.
+    if (HALT) {
+        HALT = false;
+        PC++;  // Increment PC to exit HALT state
+    }
+    
+    // Reset interrupt flip-flops
+    IFF1 = false;
+    IFF2 = false;
+    
+    // Handle interrupt based on mode
+    switch (IM) {
+        case 0:
+        case 1:
+            // Mode 0/1: Restart at address 0x0038
+            Push(PC);
+            PC = 0x0038;
+            return 13; // 13 T-states for interrupt handling
+            
+        case 2:
+            // Mode 2: Call interrupt vector
+            Push(PC);
+            {
+                uint16_t vectorAddr = (uint16_t(I) << 8) | 0xFF; // Use 0xFF as vector for non-maskable interrupt
+                PC = memory->ReadWord(vectorAddr);
+            }
+            return 19; // 19 T-states for interrupt handling
+            
+        default:
+            // Should not happen, but handle gracefully
+            return 0;
     }
 }
 
