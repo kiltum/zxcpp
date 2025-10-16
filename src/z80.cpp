@@ -1339,3 +1339,130 @@ uint8_t Z80::inC() {
 void Z80::outC(uint8_t value) {
     port->Write(BC, value);
 }
+
+// add16IY adds two 16-bit values for IY register and updates flags
+uint16_t Z80::add16IY(uint16_t a, uint16_t b) {
+    uint32_t result = (uint32_t)a + (uint32_t)b;
+    SetFlag(FLAG_C, result > 0xFFFF);
+    SetFlag(FLAG_H, (a & 0x0FFF) + (b & 0x0FFF) > 0x0FFF);
+    ClearFlag(FLAG_N);
+    // For IY operations, we update X and Y flags from high byte of result
+    UpdateFlags3and5FromAddress((uint16_t)result);
+    return (uint16_t)result;
+}
+
+// Get IYH (high byte of IY)
+uint8_t Z80::GetIYH() {
+    return uint8_t(IY >> 8);
+}
+
+// Get IYL (low byte of IY)
+uint8_t Z80::GetIYL() {
+    return uint8_t(IY & 0xFF);
+}
+
+// Set IYH (high byte of IY)
+void Z80::SetIYH(uint8_t value) {
+    IY = (IY & 0x00FF) | (uint16_t(value) << 8);
+}
+
+// Set IYL (low byte of IY)
+void Z80::SetIYL(uint8_t value) {
+    IY = (IY & 0xFF00) | uint16_t(value);
+}
+
+// executeIncDecIndexedIY handles INC/DEC (IY+d) instructions
+int Z80::executeIncDecIndexedIY(bool isInc) {
+    int8_t displacement = ReadDisplacement();
+    uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
+    uint8_t value = memory->ReadByte(addr);
+    uint8_t result;
+    if (isInc) {
+        result = inc8(value);
+    } else {
+        result = dec8(value);
+    }
+    memory->WriteByte(addr, result);
+    MEMPTR = addr;
+    return 23;
+}
+
+// executeLoadFromIndexedIY handles LD r, (IY+d) instructions
+int Z80::executeLoadFromIndexedIY(uint8_t reg) {
+    int8_t displacement = ReadDisplacement();
+    uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
+    uint8_t value = memory->ReadByte(addr);
+
+    switch (reg) {
+    case 0:
+        B = value;
+        break;
+    case 1:
+        C = value;
+        break;
+    case 2:
+        D = value;
+        break;
+    case 3:
+        E = value;
+        break;
+    case 4:
+        H = value;
+        break;
+    case 5:
+        L = value;
+        break;
+    case 7:
+        A = value;
+        break;
+    }
+
+    MEMPTR = addr;
+    return 19;
+}
+
+// executeStoreToIndexedIY handles LD (IY+d), r instructions
+int Z80::executeStoreToIndexedIY(uint8_t value) {
+    int8_t displacement = ReadDisplacement();
+    uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
+    memory->WriteByte(addr, value);
+    MEMPTR = addr;
+    return 19;
+}
+
+// executeALUIndexedIY handles ALU operations with (IY+d) operand
+int Z80::executeALUIndexedIY(uint8_t opType) {
+    int8_t displacement = ReadDisplacement();
+    uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
+    uint8_t value = memory->ReadByte(addr);
+
+    switch (opType) {
+    case 0: // ADD
+        add8(value);
+        break;
+    case 1: // ADC
+        adc8(value);
+        break;
+    case 2: // SUB
+        sub8(value);
+        break;
+    case 3: // SBC
+        sbc8(value);
+        break;
+    case 4: // AND
+        and8(value);
+        break;
+    case 5: // XOR
+        xor8(value);
+        break;
+    case 6: // OR
+        or8(value);
+        break;
+    case 7: // CP
+        cp8(value);
+        break;
+    }
+
+    MEMPTR = addr;
+    return 19;
+}

@@ -182,6 +182,17 @@ private:
     int executeALUIndexed(uint8_t opType);
     int executeDDCBOpcode();
     
+    // FD opcode helper functions
+    uint16_t add16IY(uint16_t a, uint16_t b);
+    uint8_t GetIYH();
+    uint8_t GetIYL();
+    void SetIYH(uint8_t value);
+    void SetIYL(uint8_t value);
+    int executeIncDecIndexedIY(bool isInc);
+    int executeLoadFromIndexedIY(uint8_t reg);
+    int executeStoreToIndexedIY(uint8_t value);
+    int executeALUIndexedIY(uint8_t opType);
+    
     // ED opcode helper functions
     uint16_t sbc16(uint16_t val1, uint16_t val2);
     uint16_t sbc16WithMEMPTR(uint16_t a, uint16_t b);
