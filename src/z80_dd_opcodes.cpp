@@ -305,3 +305,130 @@ int Z80::ExecuteDDOpcode() {
         //panic(fmt.Sprintf("DD unexpected code %x", opcode))
     }
 }
+
+// add16IX adds two 16-bit values for IX register and updates flags
+uint16_t Z80::add16IX(uint16_t a, uint16_t b) {
+    uint32_t result = (uint32_t)a + (uint32_t)b;
+    SetFlag(FLAG_C, result > 0xFFFF);
+    SetFlag(FLAG_H, (a & 0x0FFF) + (b & 0x0FFF) > 0x0FFF);
+    ClearFlag(FLAG_N);
+    // For IX operations, we update X and Y flags from high byte of result
+    UpdateFlags3and5FromAddress((uint16_t)result);
+    return (uint16_t)result;
+}
+
+// Get IXH (high byte of IX)
+uint8_t Z80::GetIXH() {
+    return uint8_t(IX >> 8);
+}
+
+// Get IXL (low byte of IX)
+uint8_t Z80::GetIXL() {
+    return uint8_t(IX & 0xFF);
+}
+
+// Set IXH (high byte of IX)
+void Z80::SetIXH(uint8_t value) {
+    IX = (IX & 0x00FF) | (uint16_t(value) << 8);
+}
+
+// Set IXL (low byte of IX)
+void Z80::SetIXL(uint8_t value) {
+    IX = (IX & 0xFF00) | uint16_t(value);
+}
+
+// executeIncDecIndexed handles INC/DEC (IX+d) instructions
+int Z80::executeIncDecIndexed(bool isInc) {
+    int8_t displacement = ReadDisplacement();
+    uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
+    uint8_t value = memory->ReadByte(addr);
+    uint8_t result;
+    if (isInc) {
+        result = inc8(value);
+    } else {
+        result = dec8(value);
+    }
+    memory->WriteByte(addr, result);
+    MEMPTR = addr;
+    return 23;
+}
+
+// executeLoadFromIndexed handles LD r, (IX+d) instructions
+int Z80::executeLoadFromIndexed(uint8_t reg) {
+    int8_t displacement = ReadDisplacement();
+    uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
+    uint8_t value = memory->ReadByte(addr);
+
+    switch (reg) {
+    case 0:
+        B = value;
+        break;
+    case 1:
+        C = value;
+        break;
+    case 2:
+        D = value;
+        break;
+    case 3:
+        E = value;
+        break;
+    case 4:
+        H = value;
+        break;
+    case 5:
+        L = value;
+        break;
+    case 7:
+        A = value;
+        break;
+    }
+
+    MEMPTR = addr;
+    return 19;
+}
+
+// executeStoreToIndexed handles LD (IX+d), r instructions
+int Z80::executeStoreToIndexed(uint8_t value) {
+    int8_t displacement = ReadDisplacement();
+    uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
+    memory->WriteByte(addr, value);
+    MEMPTR = addr;
+    return 19;
+}
+
+// executeALUIndexed handles ALU operations with (IX+d) operand
+int Z80::executeALUIndexed(uint8_t opType) {
+    int8_t displacement = ReadDisplacement();
+    uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
+    uint8_t value = memory->ReadByte(addr);
+
+    switch (opType) {
+    case 0: // ADD
+        add8(value);
+        break;
+    case 1: // ADC
+        adc8(value);
+        break;
+    case 2: // SUB
+        sub8(value);
+        break;
+    case 3: // SBC
+        sbc8(value);
+        break;
+    case 4: // AND
+        and8(value);
+        break;
+    case 5: // XOR
+        xor8(value);
+        break;
+    case 6: // OR
+        or8(value);
+        break;
+    case 7: // CP
+        cp8(value);
+        break;
+    }
+
+    MEMPTR = addr;
+    return 19;
+}

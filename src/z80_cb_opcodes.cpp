@@ -401,3 +401,149 @@ int Z80::ExecuteCBOpcode() {
     // Unimplemented opcode
     return 8;
 }
+
+// rlc rotates a byte left circular
+uint8_t Z80::rlc(uint8_t value) {
+    uint8_t result = (value << 1) | (value >> 7);
+    SetFlag(FLAG_C, (value & 0x80) != 0);
+    ClearFlag(FLAG_H);
+    ClearFlag(FLAG_N);
+    UpdateSZXYPVFlags(result);
+    return result;
+}
+
+// rrc rotates a byte right circular
+uint8_t Z80::rrc(uint8_t value) {
+    uint8_t result = (value >> 1) | (value << 7);
+    SetFlag(FLAG_C, (value & 0x01) != 0);
+    ClearFlag(FLAG_H);
+    ClearFlag(FLAG_N);
+    UpdateSZXYPVFlags(result);
+    return result;
+}
+
+// rl rotates a byte left through carry
+uint8_t Z80::rl(uint8_t value) {
+    bool oldCarry = GetFlag(FLAG_C);
+    uint8_t result = (value << 1);
+    if (oldCarry) {
+        result |= 0x01;
+    }
+    SetFlag(FLAG_C, (value & 0x80) != 0);
+    ClearFlag(FLAG_H);
+    ClearFlag(FLAG_N);
+    UpdateSZXYPVFlags(result);
+    return result;
+}
+
+// rr rotates a byte right through carry
+uint8_t Z80::rr(uint8_t value) {
+    bool oldCarry = GetFlag(FLAG_C);
+    uint8_t result = (value >> 1);
+    if (oldCarry) {
+        result |= 0x80;
+    }
+    SetFlag(FLAG_C, (value & 0x01) != 0);
+    ClearFlag(FLAG_H);
+    ClearFlag(FLAG_N);
+    UpdateSZXYPVFlags(result);
+    return result;
+}
+
+// sla shifts a byte left arithmetic
+uint8_t Z80::sla(uint8_t value) {
+    uint8_t result = value << 1;
+    SetFlag(FLAG_C, (value & 0x80) != 0);
+    ClearFlag(FLAG_H);
+    ClearFlag(FLAG_N);
+    UpdateSZXYPVFlags(result);
+    return result;
+}
+
+// sra shifts a byte right arithmetic
+uint8_t Z80::sra(uint8_t value) {
+    uint8_t result = (value >> 1) | (value & 0x80);
+    SetFlag(FLAG_C, (value & 0x01) != 0);
+    ClearFlag(FLAG_H);
+    ClearFlag(FLAG_N);
+    UpdateSZXYPVFlags(result);
+    return result;
+}
+
+// sll shifts a byte left logical (Undocumented)
+uint8_t Z80::sll(uint8_t value) {
+    uint8_t result = (value << 1) | 0x01;
+    SetFlag(FLAG_C, (value & 0x80) != 0);
+    ClearFlag(FLAG_H);
+    ClearFlag(FLAG_N);
+    UpdateSZXYPVFlags(result);
+    return result;
+}
+
+// srl shifts a byte right logical
+uint8_t Z80::srl(uint8_t value) {
+    uint8_t result = value >> 1;
+    SetFlag(FLAG_C, (value & 0x01) != 0);
+    ClearFlag(FLAG_H);
+    ClearFlag(FLAG_N);
+    UpdateSZXYPVFlags(result);
+    return result;
+}
+
+// bit tests a bit in a byte
+void Z80::bit(uint8_t bitNum, uint8_t value) {
+    uint8_t mask = uint8_t(1 << bitNum);
+    uint8_t result = value & mask;
+    SetFlag(FLAG_Z, result == 0);
+    SetFlag(FLAG_Y, (value & (1 << 5)) != 0);
+    SetFlag(FLAG_X, (value & (1 << 3)) != 0);
+    SetFlag(FLAG_H, true);
+    ClearFlag(FLAG_N);
+    if (result == 0) {
+        SetFlag(FLAG_PV, true);
+        ClearFlag(FLAG_S);
+    } else {
+        ClearFlag(FLAG_PV);
+        // For BIT 7, S flag is set to the value of bit 7
+        if (bitNum == 7) {
+            SetFlag(FLAG_S, (value & 0x80) != 0);
+        } else {
+            ClearFlag(FLAG_S);
+        }
+    }
+}
+
+// bitMem tests a bit in a byte for memory references
+void Z80::bitMem(uint8_t bitNum, uint8_t value, uint8_t addrHi) {
+    uint8_t mask = uint8_t(1 << bitNum);
+    uint8_t result = value & mask;
+    SetFlag(FLAG_Z, result == 0);
+    SetFlag(FLAG_Y, (addrHi & (1 << 5)) != 0);
+    SetFlag(FLAG_X, (addrHi & (1 << 3)) != 0);
+    SetFlag(FLAG_H, true);
+    ClearFlag(FLAG_N);
+    if (result == 0) {
+        SetFlag(FLAG_PV, true);
+        ClearFlag(FLAG_S);
+    } else {
+        ClearFlag(FLAG_PV);
+        // For BIT 7, S flag is set to the value of bit 7
+        if (bitNum == 7) {
+            SetFlag(FLAG_S, (value & 0x80) != 0);
+        } else {
+            ClearFlag(FLAG_S);
+        }
+    }
+}
+
+// res resets a bit in a byte
+uint8_t Z80::res(uint8_t bitNum, uint8_t value) {
+    uint8_t mask = uint8_t(~(1 << bitNum));
+    return value & mask;
+}
+
+// set sets a bit in a byte
+uint8_t Z80::set(uint8_t bitNum, uint8_t value) {
+    uint8_t mask = uint8_t(1 << bitNum);
+    return value | mask;
+}
