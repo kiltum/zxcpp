@@ -5,8 +5,8 @@ all: run_test
 
 # Compile and run the test
 run_test: fuse_test zex_test
-#	./fuse_test --failfast
-#	rm -f fuse_test
+	./fuse_test --failfast
+	rm -f fuse_test
 	time ./zex_test
 	rm -f zex_test
 

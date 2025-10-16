@@ -370,22 +370,11 @@ void Z80::cpl() {
 
 // scf sets the carry flag
 void Z80::scf() {
-    // https://worldofspectrum.org/forums/discussion/41704
     SetFlag(FLAG_C, true);
-    SetFlag(FLAG_H, false);
     SetFlag(FLAG_N, false);
-    // This sets both flags if BOTH bits 3 and 5 are set in A, otherwise clears both
-    if ((A & FLAG_Y) == FLAG_Y && (A & FLAG_X) == FLAG_X) {
-        SetFlag(FLAG_Y, true);
-        SetFlag(FLAG_X, true);
-    }
-    // Note: If the condition is not met, the flags remain cleared (default behavior)
-    // SetFlag(FLAG_C, true);
-    // SetFlag(FLAG_N, false);
-    // SetFlag(FLAG_H, false);
-    // // FIX: X and Y flags come from A register
-    // SetFlag(FLAG_X, (A & FLAG_X) != 0);
-    // SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
+    SetFlag(FLAG_H, false);
+    SetFlag(FLAG_X, (A & FLAG_X) != 0);
+    SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
 }
 
 // ccf complements the carry flag
@@ -394,14 +383,8 @@ void Z80::ccf() {
     SetFlag(FLAG_C, !oldCarry);
     SetFlag(FLAG_H, oldCarry); // H = old C
     SetFlag(FLAG_N, false);
-    // test fuse pass, test zexall failed ?
-    if ((A & FLAG_Y) == FLAG_Y && (A & FLAG_X) == FLAG_X) {
-        SetFlag(FLAG_Y, true);
-        SetFlag(FLAG_X, true);
-    }
-    // FIX: X and Y flags come from A register
-    // SetFlag(FLAG_X, (A & FLAG_X) != 0);
-    // SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
+    SetFlag(FLAG_X, (A & FLAG_X) != 0);
+    SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
 }
 
 // add16 adds two 16-bit values and updates flags
