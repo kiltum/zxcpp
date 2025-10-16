@@ -193,6 +193,11 @@ private:
     int executeStoreToIndexedIY(uint8_t value);
     int executeALUIndexedIY(uint8_t opType);
     
+    // FDCB opcode helper functions
+    int executeRotateShiftIndexedIY(uint8_t opcode, uint16_t addr, uint8_t value);
+    int executeResetBitIndexedIY(uint8_t opcode, uint16_t addr, uint8_t value);
+    int executeSetBitIndexedIY(uint8_t opcode, uint16_t addr, uint8_t value);
+    
     // ED opcode helper functions
     uint16_t sbc16(uint16_t val1, uint16_t val2);
     uint16_t sbc16WithMEMPTR(uint16_t a, uint16_t b);
