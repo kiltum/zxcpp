@@ -182,6 +182,39 @@ private:
     int executeALUIndexed(uint8_t opType);
     int executeDDCBOpcode();
     
+    // ED opcode helper functions
+    uint16_t sbc16(uint16_t val1, uint16_t val2);
+    uint16_t sbc16WithMEMPTR(uint16_t a, uint16_t b);
+    uint16_t adc16(uint16_t val1, uint16_t val2);
+    uint16_t adc16WithMEMPTR(uint16_t a, uint16_t b);
+    void neg();
+    void retn();
+    void reti();
+    void ldAI();
+    void ldAR();
+    void rrd();
+    void rld();
+    int executeIN(uint8_t reg);
+    int executeOUT(uint8_t reg);
+    void ldi();
+    void cpi();
+    void ini();
+    void outi();
+    void ldd();
+    void cpd();
+    void ind();
+    void outd();
+    int ldir();
+    int cpir();
+    int inir();
+    int otir();
+    int lddr();
+    int cpdr();
+    int indr();
+    int otdr();
+    uint8_t inC();
+    void outC(uint8_t value);
+    
     int ExecuteOpcode();
     int ExecuteCBOpcode();
     int ExecuteDDOpcode();
