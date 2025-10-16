@@ -1,7 +1,6 @@
 #include "z80.hpp"
 #include "memory.hpp"
 #include "port.hpp"
-#include "z80_opcodes.hpp"
 #include "z80_dd_opcodes.hpp"
 #include "z80_fd_opcodes.hpp"
 #include "z80_cb_opcodes.hpp"
@@ -71,7 +70,7 @@ int Z80::ExecuteOneInstruction() {
             return ExecuteEDOpcode(this);
             
         default: // Regular opcode
-            return ExecuteOpcode(this);
+            return ExecuteOpcode();
     }
 }
 

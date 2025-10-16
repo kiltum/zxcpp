@@ -155,6 +155,7 @@ public:
     void or8(uint8_t value);
     void cp8(uint8_t value);
     
+    int ExecuteOpcode();
 private:
 };
 
