@@ -1,11 +1,6 @@
 #include "z80.hpp"
 #include "memory.hpp"
 #include "port.hpp"
-#include "z80_dd_opcodes.hpp"
-#include "z80_fd_opcodes.hpp"
-#include "z80_cb_opcodes.hpp"
-#include "z80_ed_opcodes.hpp"
-#include "z80_fdcb_opcodes.hpp"
 
 Z80::Z80(Memory* mem, Port* port) {
     // Store the memory and port pointers
@@ -52,22 +47,22 @@ int Z80::ExecuteOneInstruction() {
         case 0xDD: // DD prefix (IX instructions)
             // Increment PC past the prefix
             PC++;
-            return ExecuteDDOpcode(this);
+            return ExecuteDDOpcode();
             
         case 0xFD: // FD prefix (IY instructions)
             // Increment PC past the prefix
             PC++;
-            return ExecuteFDOpcode(this);
+            return ExecuteFDOpcode();
             
         case 0xCB: // CB prefix (bit manipulation instructions)
             // Increment PC past the prefix
             PC++;
-            return ExecuteCBOpcode(this);
+            return ExecuteCBOpcode();
             
         case 0xED: // ED prefix (extended instructions)
             // Increment PC past the prefix
             PC++;
-            return ExecuteEDOpcode(this);
+            return ExecuteEDOpcode();
             
         default: // Regular opcode
             return ExecuteOpcode();

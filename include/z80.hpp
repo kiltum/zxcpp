@@ -110,7 +110,8 @@ public:
     // Execute one instruction and return number of ticks consumed
     int ExecuteOneInstruction();
     
-    // Flag update functions
+private:
+// Flag update functions
     void UpdateSZFlags(uint8_t result);
     void UpdatePVFlags(uint8_t result);
     void UpdateSZXYPVFlags(uint8_t result);
@@ -156,7 +157,11 @@ public:
     void cp8(uint8_t value);
     
     int ExecuteOpcode();
-private:
+    int ExecuteCBOpcode();
+    int ExecuteDDOpcode();
+    int ExecuteEDOpcode();
+    int ExecuteFDCBOpcode();
+    int ExecuteFDOpcode();
 };
 
 #endif // Z80_HPP

@@ -1,17 +1,16 @@
-#include "z80_fdcb_opcodes.hpp"
 #include "z80.hpp"
 #include "memory.hpp"
 
 // Implementation of FDCB prefixed Z80 opcodes (IY + bit manipulation instructions)
-int ExecuteFDCBOpcode(Z80* cpu) {
+int Z80::ExecuteFDCBOpcode() {
     // Read the opcode from memory at the current program counter
-    uint8_t opcode = cpu->memory->ReadByte(cpu->PC);
+    uint8_t opcode = memory->ReadByte(PC);
     
     // Increment program counter
-    cpu->PC++;
+    PC++;
     
     // Increment refresh register
-    cpu->R++;
+    R++;
     
     // Placeholder implementation - just return a default cycle count
     // In a real implementation, this would contain a switch statement

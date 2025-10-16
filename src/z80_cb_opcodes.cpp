@@ -1,17 +1,16 @@
-#include "z80_cb_opcodes.hpp"
 #include "z80.hpp"
 #include "memory.hpp"
 
 // Implementation of CB prefixed Z80 opcodes (bit manipulation instructions)
-int ExecuteCBOpcode(Z80* cpu) {
+int Z80::ExecuteCBOpcode() {
     // Read the opcode from memory at the current program counter
-    uint8_t opcode = cpu->memory->ReadByte(cpu->PC);
+    uint8_t opcode = memory->ReadByte(PC);
     
     // Increment program counter
-    cpu->PC++;
+    PC++;
     
     // Increment refresh register
-    cpu->R++;
+    R++;
     
     // Placeholder implementation - just return a default cycle count
     // In a real implementation, this would contain a switch statement
