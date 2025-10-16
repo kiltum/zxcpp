@@ -3,6 +3,7 @@
 
 // Implementation of CB prefixed Z80 opcodes (bit manipulation instructions)
 int Z80::ExecuteCBOpcode() {
+    R++;
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
     
