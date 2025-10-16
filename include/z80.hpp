@@ -133,6 +133,28 @@ public:
     void Push(uint16_t value);
     uint16_t Pop();
     
+    // Opcode helper functions
+    uint8_t inc8(uint8_t value);
+    uint8_t dec8(uint8_t value);
+    void rlca();
+    void rla();
+    void rrca();
+    void rra();
+    void daa();
+    bool parity(uint8_t val);
+    void cpl();
+    void scf();
+    void ccf();
+    uint16_t add16(uint16_t a, uint16_t b);
+    void add8(uint8_t value);
+    void adc8(uint8_t value);
+    void sub8(uint8_t value);
+    void sbc8(uint8_t value);
+    void and8(uint8_t value);
+    void xor8(uint8_t value);
+    void or8(uint8_t value);
+    void cp8(uint8_t value);
+    
 private:
 };
 
