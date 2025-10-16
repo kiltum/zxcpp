@@ -519,12 +519,12 @@ int main(int argc, char* argv[]) {
     FuseTest tester;
     
     // Parse input file
-    if (!tester.parseInputFile("tests/testdata/tests.in")) {
+    if (!tester.parseInputFile("testdata/tests.in")) {
         return 1;
     }
     
     // Parse expected file
-    if (!tester.parseExpectedFile("tests/testdata/tests.expected")) {
+    if (!tester.parseExpectedFile("testdata/tests.expected")) {
         return 1;
     }
     
