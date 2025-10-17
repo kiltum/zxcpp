@@ -2,6 +2,7 @@
 #define Z80_HPP
 
 #include <cstdint>
+#include <bit>
 #include "memory.hpp"
 #include "port.hpp"
 
@@ -14,6 +15,17 @@
 #define FLAG_PV 0x04 // Parity/Overflow Flag (P/V) - bit 2
 #define FLAG_N 0x02  // Add/Subtract Flag (N) - bit 1
 #define FLAG_C 0x01  // Carry Flag (C) - bit 0
+
+#if defined(__GNUC__) || defined(__clang__)   // GCC/Clang built‑ins
+    // Example: use a builtin that only GCC/Clang provide
+    #define POPCOUNT(x) __builtin_popcount(x)
+#else
+    // Portable fallback
+    #include <bit>
+    #define POPCOUNT(x) std::popcount(x)
+#endif
+// ---------------------------------------------------------------
+
 
 class Z80
 {
@@ -186,7 +198,11 @@ private:
     void rrca();
     void rra();
     void daa();
-    bool parity(uint8_t val);
+    //bool parity(uint8_t val);
+    __attribute__((always_inline))
+    static inline bool parity(uint8_t v) noexcept {
+    return !(POPCOUNT(v) & 1);
+    }
     void cpl();
     void scf();
     void ccf();

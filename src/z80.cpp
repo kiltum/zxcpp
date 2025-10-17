@@ -326,16 +326,16 @@ void Z80::daa() {
     SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
 }
 
-// Helper function to calculate parity
-bool Z80::parity(uint8_t val) {
-    int count = 0;
-    for (int i = 0; i < 8; i++) {
-        if (val & (1 << i)) {
-            count++;
-        }
-    }
-    return (count % 2) == 0;
-}
+// // Helper function to calculate parity
+// bool Z80::parity(uint8_t val) {
+//     int count = 0;
+//     for (int i = 0; i < 8; i++) {
+//         if (val & (1 << i)) {
+//             count++;
+//         }
+//     }
+//     return (count % 2) == 0;
+// }
 
 // cpl complements the accumulator
 void Z80::cpl() {
