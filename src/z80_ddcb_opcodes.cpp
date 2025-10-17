@@ -17,7 +17,7 @@ int Z80::executeDDCBOpcode() {
     R = originalR;
 
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    uint8_t value = memory->ReadByte(addr);
+    uint8_t value = memory->memory[addr];
 
     // Handle rotate and shift instructions (0x00-0x3F)
     if (opcode <= 0x3F) {

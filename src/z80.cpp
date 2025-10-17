@@ -50,7 +50,7 @@ int Z80::ExecuteOneInstruction() {
     }
 
     // Read the first opcode byte
-    uint8_t opcode = memory->ReadByte(PC);
+    uint8_t opcode = memory->memory[PC];
     
     // Handle prefix opcodes
     switch (opcode) {
@@ -203,30 +203,30 @@ void Z80::ClearAllFlags() {
 
 // ReadImmediateByte reads the next byte from memory at PC and increments PC
 uint8_t Z80::ReadImmediateByte() {
-    uint8_t value = memory->ReadByte(PC);
+    uint8_t value = memory->memory[PC];
     PC++;
     return value;
 }
 
 // ReadImmediateWord reads the next word from memory at PC and increments PC by 2
 uint16_t Z80::ReadImmediateWord() {
-    uint8_t lo = memory->ReadByte(PC);
+    uint8_t lo = memory->memory[PC];
     PC++;
-    uint8_t hi = memory->ReadByte(PC);
+    uint8_t hi = memory->memory[PC];
     PC++;
     return (uint16_t(hi) << 8) | uint16_t(lo);
 }
 
 // ReadDisplacement reads an 8-bit signed displacement value
 int8_t Z80::ReadDisplacement() {
-    int8_t value = int8_t(memory->ReadByte(PC));
+    int8_t value = int8_t(memory->memory[PC]);
     PC++;
     return value;
 }
 
 // ReadOpcode reads the next opcode from memory at PC and increments PC
 uint8_t Z80::ReadOpcode() {
-    uint8_t opcode = memory->ReadByte(PC);
+    uint8_t opcode = memory->memory[PC];
     PC++;
     // Increment R register (memory refresh) for each opcode fetch
     // Note: R is a 7-bit register, bit 7 remains unchanged
@@ -243,8 +243,8 @@ void Z80::Push(uint16_t value) {
 // Pop pops a 16-bit value from the stack
 uint16_t Z80::Pop() {
     // Read low byte first, then high byte (little-endian)
-    uint8_t lo = memory->ReadByte(SP);
-    uint8_t hi = memory->ReadByte(SP + 1);
+    uint8_t lo = memory->memory[SP];
+    uint8_t hi = memory->memory[SP + 1];
     SP += 2;
     return (uint16_t(hi) << 8) | uint16_t(lo);
 }

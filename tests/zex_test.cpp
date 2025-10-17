@@ -46,7 +46,7 @@ public:
                     uint16_t addr = (cpu->D << 8) | cpu->E; // Get DE register value
                     // Read characters from memory until we encounter '$'
                     while (true) {
-                        uint8_t ch = memory->ReadByte(addr);
+                        uint8_t ch = memory->memory[addr];
                         if (ch == '$') {
                             break;
                         }
@@ -67,9 +67,9 @@ public:
         // and setting the PC to that address.
 
         // Pop return address from stack
-        uint8_t lowByte = memory->ReadByte(cpu->SP);
+        uint8_t lowByte = memory->memory[cpu->SP];
         cpu->SP++;
-        uint8_t highByte = memory->ReadByte(cpu->SP);
+        uint8_t highByte = memory->memory[cpu->SP];
         cpu->SP++;
         uint16_t returnAddress = ((uint16_t)highByte << 8) | (uint16_t)lowByte;
 
@@ -161,7 +161,7 @@ void TestZEXALL() {
                         uint16_t addr = (cpu->D << 8) | cpu->E; // Get DE register value
                         // Read characters from memory until we encounter '$'
                         while (true) {
-                            uint8_t ch = memory->ReadByte(addr);
+                            uint8_t ch = memory->memory[addr];
                             if (ch == '$') {
                                 break;
                             }
@@ -182,9 +182,9 @@ void TestZEXALL() {
             // and setting the PC to that address.
 
             // Pop return address from stack
-            uint8_t lowByte = memory->ReadByte(cpu->SP);
+            uint8_t lowByte = memory->memory[cpu->SP];
             cpu->SP++;
-            uint8_t highByte = memory->ReadByte(cpu->SP);
+            uint8_t highByte = memory->memory[cpu->SP];
             cpu->SP++;
             uint16_t returnAddress = ((uint16_t)highByte << 8) | (uint16_t)lowByte;
 

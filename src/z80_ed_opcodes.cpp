@@ -386,7 +386,7 @@ void Z80::ldAR() {
 
 // rrd rotates digit between A and (HL) right
 void Z80::rrd() {
-    uint8_t value = memory->ReadByte(HL);
+    uint8_t value = memory->memory[HL];
     uint8_t ah = A & 0xF0;
     uint8_t al = A & 0x0F;
     uint8_t hl = value;
@@ -408,7 +408,7 @@ void Z80::rrd() {
 
 // rld rotates digit between A and (HL) left
 void Z80::rld() {
-    uint8_t value = memory->ReadByte(HL);
+    uint8_t value = memory->memory[HL];
     uint8_t ah = A & 0xF0;
     uint8_t al = A & 0x0F;
     uint8_t hl = value;
@@ -511,7 +511,7 @@ int Z80::executeOUT(uint8_t reg) {
 
 // ldi loads byte from (HL) to (DE), increments pointers, decrements BC
 void Z80::ldi() {
-    uint8_t value = memory->ReadByte(HL);
+    uint8_t value = memory->memory[HL];
     memory->WriteByte(DE, value);
 
     DE++;
@@ -530,7 +530,7 @@ void Z80::ldi() {
 
 // cpi compares A with (HL), increments HL, decrements BC
 void Z80::cpi() {
-    uint8_t value = memory->ReadByte(HL);
+    uint8_t value = memory->memory[HL];
     uint8_t result = A - value;
 
     HL++;
@@ -584,7 +584,7 @@ void Z80::ini() {
 
 // outi outputs byte from (HL) to port, increments HL, decrements B
 void Z80::outi() {
-    uint8_t val = memory->ReadByte(HL);
+    uint8_t val = memory->memory[HL];
     B--;
     port->Write(BC, val);
     HL++;
@@ -609,7 +609,7 @@ void Z80::outi() {
 
 // ldd loads byte from (HL) to (DE), decrements pointers, decrements BC
 void Z80::ldd() {
-    uint8_t value = memory->ReadByte(HL);
+    uint8_t value = memory->memory[HL];
     memory->WriteByte(DE, value);
     HL--;
     DE--;
@@ -627,7 +627,7 @@ void Z80::ldd() {
 
 // cpd compares A with (HL), decrements HL, decrements BC
 void Z80::cpd() {
-    uint8_t val = memory->ReadByte(HL);
+    uint8_t val = memory->memory[HL];
     int16_t result = (int16_t)A - (int16_t)val;
     HL--;
     BC--;
@@ -686,7 +686,7 @@ void Z80::ind() {
 
 // outd outputs byte from (HL) to port, decrements HL, decrements B
 void Z80::outd() {
-    uint8_t val = memory->ReadByte(HL);
+    uint8_t val = memory->memory[HL];
     B--;
     port->Write(uint16_t(C) | (uint16_t(B) << 8), val);
     HL--;

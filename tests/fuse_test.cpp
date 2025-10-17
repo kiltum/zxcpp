@@ -393,7 +393,7 @@ public:
         for (const auto& memChange : expected.memoryChanges) {
             uint16_t address = memChange.first;
             uint8_t expectedByte = memChange.second;
-            uint8_t actualByte = memory.ReadByte(address);
+            uint8_t actualByte = memory.memory[address];
             
             if (actualByte != expectedByte) {
                 std::stringstream actualStr, expectedStr;

@@ -19,7 +19,7 @@ int Z80::ExecuteCBOpcode() {
         // Handle (HL) special case
         if (reg == 6) {
             uint16_t addr = HL;
-            uint8_t value = memory->ReadByte(addr);
+            uint8_t value = memory->memory[addr];
 
             switch (opType) {
             case 0: // RLC
@@ -285,7 +285,7 @@ int Z80::ExecuteCBOpcode() {
 
         // Handle (HL) special case
         if (reg == 6) {
-            uint8_t value = memory->ReadByte(HL);
+            uint8_t value = memory->memory[HL];
             bitMem(bitNum, value, uint8_t(MEMPTR >> 8));
             return 12;
         } else {
@@ -327,7 +327,7 @@ int Z80::ExecuteCBOpcode() {
         // Handle (HL) special case
         if (reg == 6) {
             uint16_t addr = HL;
-            uint8_t value = memory->ReadByte(addr);
+            uint8_t value = memory->memory[addr];
             uint8_t result = res(bitNum, value);
             memory->WriteByte(addr, result);
             return 15;
@@ -368,7 +368,7 @@ int Z80::ExecuteCBOpcode() {
         // Handle (HL) special case
         if (reg == 6) {
             uint16_t addr = HL;
-            uint8_t value = memory->ReadByte(addr);
+            uint8_t value = memory->memory[addr];
             uint8_t result = set(bitNum, value);
             memory->WriteByte(addr, result);
             return 15;

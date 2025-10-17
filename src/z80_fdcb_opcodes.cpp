@@ -7,7 +7,7 @@ int Z80::ExecuteFDCBOpcode() {
     uint8_t opcode = ReadOpcode();
     R--; // Decrement R because ReadOpcode() increments it
     uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
-    uint8_t value = memory->ReadByte(addr);
+    uint8_t value = memory->memory[addr];
     MEMPTR = addr;
 
     // Handle rotate and shift instructions (0x00-0x3F)

@@ -344,7 +344,7 @@ void Z80::SetIXL(uint8_t value) {
 int Z80::executeIncDecIndexed(bool isInc) {
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    uint8_t value = memory->ReadByte(addr);
+    uint8_t value = memory->memory[addr];
     uint8_t result;
     if (isInc) {
         result = inc8(value);
@@ -360,7 +360,7 @@ int Z80::executeIncDecIndexed(bool isInc) {
 int Z80::executeLoadFromIndexed(uint8_t reg) {
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    uint8_t value = memory->ReadByte(addr);
+    uint8_t value = memory->memory[addr];
 
     switch (reg) {
     case 0:
@@ -403,7 +403,7 @@ int Z80::executeStoreToIndexed(uint8_t value) {
 int Z80::executeALUIndexed(uint8_t opType) {
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    uint8_t value = memory->ReadByte(addr);
+    uint8_t value = memory->memory[addr];
 
     switch (opType) {
     case 0: // ADD

@@ -48,7 +48,7 @@ int Z80::ExecuteOpcode() {
             }
             return 11;
         case 0x0A: // LD A, (BC)
-            A = memory->ReadByte(BC);
+            A = memory->memory[BC];
             MEMPTR = BC + 1;
             return 7;
         case 0x0B: // DEC BC
@@ -113,7 +113,7 @@ int Z80::ExecuteOpcode() {
             }
             return 11;
         case 0x1A: // LD A, (DE)
-            A = memory->ReadByte(DE);
+            A = memory->memory[DE];
             MEMPTR = DE + 1;
             return 7;
         case 0x1B: // DEC DE
@@ -227,14 +227,14 @@ int Z80::ExecuteOpcode() {
             return 6;
         case 0x34: // INC (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 uint8_t result = inc8(value);
                 memory->WriteByte(HL, result);
             }
             return 11;
         case 0x35: // DEC (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 uint8_t result = dec8(value);
                 memory->WriteByte(HL, result);
             }
@@ -267,7 +267,7 @@ int Z80::ExecuteOpcode() {
         case 0x3A: // LD A, (nn)
             {
                 uint16_t addr = ReadImmediateWord();
-                A = memory->ReadByte(addr);
+                A = memory->memory[addr];
                 MEMPTR = addr + 1;
             }
             return 13;
@@ -306,7 +306,7 @@ int Z80::ExecuteOpcode() {
             B = L;
             return 4;
         case 0x46: // LD B, (HL)
-            B = memory->ReadByte(HL);
+            B = memory->memory[HL];
             return 7;
         case 0x47: // LD B, A
             B = A;
@@ -329,7 +329,7 @@ int Z80::ExecuteOpcode() {
             C = L;
             return 4;
         case 0x4E: // LD C, (HL)
-            C = memory->ReadByte(HL);
+            C = memory->memory[HL];
             return 7;
         case 0x4F: // LD C, A
             C = A;
@@ -352,7 +352,7 @@ int Z80::ExecuteOpcode() {
             D = L;
             return 4;
         case 0x56: // LD D, (HL)
-            D = memory->ReadByte(HL);
+            D = memory->memory[HL];
             return 7;
         case 0x57: // LD D, A
             D = A;
@@ -375,7 +375,7 @@ int Z80::ExecuteOpcode() {
             E = L;
             return 4;
         case 0x5E: // LD E, (HL)
-            E = memory->ReadByte(HL);
+            E = memory->memory[HL];
             return 7;
         case 0x5F: // LD E, A
             E = A;
@@ -398,7 +398,7 @@ int Z80::ExecuteOpcode() {
             H = L;
             return 4;
         case 0x66: // LD H, (HL)
-            H = memory->ReadByte(HL);
+            H = memory->memory[HL];
             return 7;
         case 0x67: // LD H, A
             H = A;
@@ -421,7 +421,7 @@ int Z80::ExecuteOpcode() {
         case 0x6D: // LD L, L
             return 4;
         case 0x6E: // LD L, (HL)
-            L = memory->ReadByte(HL);
+            L = memory->memory[HL];
             return 7;
         case 0x6F: // LD L, A
             L = A;
@@ -470,7 +470,7 @@ int Z80::ExecuteOpcode() {
             A = L;
             return 4;
         case 0x7E: // LD A, (HL)
-            A = memory->ReadByte(HL);
+            A = memory->memory[HL];
             return 7;
         case 0x7F: // LD A, A
             return 4;
@@ -496,7 +496,7 @@ int Z80::ExecuteOpcode() {
             return 4;
         case 0x86: // ADD A, (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 add8(value);
             }
             return 7;
@@ -523,7 +523,7 @@ int Z80::ExecuteOpcode() {
             return 4;
         case 0x8E: // ADC A, (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 adc8(value);
             }
             return 7;
@@ -550,7 +550,7 @@ int Z80::ExecuteOpcode() {
             return 4;
         case 0x96: // SUB (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 sub8(value);
             }
             return 7;
@@ -577,7 +577,7 @@ int Z80::ExecuteOpcode() {
             return 4;
         case 0x9E: // SBC A, (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 sbc8(value);
             }
             return 7;
@@ -604,7 +604,7 @@ int Z80::ExecuteOpcode() {
             return 4;
         case 0xA6: // AND (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 and8(value);
             }
             return 7;
@@ -631,7 +631,7 @@ int Z80::ExecuteOpcode() {
             return 4;
         case 0xAE: // XOR (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 xor8(value);
             }
             return 7;
@@ -658,7 +658,7 @@ int Z80::ExecuteOpcode() {
             return 4;
         case 0xB6: // OR (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 or8(value);
             }
             return 7;
@@ -685,7 +685,7 @@ int Z80::ExecuteOpcode() {
             return 4;
         case 0xBE: // CP (HL)
             {
-                uint8_t value = memory->ReadByte(HL);
+                uint8_t value = memory->memory[HL];
                 cp8(value);
             }
             return 7;
@@ -1127,4 +1127,3 @@ int Z80::ExecuteOpcode() {
     // Default return (should not reach here)
     return 4;
 }
-

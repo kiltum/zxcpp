@@ -4,10 +4,9 @@
 #include <cstdint>
 
 class Memory {
-private:
+public:
     uint8_t memory[65536]; // 64KB of memory
 
-public:
     // Constructor
     Memory();
     
