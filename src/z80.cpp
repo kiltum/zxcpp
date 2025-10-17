@@ -185,14 +185,14 @@ uint8_t Z80::ReadImmediateByte() {
     return value;
 }
 
-// ReadImmediateWord reads the next word from memory at PC and increments PC by 2
-uint16_t Z80::ReadImmediateWord() {
-    uint8_t lo = memory->memory[PC];
-    PC++;
-    uint8_t hi = memory->memory[PC];
-    PC++;
-    return (uint16_t(hi) << 8) | uint16_t(lo);
-}
+// // ReadImmediateWord reads the next word from memory at PC and increments PC by 2
+// uint16_t Z80::ReadImmediateWord() {
+//     uint8_t lo = memory->memory[PC];
+//     PC++;
+//     uint8_t hi = memory->memory[PC];
+//     PC++;
+//     return (uint16_t(hi) << 8) | uint16_t(lo);
+// }
 
 // ReadDisplacement reads an 8-bit signed displacement value
 int8_t Z80::ReadDisplacement() {

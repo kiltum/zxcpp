@@ -152,7 +152,15 @@ private:
 
     // Helper functions
     uint8_t ReadImmediateByte();
-    uint16_t ReadImmediateWord();
+    // uint16_t ReadImmediateWord();
+    __attribute__((always_inline))
+    inline uint16_t ReadImmediateWord() noexcept {
+        const uint8_t* p = memory->memory + PC;   // single address calc
+        uint16_t word;
+        std::memcpy(&word, p, sizeof(word));    // becomes a single load
+        PC += 2;                                 // one add
+        return word;                             // little‑endian order is correct
+    }
     int8_t ReadDisplacement();
     uint8_t ReadOpcode();
     void Push(uint16_t value);
