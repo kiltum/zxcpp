@@ -102,7 +102,7 @@ bool loadZEXALL(Memory* memory, const std::string& filename) {
     // Load into memory at address 0x100
     uint16_t loadAddress = 0x100;
     for (size_t i = 0; i < fileSize && loadAddress + i < 0x10000; i++) {
-        memory->WriteByte(loadAddress + i, buffer[i]);
+        memory->memory[loadAddress + i] = buffer[i];
     }
 
     // Clean up

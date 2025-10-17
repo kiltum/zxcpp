@@ -25,49 +25,49 @@ int Z80::ExecuteCBOpcode() {
             case 0: // RLC
                 {
                     uint8_t result = rlc(value);
-                    memory->WriteByte(addr, result);
+                    memory->memory[addr] = result;
                 }
                 return 15;
             case 1: // RRC
                 {
                     uint8_t result = rrc(value);
-                    memory->WriteByte(addr, result);
+                    memory->memory[addr] = result;
                 }
                 return 15;
             case 2: // RL
                 {
                     uint8_t result = rl(value);
-                    memory->WriteByte(addr, result);
+                    memory->memory[addr] = result;
                 }
                 return 15;
             case 3: // RR
                 {
                     uint8_t result = rr(value);
-                    memory->WriteByte(addr, result);
+                    memory->memory[addr] = result;
                 }
                 return 15;
             case 4: // SLA
                 {
                     uint8_t result = sla(value);
-                    memory->WriteByte(addr, result);
+                    memory->memory[addr] = result;
                 }
                 return 15;
             case 5: // SRA
                 {
                     uint8_t result = sra(value);
-                    memory->WriteByte(addr, result);
+                    memory->memory[addr] = result;
                 }
                 return 15;
             case 6: // SLL (Undocumented)
                 {
                     uint8_t result = sll(value);
-                    memory->WriteByte(addr, result);
+                    memory->memory[addr] = result;
                 }
                 return 15;
             case 7: // SRL
                 {
                     uint8_t result = srl(value);
-                    memory->WriteByte(addr, result);
+                    memory->memory[addr] = result;
                 }
                 return 15;
             }
@@ -329,7 +329,7 @@ int Z80::ExecuteCBOpcode() {
             uint16_t addr = HL;
             uint8_t value = memory->memory[addr];
             uint8_t result = res(bitNum, value);
-            memory->WriteByte(addr, result);
+            memory->memory[addr] = result;
             return 15;
         } else {
             // Handle regular registers
@@ -370,7 +370,7 @@ int Z80::ExecuteCBOpcode() {
             uint16_t addr = HL;
             uint8_t value = memory->memory[addr];
             uint8_t result = set(bitNum, value);
-            memory->WriteByte(addr, result);
+            memory->memory[addr] = result;
             return 15;
         } else {
             // Handle regular registers

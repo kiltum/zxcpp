@@ -125,16 +125,6 @@ void Z80::UpdateSZFlags(uint8_t result) {
     SetFlag(FLAG_Z, result == 0);
 }
 
-// UpdatePVFlags updates the P/V flag based on an 8-bit result (parity calculation)
-void Z80::UpdatePVFlags(uint8_t result) {
-    // Calculate parity (even number of 1-bits = 1, odd = 0)
-    uint8_t parity = 1;
-    for (int i = 0; i < 8; i++) {
-        parity ^= (result >> i) & 1;
-    }
-    SetFlag(FLAG_PV, parity != 0);
-}
-
 // UpdateSZXYPVFlags updates the S, Z, X, Y, P/V flags based on an 8-bit result
 void Z80::UpdateSZXYPVFlags(uint8_t result) {
     SetFlag(FLAG_S, (result & 0x80) != 0);
@@ -181,23 +171,10 @@ bool Z80::GetFlag(uint8_t flag) {
     return (F & flag) != 0;
 }
 
-// SetFlag sets a flag to a specific state
-void Z80::SetFlag(uint8_t flag, bool state) {
-    if (state) {
-        F |= flag;
-    } else {
-        F &= ~flag;
-    }
-}
 
 // ClearFlag clears a specific flag
 void Z80::ClearFlag(uint8_t flag) {
     F &= ~flag;
-}
-
-// ClearAllFlags clears all flags
-void Z80::ClearAllFlags() {
-    F = 0;
 }
 
 

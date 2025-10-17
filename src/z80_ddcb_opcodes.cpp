@@ -59,7 +59,7 @@ int Z80::executeDDCBOpcode() {
         }
 
         // Store result in memory
-        memory->WriteByte(addr, result);
+        memory->memory[addr] = result;
 
         // Store result in register if needed (except for (HL) case)
         if (reg != 6) { // reg 6 is (HL) - no register store needed
@@ -106,7 +106,7 @@ int Z80::executeDDCBOpcode() {
         uint8_t reg = opcode & 0x07;
 
         uint8_t result = res(bitNum, value);
-        memory->WriteByte(addr, result);
+        memory->memory[addr] = result;
 
         // Store result in register if needed (except for (HL) case)
         if (reg != 6) { // reg 6 is (HL) - no register store needed
@@ -145,7 +145,7 @@ int Z80::executeDDCBOpcode() {
         uint8_t reg = opcode & 0x07;
 
         uint8_t result = set(bitNum, value);
-        memory->WriteByte(addr, result);
+        memory->memory[addr] = result;
 
         // Store result in register if needed (except for (HL) case)
         if (reg != 6) { // reg 6 is (HL) - no register store needed

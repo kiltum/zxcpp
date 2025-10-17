@@ -66,7 +66,6 @@ int Z80::ExecuteEDOpcode() {
         {
             uint16_t addr = ReadImmediateWord();
             memory->WriteWord(addr, BC);
-            // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
         return 20;
@@ -111,7 +110,6 @@ int Z80::ExecuteEDOpcode() {
         {
             uint16_t addr = ReadImmediateWord();
             BC = memory->ReadWord(addr);
-            // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
         return 20;
@@ -138,7 +136,6 @@ int Z80::ExecuteEDOpcode() {
         {
             uint16_t addr = ReadImmediateWord();
             memory->WriteWord(addr, DE);
-            // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
         return 20;
@@ -163,7 +160,6 @@ int Z80::ExecuteEDOpcode() {
         {
             uint16_t addr = ReadImmediateWord();
             DE = memory->ReadWord(addr);
-            // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
         return 20;
@@ -188,7 +184,6 @@ int Z80::ExecuteEDOpcode() {
         {
             uint16_t addr = ReadImmediateWord();
             memory->WriteWord(addr, HL);
-            // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
         return 20;
@@ -209,7 +204,6 @@ int Z80::ExecuteEDOpcode() {
         {
             uint16_t addr = ReadImmediateWord();
             HL = memory->ReadWord(addr);
-            // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
         return 20;
@@ -246,7 +240,6 @@ int Z80::ExecuteEDOpcode() {
         {
             uint16_t addr = ReadImmediateWord();
             memory->WriteWord(addr, SP);
-            // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
         return 20;
@@ -264,7 +257,6 @@ int Z80::ExecuteEDOpcode() {
         {
             uint16_t addr = ReadImmediateWord();
             SP = memory->ReadWord(addr);
-            // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
         return 20;
@@ -396,7 +388,7 @@ void Z80::rrd() {
     // HL bits 3-0 go to A bits 3-0
     A = ah | (hl & 0x0F);
     uint8_t newHL = ((hl & 0xF0) >> 4) | (al << 4);
-    memory->WriteByte(HL, newHL);
+    memory->memory[HL] = newHL;
 
     UpdateSZXYPVFlags(A);
     ClearFlag(FLAG_H);
@@ -418,7 +410,7 @@ void Z80::rld() {
     // HL bits 7-4 go to A bits 3-0
     A = ah | (hl >> 4);
     uint8_t newHL = ((hl & 0x0F) << 4) | al;
-    memory->WriteByte(HL, newHL);
+    memory->memory[HL] = newHL;
 
     UpdateSZXYPVFlags(A);
     ClearFlag(FLAG_H);
@@ -512,7 +504,7 @@ int Z80::executeOUT(uint8_t reg) {
 // ldi loads byte from (HL) to (DE), increments pointers, decrements BC
 void Z80::ldi() {
     uint8_t value = memory->memory[HL];
-    memory->WriteByte(DE, value);
+    memory->memory[DE] = value;
 
     DE++;
     HL++;
@@ -561,7 +553,7 @@ void Z80::cpi() {
 // ini inputs byte to (HL), increments HL, decrements B
 void Z80::ini() {
     uint8_t value = port->Read(uint16_t(C) | (uint16_t(B) << 8));
-    memory->WriteByte(HL, value);
+    memory->memory[HL] = value;
     HL++;
     uint16_t origbc = BC;
     B--;
@@ -610,7 +602,7 @@ void Z80::outi() {
 // ldd loads byte from (HL) to (DE), decrements pointers, decrements BC
 void Z80::ldd() {
     uint8_t value = memory->memory[HL];
-    memory->WriteByte(DE, value);
+    memory->memory[DE] = value;
     HL--;
     DE--;
     BC--;
@@ -650,7 +642,7 @@ void Z80::cpd() {
 // ind inputs byte to (HL), decrements HL, decrements B
 void Z80::ind() {
     uint8_t val = port->Read(BC);
-    memory->WriteByte(HL, val);
+    memory->memory[HL] = val;
     HL--;
     MEMPTR = BC - 1;
     B--;

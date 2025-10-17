@@ -84,7 +84,7 @@ int Z80::ExecuteDDOpcode() {
             int8_t displacement = ReadDisplacement();
             uint8_t value = ReadImmediateByte();
             uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-            memory->WriteByte(addr, value);
+            memory->memory[addr] = value;
             MEMPTR = addr;
         }
         return 19;
@@ -351,7 +351,7 @@ int Z80::executeIncDecIndexed(bool isInc) {
     } else {
         result = dec8(value);
     }
-    memory->WriteByte(addr, result);
+    memory->memory[addr] = result;
     MEMPTR = addr;
     return 23;
 }
@@ -394,7 +394,7 @@ int Z80::executeLoadFromIndexed(uint8_t reg) {
 int Z80::executeStoreToIndexed(uint8_t value) {
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    memory->WriteByte(addr, value);
+    memory->memory[addr] = value;
     MEMPTR = addr;
     return 19;
 }

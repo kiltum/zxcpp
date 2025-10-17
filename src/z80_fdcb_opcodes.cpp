@@ -76,7 +76,7 @@ int Z80::executeRotateShiftIndexedIY(uint8_t opcode, uint16_t addr, uint8_t valu
     }
 
     // Store result in memory
-    memory->WriteByte(addr, result);
+    memory->memory[addr] = result;
 
     // Store result in register if needed (except for (HL) case)
     if (reg != 6) { // reg 6 is (HL) - no register store needed
@@ -114,7 +114,7 @@ int Z80::executeResetBitIndexedIY(uint8_t opcode, uint16_t addr, uint8_t value) 
     uint8_t reg = opcode & 0x07;
 
     uint8_t result = res(bitNum, value);
-    memory->WriteByte(addr, result);
+    memory->memory[addr] = result;
 
     // Store result in register if needed (except for (HL) case)
     if (reg != 6) { // reg 6 is (HL) - no register store needed
@@ -152,7 +152,7 @@ int Z80::executeSetBitIndexedIY(uint8_t opcode, uint16_t addr, uint8_t value) {
     uint8_t reg = opcode & 0x07;
 
     uint8_t result = set(bitNum, value);
-    memory->WriteByte(addr, result);
+    memory->memory[addr] = result;
 
     // Store result in register if needed (except for (HL) case)
     if (reg != 6) { // reg 6 is (HL) - no register store needed

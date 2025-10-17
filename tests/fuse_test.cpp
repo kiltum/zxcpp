@@ -294,7 +294,7 @@ public:
         for (const auto& block : test.memoryBlocks) {
             uint16_t addr = block.first;
             for (size_t i = 0; i < block.second.size(); i++) {
-                memory.WriteByte(addr + i, block.second[i]);
+                memory.memory[addr + i] = block.second[i];
             }
         }
     }

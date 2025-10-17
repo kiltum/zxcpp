@@ -15,7 +15,7 @@ int Z80::ExecuteOpcode() {
             BC = ReadImmediateWord();
             return 10;
         case 0x02: // LD (BC), A
-            memory->WriteByte(BC, A);
+            memory->memory[BC] = A;
             MEMPTR = (uint16_t(A) << 8) | (uint16_t(BC + 1) & 0xff);
             return 7;
         case 0x03: // INC BC
@@ -80,7 +80,7 @@ int Z80::ExecuteOpcode() {
             DE = ReadImmediateWord();
             return 10;
         case 0x12: // LD (DE), A
-            memory->WriteByte(DE, A);
+            memory->memory[DE] = A;
             MEMPTR = (uint16_t(A) << 8) | (uint16_t(DE + 1) & 0xff);
             return 7;
         case 0x13: // INC DE
@@ -218,7 +218,7 @@ int Z80::ExecuteOpcode() {
         case 0x32: // LD (nn), A
             {
                 uint16_t addr = ReadImmediateWord();
-                memory->WriteByte(addr, A);
+                memory->memory[addr] = A;
                 MEMPTR = (uint16_t(A) << 8) | ((addr + 1) & 0xFF);
             }
             return 13;
@@ -229,20 +229,20 @@ int Z80::ExecuteOpcode() {
             {
                 uint8_t value = memory->memory[HL];
                 uint8_t result = inc8(value);
-                memory->WriteByte(HL, result);
+                memory->memory[HL] = result;
             }
             return 11;
         case 0x35: // DEC (HL)
             {
                 uint8_t value = memory->memory[HL];
                 uint8_t result = dec8(value);
-                memory->WriteByte(HL, result);
+                memory->memory[HL] = result;
             }
             return 11;
         case 0x36: // LD (HL), n
             {
                 uint8_t value = ReadImmediateByte();
-                memory->WriteByte(HL, value);
+                memory->memory[HL] = value;
             }
             return 10;
         case 0x37: // SCF
@@ -427,29 +427,29 @@ int Z80::ExecuteOpcode() {
             L = A;
             return 4;
         case 0x70: // LD (HL), B
-            memory->WriteByte(HL, B);
+            memory->memory[HL] = B;
             return 7;
         case 0x71: // LD (HL), C
-            memory->WriteByte(HL, C);
+            memory->memory[HL] = C;
             return 7;
         case 0x72: // LD (HL), D
-            memory->WriteByte(HL, D);
+            memory->memory[HL] = D;
             return 7;
         case 0x73: // LD (HL), E
-            memory->WriteByte(HL, E);
+            memory->memory[HL] = E;
             return 7;
         case 0x74: // LD (HL), H
-            memory->WriteByte(HL, H);
+            memory->memory[HL] = H;
             return 7;
         case 0x75: // LD (HL), L
-            memory->WriteByte(HL, L);
+            memory->memory[HL] = L;
             return 7;
         case 0x76: // HALT
             HALT = true;
             PC--;
             return 4;
         case 0x77: // LD (HL), A
-            memory->WriteByte(HL, A);
+            memory->memory[HL] = A;
             return 7;
         case 0x78: // LD A, B
             A = B;
