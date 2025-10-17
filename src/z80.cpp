@@ -180,9 +180,9 @@ void Z80::ClearFlag(uint8_t flag) {
 
 // ReadImmediateByte reads the next byte from memory at PC and increments PC
 uint8_t Z80::ReadImmediateByte() {
-    uint8_t value = memory->memory[PC];
-    PC++;
-    return value;
+    //uint8_t value = memory->memory[PC];
+    //PC++;
+    return memory->memory[PC++];
 }
 
 // // ReadImmediateWord reads the next word from memory at PC and increments PC by 2
@@ -196,9 +196,9 @@ uint8_t Z80::ReadImmediateByte() {
 
 // ReadDisplacement reads an 8-bit signed displacement value
 int8_t Z80::ReadDisplacement() {
-    int8_t value = int8_t(memory->memory[PC]);
-    PC++;
-    return value;
+    // int8_t value = int8_t(memory->memory[PC]);
+    // PC++;
+    return int8_t(memory->memory[PC++]);
 }
 
 // // ReadOpcode reads the next opcode from memory at PC and increments PC
