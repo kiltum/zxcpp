@@ -167,9 +167,9 @@ void Z80::UpdateXYFlags(uint8_t result) {
 }
 
 // GetFlag returns the state of a specific flag
-bool Z80::GetFlag(uint8_t flag) {
-    return (F & flag) != 0;
-}
+// bool Z80::GetFlag(uint8_t flag) {
+//     return (F & flag) != 0;
+// }
 
 
 // ClearFlag clears a specific flag
@@ -201,15 +201,15 @@ int8_t Z80::ReadDisplacement() {
     return value;
 }
 
-// ReadOpcode reads the next opcode from memory at PC and increments PC
-uint8_t Z80::ReadOpcode() {
-    uint8_t opcode = memory->memory[PC];
-    PC++;
-    // Increment R register (memory refresh) for each opcode fetch
-    // Note: R is a 7-bit register, bit 7 remains unchanged
-    R = (R & 0x80) | ((R + 1) & 0x7F);
-    return opcode;
-}
+// // ReadOpcode reads the next opcode from memory at PC and increments PC
+// uint8_t Z80::ReadOpcode() {
+//     uint8_t opcode = memory->memory[PC];
+//     PC++;
+//     // Increment R register (memory refresh) for each opcode fetch
+//     // Note: R is a 7-bit register, bit 7 remains unchanged
+//     R = (R & 0x80) | ((R + 1) & 0x7F);
+//     return opcode;
+// }
 
 // Push pushes a 16-bit value onto the stack
 void Z80::Push(uint16_t value) {

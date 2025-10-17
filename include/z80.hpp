@@ -140,8 +140,12 @@ private:
     void UpdateXYFlags(uint8_t result);
 
     // Flag manipulation functions
-    bool GetFlag(uint8_t flag);
-    
+    // bool GetFlag(uint8_t flag);
+    __attribute__((always_inline)) inline bool GetFlag(uint8_t flag) const noexcept
+    {
+        return (F & flag) != 0;
+    }
+
     __attribute__((always_inline)) inline void SetFlag(uint8_t flag, bool state) noexcept
     {
         uint8_t mask = static_cast<uint8_t>(-static_cast<int8_t>(state));
@@ -153,16 +157,24 @@ private:
     // Helper functions
     uint8_t ReadImmediateByte();
     // uint16_t ReadImmediateWord();
-    __attribute__((always_inline))
-    inline uint16_t ReadImmediateWord() noexcept {
-        const uint8_t* p = memory->memory + PC;   // single address calc
+    __attribute__((always_inline)) inline uint16_t ReadImmediateWord() noexcept
+    {
+        const uint8_t *p = memory->memory + PC; // single address calc
         uint16_t word;
-        std::memcpy(&word, p, sizeof(word));    // becomes a single load
-        PC += 2;                                 // one add
-        return word;                             // little‑endian order is correct
+        std::memcpy(&word, p, sizeof(word)); // becomes a single load
+        PC += 2;                             // one add
+        return word;                         // little‑endian order is correct
     }
     int8_t ReadDisplacement();
-    uint8_t ReadOpcode();
+    // uint8_t ReadOpcode();
+    __attribute__((always_inline)) inline uint8_t ReadOpcode() noexcept
+    {
+        const uint8_t *p = memory->memory + PC;                // one address calc
+        uint8_t opcode = *p;                                   // single byte load
+        PC += 1;                                               // merged with the load
+        R = static_cast<uint8_t>((R + 1) & 0x7F) | (R & 0x80); // one add + mask
+        return opcode;
+    }
     void Push(uint16_t value);
     uint16_t Pop();
 
