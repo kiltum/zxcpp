@@ -68,7 +68,7 @@ public:
         }
         
         // Create texture for the screen (352x288 to match ULA buffer)
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, 
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, 
                                    SDL_TEXTUREACCESS_STATIC, 352, 288);
         if (texture == nullptr) {
             std::cerr << "Texture could not be created! SDL_Error: " << SDL_GetError() << std::endl;

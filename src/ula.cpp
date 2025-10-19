@@ -16,7 +16,7 @@ ULA::ULA(Memory *mem) : memory(mem)
     flash = false;
     flashCnt = 0;
     frameCnt = 0;
-    borderColor = 5;
+    borderColor = 9;
     needRefeshScreen = false;
     horClock = 0;
 
@@ -42,7 +42,7 @@ ULA::ULA(Memory *mem) : memory(mem)
 
     for (int i = 0; i < 352 * 288; i++)
     {
-        screenBuffer[i] = colors[0];
+        screenBuffer[i] = colors[5];
     }
 }
 
