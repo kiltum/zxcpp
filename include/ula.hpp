@@ -52,9 +52,8 @@ public:
     uint32_t* getScreenBuffer();
     
     // Process a single ULA tick
-    // Returns how much tstates cpu should wait
-    int oneTick(int);
-    bool needRefeshScreen;
+    // Returns internal clock state. If 0 - screen is ready, generate interrupt
+    int oneTick();
     
     // Reset ULA state
     void reset();

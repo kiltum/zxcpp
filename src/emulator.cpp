@@ -94,12 +94,14 @@ public:
                     quit = true;
                 }
             }
+            int z =0;
             
             // // Process ULA ticks (approximately 3.5MHz)
-            for (int i = 0; i < 100; i++) {
-                ula->oneTick(0);
+            for (int i = 0; i < 100000; i++) {
+                z = ula->oneTick();
             }
             
+            if (z==0) {
             // Clear screen
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
@@ -109,7 +111,7 @@ public:
             
             // Update texture with ULA screen buffer
             SDL_UpdateTexture(texture, nullptr, src, 352 * sizeof(uint32_t));
-            
+            }
             // Get window size
             int windowWidth, windowHeight;
             SDL_GetWindowSize(window, &windowWidth, &windowHeight);

@@ -17,7 +17,6 @@ ULA::ULA(Memory *mem) : memory(mem)
     flashCnt = 0;
     frameCnt = 0;
     borderColor = 9;
-    needRefeshScreen = false;
     horClock = 0;
 
     colors[0] = 0xFF000000;  // Black
@@ -116,20 +115,21 @@ uint32_t *ULA::getScreenBuffer()
 // Visible Height = (48+192+48) = 288
 
 // Process a single ULA tick
-// Returns how much tstates cpu should wait
-int ULA::oneTick(int PC)
+// Returns internal clock state. 
+int ULA::oneTick()
 {
     // Process one clock tick
     clock++;
+    int delay =0;
 
     if (clock <= 3560)
     { // we are on flyback
-        return 0;
+        return clock;
     }
 
     if (clock > 68072 && clock < 69888)
     { // we are on over scan
-        return 0;
+        return clock;
     }
 
     // Check if we've completed a frame
@@ -149,7 +149,6 @@ int ULA::oneTick(int PC)
             flashCnt = (flashCnt + 1) & 0x0F;
             frameCnt = 0;
         }
-        needRefeshScreen = true;
         return 0;
     }
 
@@ -175,8 +174,6 @@ int ULA::oneTick(int PC)
             // screenBuffer[(y + 48) * 352 + x + 48 + 1] = getPixelColorFast(x + 1, y);
             screenBuffer[(y + 48) * 352 + x + 48] = colors[rand() % 15];
             screenBuffer[(y + 48) * 352 + x + 48 + 1] = colors[rand() % 15];
-            horClock++;
-            return 1; // just for fun now
         }
     }
 
@@ -193,7 +190,7 @@ int ULA::oneTick(int PC)
     }
 
     // printf("%d %d %d \n", clock, horClock, line);
-    return 0;
+    return clock;
 }
 
 // Draw the current pixel
