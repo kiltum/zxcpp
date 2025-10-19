@@ -6,15 +6,13 @@
 // Constructor
 ULA::ULA(Memory *mem) : memory(mem)
 {
-    std::cout << "ULA constructor called" << std::endl;
-    
+
     // Allocate screen buffer (352x288 to accommodate borders)
     screenBuffer = new uint32_t[352 * 288];
 
     // Initialize state variables
     clock = 0;
     line = 0;
-    pixel = 0;
     flash = false;
     flashCnt = 0;
     frameCnt = 0;
@@ -46,8 +44,6 @@ ULA::ULA(Memory *mem) : memory(mem)
     {
         screenBuffer[i] = colors[0];
     }
-    
-    std::cout << "ULA constructor finished" << std::endl;
 }
 
 // Destructor
@@ -131,7 +127,7 @@ int ULA::oneTick(int PC)
         return 0;
     }
 
-    if (clock > 68072)
+    if (clock > 68072 && clock < 69888)
     { // we are on over scan
         return 0;
     }
@@ -142,7 +138,6 @@ int ULA::oneTick(int PC)
         // Reset counters for next frame
         clock = 0;
         line = 0;
-        pixel = 0;
 
         // Increment frame counter for flash timing
         frameCnt++;
@@ -158,24 +153,22 @@ int ULA::oneTick(int PC)
         return 0;
     }
 
-    line = (clock - 3561) / 288;
+    line = (clock - 3560) / 224;
 
-    horClock++;
     // now lets draw screen
     if (horClock <= 24)
     { // beam on left border
         drawPixel(borderColor);
-        return 0;
     }
-    if (horClock > 24 && horClock <= (24 + 128))
-    {                                        
-        if (line <= 48 || line > (128 + 48)) // its up/down border, still no need to access screen
+    if (horClock > 23 && horClock <= (24 + 128))
+    {
+        if (line <= 47 || line > (192 + 48)) // its up border, still no need to access screen
         {
             drawPixel(borderColor);
-            return 0;
         }
         else
         {
+            horClock++;
             return 1; // just for fun now
         }
     }
@@ -183,25 +176,26 @@ int ULA::oneTick(int PC)
     if (horClock > (24 + 128) && horClock <= (24 + 128 + 24))
     { // beam on right border
         drawPixel(borderColor);
-        return 0;
     }
 
+    horClock++;
     if (horClock > 223)
     { // beam end line and return back
         horClock = 0;
-        pixel = 0;
+        // printf("---- %d %d \n", clock, clock-3560);
     }
-    //printf("%d %d %d %d \n", clock, horClock, line, pixel);
+
+    // printf("%d %d %d \n", clock, horClock, line);
     return 0;
 }
 
 // Draw the current pixel
-void ULA::drawPixel(int color) 
+void ULA::drawPixel(int color)
 {
-    //printf("%d %d \n", line, horClock);
-    // One tick = 2 pixel to draw
-    screenBuffer[line*352+(horClock*2-1)] = colors[color];
-    screenBuffer[line*352+horClock*2] = colors[color];
+    // printf("%d %d \n", line, horClock);
+    //  One tick = 2 pixel to draw
+    screenBuffer[line * 352 + (horClock * 2 - 1)] = colors[color];
+    screenBuffer[line * 352 + horClock * 2] = colors[color];
 }
 
 // Get pixel color based on ZX Spectrum video memory layout
@@ -272,7 +266,6 @@ void ULA::reset()
 {
     clock = 0;
     line = 0;
-    pixel = 0;
     flash = false;
     flashCnt = 0;
     frameCnt = 0;

@@ -23,7 +23,6 @@ private:
     // ULA internal state
     int clock;
     int line;
-    int pixel;
     bool flash;
     int flashCnt;
     int frameCnt;

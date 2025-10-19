@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 #include <memory>
+#include <algorithm>
 #include "ula.hpp"
 #include "memory.hpp"
 #include "port.hpp"
@@ -50,7 +51,7 @@ public:
         }
         
         // Create window
-        window = SDL_CreateWindow("ZX Spectrum Emulator", 640, 480, 0);
+        window = SDL_CreateWindow("ZX Spectrum Emulator", 704, 576, SDL_WINDOW_RESIZABLE);
         if (window == nullptr) {
             std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
             return false;
@@ -86,15 +87,15 @@ public:
         while (!quit) {
             // Handle events
             while (SDL_PollEvent(&e) != 0) {
-                std::cout << "Event: " << e.type << std::endl;
+                // std::cout << "Event: " << e.type << std::endl;
                 if (e.type == SDL_EVENT_QUIT) {
                     std::cout << "Quit event received" << std::endl;
                     quit = true;
                 }
             }
             
-            // Process ULA ticks (approximately 3.5MHz)
-            for (int i = 0; i < 80000; i++) {
+            // // Process ULA ticks (approximately 3.5MHz)
+            for (int i = 0; i < 100; i++) {
                 ula->oneTick(0);
             }
             
@@ -108,14 +109,30 @@ public:
             // Update texture with ULA screen buffer
             SDL_UpdateTexture(texture, nullptr, src, 352 * sizeof(uint32_t));
             
+            // Get window size
+            int windowWidth, windowHeight;
+            SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+            
+            // Calculate destination rectangle to maintain aspect ratio
+            float scaleX = (float)windowWidth / 352.0f;
+            float scaleY = (float)windowHeight / 288.0f;
+            float scale = std::min(scaleX, scaleY);
+
+            //printf("%d %d %f\n", windowWidth, windowHeight , scale);
+            
+            int destWidth = (int)(352.0f * scale);
+            int destHeight = (int)(288.0f * scale);
+            int destX = (windowWidth - destWidth) / 2;
+            int destY = (windowHeight - destHeight) / 2;
+            
+            SDL_FRect destRect = {(float)destX, (float)destY, (float)destWidth, (float)destHeight};
+            
             // Render texture
-            SDL_RenderTexture(renderer, texture, nullptr, nullptr);
+            SDL_RenderTexture(renderer, texture, nullptr, &destRect);
             
             // Update screen
             SDL_RenderPresent(renderer);
             
-            // Add a small delay to slow down the loop
-            SDL_Delay(16); // Approximately 60 FPS
         }
     }
     
