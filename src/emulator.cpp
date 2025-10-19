@@ -5,6 +5,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <mutex>
 #include "ula.hpp"
 #include "memory.hpp"
 #include "port.hpp"
@@ -27,10 +28,13 @@ private:
     std::unique_ptr<Port> ports;
     std::unique_ptr<Z80> cpu;
     std::unique_ptr<ULA> ula;
-    uint32_t* src;
+    
+    // Thread synchronization
+    std::mutex screenMutex;
+    bool screenUpdated;
 
 public:
-    Emulator() : window(nullptr), renderer(nullptr), texture(nullptr), quit(false), threadRunning(false) {}
+    Emulator() : window(nullptr), renderer(nullptr), texture(nullptr), quit(false), threadRunning(false), screenUpdated(false) {}
 
     // Run emulation in a separate thread
     void runZX();
@@ -98,55 +102,57 @@ public:
     void run()
     {
         SDL_Event e;
-
         std::cout << "Entering emulation loop" << std::endl;
-
+        
         runZX();
-
+        
         while (!quit)
         {
             // Handle events
             while (SDL_PollEvent(&e) != 0)
             {
-                // std::cout << "Event: " << e.type << std::endl;
                 if (e.type == SDL_EVENT_QUIT)
                 {
                     std::cout << "Quit event received" << std::endl;
                     quit = true;
                 }
             }
-
-            // Clear screen
-            // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            // SDL_RenderClear(renderer);
-
-            // Update screen with ULA output
-            // uint32_t* src = ula->getScreenBuffer();
-
-            // Update texture with ULA screen buffer
-            // SDL_UpdateTexture(texture, nullptr, src, 352 * sizeof(uint32_t));
-
+            
+            // Check if screen was updated by emulation thread
+            bool updateScreen = false;
+            {
+                std::lock_guard<std::mutex> lock(screenMutex);
+                if (screenUpdated) {
+                    updateScreen = true;
+                    screenUpdated = false;
+                }
+            }
+            
+            if (updateScreen) {
+                // Update screen with ULA output - this must be done on the main thread
+                uint32_t* src = ula->getScreenBuffer();
+                SDL_UpdateTexture(texture, nullptr, src, 352 * sizeof(uint32_t));
+            }
+            
             // Get window size
             int windowWidth, windowHeight;
             SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-
+            
             // Calculate destination rectangle to maintain aspect ratio
             float scaleX = (float)windowWidth / 352.0f;
             float scaleY = (float)windowHeight / 288.0f;
             float scale = std::min(scaleX, scaleY);
-
-            // printf("%d %d %f\n", windowWidth, windowHeight , scale);
-
+            
             int destWidth = (int)(352.0f * scale);
             int destHeight = (int)(288.0f * scale);
             int destX = (windowWidth - destWidth) / 2;
             int destY = (windowHeight - destHeight) / 2;
-
+            
             SDL_FRect destRect = {(float)destX, (float)destY, (float)destWidth, (float)destHeight};
-
+            
             // Render texture
             SDL_RenderTexture(renderer, texture, nullptr, &destRect);
-
+            
             // Update screen
             SDL_RenderPresent(renderer);
         }
@@ -194,20 +200,22 @@ void Emulator::runZX()
     emulationThread = std::thread([this]()
                                   {
         while (threadRunning.load()) {
-            int ticks =0;
+            int ticks = 0;
             ticks = cpu->ExecuteOneInstruction();
-            for (int i=0;i<ticks;i++) {
-                int ref =0;
+            for (int i = 0; i < ticks; i++) {
+                int ref = 0;
                 ref = ula->oneTick();
-                if(ref==0) {
-                src = ula->getScreenBuffer();
-                SDL_UpdateTexture(texture, nullptr, src, 352 * sizeof(uint32_t));
-                //printf("%d ", ref);
+                if (ref == 0) {
+                    // Signal that screen has been updated
+                    {
+                        std::lock_guard<std::mutex> lock(screenMutex);
+                        screenUpdated = true;
+                    }
                 }
             }
             
             // Small delay to prevent excessive CPU usage
-            //std::this_thread::sleep_for(std::chrono::microseconds(100));
+            // std::this_thread::sleep_for(std::chrono::microseconds(100));
         } });
     printf("EMU STOP\n");
 }

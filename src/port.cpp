@@ -21,12 +21,14 @@ void Port::RegisterReadHandler(uint16_t port, ReadHandler handler) {
 }
 
 void Port::Write(uint16_t port, uint8_t value) {
+    printf("PORT %x\n",port);
     // Find all handlers registered for this port
     auto it = writeHandlers.find(port);
     if (it != writeHandlers.end()) {
         // Call all registered handlers for this port
         for (const auto& handler : it->second) {
             handler(port, value);
+            printf("HAND\n");
         }
     }
 }
