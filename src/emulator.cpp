@@ -28,7 +28,7 @@ private:
     std::unique_ptr<Port> ports;
     std::unique_ptr<Z80> cpu;
     std::unique_ptr<ULA> ula;
-    
+
     // Thread synchronization
     std::mutex screenMutex;
     bool screenUpdated;
@@ -103,9 +103,9 @@ public:
     {
         SDL_Event e;
         std::cout << "Entering emulation loop" << std::endl;
-        
+
         runZX();
-        
+
         while (!quit)
         {
             // Handle events
@@ -117,42 +117,44 @@ public:
                     quit = true;
                 }
             }
-            
+
             // Check if screen was updated by emulation thread
             bool updateScreen = false;
             {
                 std::lock_guard<std::mutex> lock(screenMutex);
-                if (screenUpdated) {
+                if (screenUpdated)
+                {
                     updateScreen = true;
                     screenUpdated = false;
                 }
             }
-            
-            if (updateScreen) {
+
+            if (updateScreen)
+            {
                 // Update screen with ULA output - this must be done on the main thread
-                uint32_t* src = ula->getScreenBuffer();
+                uint32_t *src = ula->getScreenBuffer();
                 SDL_UpdateTexture(texture, nullptr, src, 352 * sizeof(uint32_t));
             }
-            
+
             // Get window size
             int windowWidth, windowHeight;
             SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-            
+
             // Calculate destination rectangle to maintain aspect ratio
             float scaleX = (float)windowWidth / 352.0f;
             float scaleY = (float)windowHeight / 288.0f;
             float scale = std::min(scaleX, scaleY);
-            
+
             int destWidth = (int)(352.0f * scale);
             int destHeight = (int)(288.0f * scale);
             int destX = (windowWidth - destWidth) / 2;
             int destY = (windowHeight - destHeight) / 2;
-            
+
             SDL_FRect destRect = {(float)destX, (float)destY, (float)destWidth, (float)destHeight};
-            
+
             // Render texture
             SDL_RenderTexture(renderer, texture, nullptr, &destRect);
-            
+
             // Update screen
             SDL_RenderPresent(renderer);
         }
@@ -195,13 +197,15 @@ public:
 void Emulator::runZX()
 {
     threadRunning = true;
-    printf("EMU START\n");
     memory->Read48();
     emulationThread = std::thread([this]()
                                   {
+                                    int totalTicks = 0;
         while (threadRunning.load()) {
             int ticks = 0;
+            
             ticks = cpu->ExecuteOneInstruction();
+            totalTicks = totalTicks + ticks;
             for (int i = 0; i < ticks; i++) {
                 int ref = 0;
                 ref = ula->oneTick();
@@ -212,12 +216,13 @@ void Emulator::runZX()
                         screenUpdated = true;
                     }
                 }
+                // Here need to check ref and CPU:PC and slow down because condenced memory
+        
             }
             
             // Small delay to prevent excessive CPU usage
             // std::this_thread::sleep_for(std::chrono::microseconds(100));
         } });
-    printf("EMU STOP\n");
 }
 
 int main(void)
