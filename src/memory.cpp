@@ -1,5 +1,7 @@
 #include "memory.hpp"
 
+#include "48rom.h"
+
 Memory::Memory() {
     // Initialize all memory to zero
     for (int i = 0; i < 65536; i++) {
@@ -26,4 +28,10 @@ void Memory::WriteWord(uint16_t address, uint16_t value) {
     // Write word in little-endian format (least significant byte first)
     memory[address] = static_cast<uint8_t>(value & 0xFF);
     memory[address + 1] = static_cast<uint8_t>((value >> 8) & 0xFF);
+}
+
+void Memory::Read48(void) {
+for (unsigned int i = 0; i < __48_rom_len; i++) {
+        memory[i] = __48_rom[i];
+    }
 }

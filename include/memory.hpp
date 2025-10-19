@@ -22,6 +22,8 @@ public:
     
     // Write a word (16-bit) to memory (little-endian)
     void WriteWord(uint16_t address, uint16_t value);
+    // Load 48k rom to memory
+    void Read48(void);
 };
 
 #endif // MEMORY_HPP

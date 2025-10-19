@@ -2,6 +2,9 @@
 #include <iostream>
 #include <memory>
 #include <algorithm>
+#include <thread>
+#include <atomic>
+#include <chrono>
 #include "ula.hpp"
 #include "memory.hpp"
 #include "port.hpp"
@@ -14,6 +17,10 @@ private:
     SDL_Texture* texture;
     bool quit;
     
+    // Thread management
+    std::thread emulationThread;
+    std::atomic<bool> threadRunning;
+    
     // Emulator components
     std::unique_ptr<Memory> memory;
     std::unique_ptr<Port> ports;
@@ -21,7 +28,10 @@ private:
     std::unique_ptr<ULA> ula;
     
 public:
-    Emulator() : window(nullptr), renderer(nullptr), texture(nullptr), quit(false) {}
+    Emulator() : window(nullptr), renderer(nullptr), texture(nullptr), quit(false), threadRunning(false) {}
+    
+    // Run emulation in a separate thread
+    void runZX();
     
     ~Emulator() {
         cleanup();
@@ -84,6 +94,8 @@ public:
         SDL_Event e;
         
         std::cout << "Entering emulation loop" << std::endl;
+
+        runZX();
         
         while (!quit) {
             // Handle events
@@ -96,10 +108,10 @@ public:
             }
             int z =0;
 
-            // // Process ULA ticks (approximately 3.5MHz)
-            for (int i = 0; i < 100000; i++) {
-                ula->oneTick();
-            }
+            // // // Process ULA ticks (approximately 3.5MHz)
+            // for (int i = 0; i < 100000; i++) {
+            //     ula->oneTick();
+            // }
             
             if (z==0) {
             // Clear screen
@@ -140,6 +152,14 @@ public:
     }
     
     void cleanup() {
+        // Stop the thread if it's running
+        if (threadRunning.load()) {
+            threadRunning = false;
+            if (emulationThread.joinable()) {
+                emulationThread.join();
+            }
+        }
+        
         if (texture) {
             SDL_DestroyTexture(texture);
             texture = nullptr;
@@ -158,6 +178,23 @@ public:
         SDL_Quit();
     }
 };
+
+void Emulator::runZX() {
+    threadRunning = true;
+    printf("EMU START\n");
+    emulationThread = std::thread([this]() {
+        while (threadRunning.load()) {
+            // Process ULA ticks (approximately 3.5MHz)
+            for (int i = 0; i < 100000; i++) {
+                ula->oneTick();
+            }
+            
+            // Small delay to prevent excessive CPU usage
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
+        }
+    });
+    printf("EMU STOP\n");
+}
 
 int main(void) {
     std::cout << "Starting emulator..." << std::endl;
