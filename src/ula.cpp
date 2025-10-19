@@ -146,9 +146,9 @@ int ULA::oneTick()
     { // beam on left border
         drawPixel(borderColor);
     }
-    if (horClock > 23 && horClock <= (24 + 128))
+    if (horClock > 23 && horClock <= (24 + 128-1))
     {
-        if (line <= 47 || line > (192 + 48)) // its up border, still no need to access screen
+        if (line <= 47 || line >= (192 + 48)) // its up border, still no need to access screen
         {
             drawPixel(borderColor);
         }
@@ -159,12 +159,12 @@ int ULA::oneTick()
             //printf("%d %d\n", x, y);
             screenBuffer[(y + 48) * 352 + x + 48] = getPixelColorFast(x, y);
             screenBuffer[(y + 48) * 352 + x + 48 + 1] = getPixelColorFast(x + 1, y);
-            // screenBuffer[(y + 48) * 352 + x + 48] = colors[rand() % 15];
-            // screenBuffer[(y + 48) * 352 + x + 48 + 1] = colors[rand() % 15];
+            //screenBuffer[(y + 48) * 352 + x + 48] = colors[2];
+            //screenBuffer[(y + 48) * 352 + x + 48 + 1] = colors[0];
         }
     }
 
-    if (horClock > (24 + 128) && horClock <= (24 + 128 + 24))
+    if (horClock >= (24 + 128) && horClock <= (24 + 128 + 24))
     { // beam on right border
         drawPixel(borderColor);
     }
