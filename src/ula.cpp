@@ -72,7 +72,7 @@ uint8_t ULA::readPort(uint16_t port)
 // Write a byte to the specified port
 void ULA::writePort(uint16_t port, uint8_t value)
 {
-    printf("pport %d", port);
+    //printf("port %d", port);
     if ((port & 0xFF) == 0xFE)
     {
         borderColor = value & 0x07;
