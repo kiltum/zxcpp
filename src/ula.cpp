@@ -42,7 +42,7 @@ ULA::ULA(Memory *mem) : memory(mem)
 
     for (int i = 0; i < 352 * 288; i++)
     {
-        screenBuffer[i] = colors[5];
+        screenBuffer[i] = colors[0];
     }
 }
 
@@ -168,6 +168,13 @@ int ULA::oneTick(int PC)
         }
         else
         {
+            int x = (horClock - 24) * 2;
+            int y = line - 48;
+            //printf("%d %d\n", x, y);
+            // screenBuffer[(y + 48) * 352 + x + 48] = getPixelColorFast(x, y);
+            // screenBuffer[(y + 48) * 352 + x + 48 + 1] = getPixelColorFast(x + 1, y);
+            screenBuffer[(y + 48) * 352 + x + 48] = colors[rand() % 15];
+            screenBuffer[(y + 48) * 352 + x + 48 + 1] = colors[rand() % 15];
             horClock++;
             return 1; // just for fun now
         }
