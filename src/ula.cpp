@@ -16,7 +16,7 @@ ULA::ULA(Memory *mem) : memory(mem)
     flash = false;
     flashCnt = 0;
     frameCnt = 0;
-    borderColor = 9;
+    borderColor = 0;
     horClock = 0;
 
     colors[0] = 0xFF000000;  // Black
@@ -156,10 +156,10 @@ int ULA::oneTick()
             int x = (horClock - 24) * 2;
             int y = line - 48;
             //printf("%d %d\n", x, y);
-            // screenBuffer[(y + 48) * 352 + x + 48] = getPixelColorFast(x, y);
-            // screenBuffer[(y + 48) * 352 + x + 48 + 1] = getPixelColorFast(x + 1, y);
-            screenBuffer[(y + 48) * 352 + x + 48] = colors[rand() % 15];
-            screenBuffer[(y + 48) * 352 + x + 48 + 1] = colors[rand() % 15];
+            screenBuffer[(y + 48) * 352 + x + 48] = getPixelColorFast(x, y);
+            screenBuffer[(y + 48) * 352 + x + 48 + 1] = getPixelColorFast(x + 1, y);
+            // screenBuffer[(y + 48) * 352 + x + 48] = colors[rand() % 15];
+            // screenBuffer[(y + 48) * 352 + x + 48 + 1] = colors[rand() % 15];
         }
     }
 
