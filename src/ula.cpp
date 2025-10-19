@@ -36,9 +36,6 @@ ULA::ULA(Memory *mem) : memory(mem)
     colors[14] = 0xFF00FFFF; // Bright Yellow
     colors[15] = 0xFFFFFFFF; // Bright White
 
-    // Initialize pixel mapping tables
-    initializePixelMapping();
-
     for (int i = 0; i < 352 * 288; i++)
     {
         screenBuffer[i] = colors[0];
@@ -49,16 +46,6 @@ ULA::ULA(Memory *mem) : memory(mem)
 ULA::~ULA()
 {
     delete[] screenBuffer;
-}
-
-// Initialize pixel mapping tables
-void ULA::initializePixelMapping()
-{
-    for (int i = 0; i < 224; i++)
-    {
-        pixelMapStart[i] = static_cast<int>(static_cast<float>(i) * 320.0f / 224.0f);
-        pixelMapEnd[i] = static_cast<int>(static_cast<float>(i + 1) * 320.0f / 224.0f);
-    }
 }
 
 // Check if this handler can handle the specified port
@@ -120,8 +107,7 @@ int ULA::oneTick()
 {
     // Process one clock tick
     clock++;
-    int delay =0;
-
+    
     if (clock <= 3560)
     { // we are on flyback
         return clock;

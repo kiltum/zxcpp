@@ -13,10 +13,6 @@ private:
     // Screen buffer (256x192 pixels with border)
     uint32_t* screenBuffer;
     
-    // Pre-calculated pixel mapping tables
-    int pixelMapStart[224];
-    int pixelMapEnd[224];
-    
     // Pre-calculated color values for faster lookup
     uint32_t colors[16];
     
@@ -34,7 +30,6 @@ private:
     // Private helper functions
     void drawPixel(int);
     uint32_t getPixelColorFast(uint8_t x, uint8_t y);
-    void initializePixelMapping();
 
 public:
     // Constructor

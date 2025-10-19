@@ -95,16 +95,16 @@ public:
                 }
             }
             int z =0;
-            
+
             // // Process ULA ticks (approximately 3.5MHz)
             for (int i = 0; i < 100000; i++) {
-                z = ula->oneTick();
+                ula->oneTick();
             }
             
             if (z==0) {
             // Clear screen
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderClear(renderer);
+            // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            // SDL_RenderClear(renderer);
             
             // Update screen with ULA output
             uint32_t* src = ula->getScreenBuffer();
