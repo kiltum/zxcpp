@@ -201,13 +201,15 @@ void Emulator::runZX()
     emulationThread = std::thread([this]()
                                   {
         const int TARGET_FREQUENCY = 3500000; // 3.5 MHz
-        const int FRAME_TICKS = TARGET_FREQUENCY / 50; // 50Hz screen refresh
-        auto frameStart = std::chrono::high_resolution_clock::now();
-        int frameTicks = 0;
+        const int CHECK_INTERVAL = TARGET_FREQUENCY / 1000; // Check timing every 1ms
+        auto startTime = std::chrono::high_resolution_clock::now();
+        long long totalTicks = 0;
+        long long checkTicks = 0;
         
         while (threadRunning.load()) {
             int ticks = cpu->ExecuteOneInstruction();
-            frameTicks += ticks;
+            totalTicks += ticks;
+            checkTicks += ticks;
             
             for (int i = 0; i < ticks; i++) {
                 int ref = ula->oneTick();
@@ -220,19 +222,21 @@ void Emulator::runZX()
                 }
             }
             
-            // Speed limiter - aim for 50Hz frame rate (typical for ZX Spectrum)
-            if (frameTicks >= FRAME_TICKS) {
-                frameTicks = 0;
-                auto frameEnd = std::chrono::high_resolution_clock::now();
-                auto frameTime = std::chrono::duration_cast<std::chrono::microseconds>(frameEnd - frameStart).count();
-                auto targetFrameTime = 20000; // 20ms for 50Hz
+            // Speed limiter - check timing more frequently for smoother execution
+            if (checkTicks >= CHECK_INTERVAL) {
+                checkTicks = 0;
+                auto currentTime = std::chrono::high_resolution_clock::now();
+                auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime).count();
+                long long expectedTime = (totalTicks * 1000000LL) / TARGET_FREQUENCY;
                 
-                if (frameTime < targetFrameTime) {
-                    auto sleepTime = targetFrameTime - frameTime;
+                if (expectedTime > elapsedTime) {
+                    long long sleepTime = expectedTime - elapsedTime;
+                    // Limit sleep time to prevent large sleeps that could cause stuttering
+                    if (sleepTime > 1000) { // Cap at 1ms
+                        sleepTime = 1000;
+                    }
                     std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
                 }
-                
-                frameStart = std::chrono::high_resolution_clock::now();
             }
         } });
 }
