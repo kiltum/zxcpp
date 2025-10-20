@@ -6,7 +6,6 @@
 // Constructor
 ULA::ULA(Memory *mem) : memory(mem)
 {
-
     // Allocate screen buffer (352x288 to accommodate borders)
     screenBuffer = new uint32_t[352 * 288];
 
@@ -18,6 +17,11 @@ ULA::ULA(Memory *mem) : memory(mem)
     frameCnt = 0;
     borderColor = 0;
     horClock = 0;
+
+    // Initialize keyboard state (all keys released)
+    for (int i = 0; i < 8; i++) {
+        keyboard[i] = 0xFF; // All bits set = all keys released
+    }
 
     colors[0] = 0xFF000000;  // Black
     colors[1] = 0xFF0000C0;  // Blue
@@ -61,8 +65,20 @@ uint8_t ULA::readPort(uint16_t port)
     // ULA handles port 0xFE for keyboard input and other functions
     if ((port & 0xFF) == 0xFE)
     {
-        // For now, return all keys released (bits set to 1)
-        // We'll implement proper keyboard handling later
+        // Extract the half-row selection from bits 8-15 of the port address
+        uint8_t halfRowSelect = (port >> 8) & 0xFF;
+        
+        // Find the first zero bit in the half-row selection (active low)
+        // This determines which half-row to read
+        for (int i = 0; i < 8; i++) {
+            if ((halfRowSelect & (1 << i)) == 0) {
+                // Return the state of the selected half-row
+                // 0 = key pressed, 1 = key released (inverted logic)
+                return keyboard[i];
+            }
+        }
+        
+        // If no half-row is selected, return all keys released
         return 0xFF;
     }
 
@@ -267,5 +283,31 @@ void ULA::reset()
     for (int i = 0; i < 320 * 240; i++)
     {
         screenBuffer[i] = blackColor;
+    }
+    
+    // Reinitialize keyboard state (all keys released)
+    for (int i = 0; i < 8; i++) {
+        keyboard[i] = 0xFF; // All bits set = all keys released
+    }
+}
+
+// Set the state of a key in the keyboard matrix
+void ULA::setKeyState(int halfRow, uint8_t keyMask) {
+    if (halfRow >= 0 && halfRow < 8) {
+        keyboard[halfRow] = keyMask;
+    }
+}
+
+// Set a key as pressed (0 = pressed)
+void ULA::setKeyDown(int halfRow, int keyBit) {
+    if (halfRow >= 0 && halfRow < 8 && keyBit >= 0 && keyBit < 8) {
+        keyboard[halfRow] &= ~(1 << keyBit); // Clear bit to press key (0 = pressed)
+    }
+}
+
+// Set a key as released (1 = released)
+void ULA::setKeyUp(int halfRow, int keyBit) {
+    if (halfRow >= 0 && halfRow < 8 && keyBit >= 0 && keyBit < 8) {
+        keyboard[halfRow] |= (1 << keyBit); // Set bit to release key (1 = released)
     }
 }

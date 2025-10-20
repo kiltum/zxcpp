@@ -41,6 +41,7 @@ Z80::Z80(Memory* mem, Port* port) {
 int Z80::ExecuteOneInstruction() {
     // Handle interrupts first if enabled
     if (IFF1 && InterruptPending) {
+        InterruptPending = false;
         return HandleInterrupt();
     }
     

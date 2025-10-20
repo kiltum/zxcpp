@@ -38,6 +38,10 @@ private:
     std::mutex screenMutex;
     bool screenUpdated;
 
+    // Keyboard handling functions
+    void handleKeyDown(SDL_Keycode key);
+    void handleKeyUp(SDL_Keycode key);
+
 public:
     Emulator() : window(nullptr), renderer(nullptr), texture(nullptr), quit(false), threadRunning(false), screenUpdated(false) {}
 
@@ -136,6 +140,14 @@ public:
                 {
                     std::cout << "Quit event received" << std::endl;
                     quit = true;
+                }
+                else if (e.type == SDL_EVENT_KEY_DOWN)
+                {
+                    handleKeyDown(e.key.key);
+                }
+                else if (e.type == SDL_EVENT_KEY_UP)
+                {
+                    handleKeyUp(e.key.key);
                 }
             }
 
@@ -296,6 +308,7 @@ void Emulator::runZX()
                     {
                         std::lock_guard<std::mutex> lock(screenMutex);
                         screenUpdated = true;
+                        cpu->InterruptPending = true;
                     }
                 }
             }
@@ -317,6 +330,310 @@ void Emulator::runZX()
                 }
             }
         } });
+}
+
+// Handle key down events
+void Emulator::handleKeyDown(SDL_Keycode key) {
+    // Map SDL keys to ZX Spectrum keyboard matrix
+    // ZX Spectrum keyboard matrix:
+    // Half-row 0 (port 0xFEFE): CAPS SHIFT, Z, X, C, V
+    // Half-row 1 (port 0xFDFE): A, S, D, F, G
+    // Half-row 2 (port 0xFBFE): Q, W, E, R, T
+    // Half-row 3 (port 0xF7FE): 1, 2, 3, 4, 5
+    // Half-row 4 (port 0xEFFE): 0, 9, 8, 7, 6
+    // Half-row 5 (port 0xDFFE): P, O, I, U, Y
+    // Half-row 6 (port 0xBFFE): ENTER, L, K, J, H
+    // Half-row 7 (port 0x7FFE): SPACE, SYM SHIFT, M, N, B
+    
+    switch (key) {
+        // Row 0: CAPS SHIFT, Z, X, C, V
+        case SDLK_LSHIFT:
+            ula->setKeyDown(0, 0); // CAPS SHIFT
+            break;
+        case SDLK_RSHIFT:
+            ula->setKeyDown(7, 1); // SYM SHIFT
+            break;
+        case SDLK_Z:
+            ula->setKeyDown(0, 1); // Z
+            break;
+        case SDLK_X:
+            ula->setKeyDown(0, 2); // X
+            break;
+        case SDLK_C:
+            ula->setKeyDown(0, 3); // C
+            break;
+        case SDLK_V:
+            ula->setKeyDown(0, 4); // V
+            break;
+            
+        // Row 1: A, S, D, F, G
+        case SDLK_A:
+            ula->setKeyDown(1, 0); // A
+            break;
+        case SDLK_S:
+            ula->setKeyDown(1, 1); // S
+            break;
+        case SDLK_D:
+            ula->setKeyDown(1, 2); // D
+            break;
+        case SDLK_F:
+            ula->setKeyDown(1, 3); // F
+            break;
+        case SDLK_G:
+            ula->setKeyDown(1, 4); // G
+            break;
+            
+        // Row 2: Q, W, E, R, T
+        case SDLK_Q:
+            ula->setKeyDown(2, 0); // Q
+            break;
+        case SDLK_W:
+            ula->setKeyDown(2, 1); // W
+            break;
+        case SDLK_E:
+            ula->setKeyDown(2, 2); // E
+            break;
+        case SDLK_R:
+            ula->setKeyDown(2, 3); // R
+            break;
+        case SDLK_T:
+            ula->setKeyDown(2, 4); // T
+            break;
+            
+        // Row 3: 1, 2, 3, 4, 5
+        case SDLK_1:
+            ula->setKeyDown(3, 0); // 1
+            break;
+        case SDLK_2:
+            ula->setKeyDown(3, 1); // 2
+            break;
+        case SDLK_3:
+            ula->setKeyDown(3, 2); // 3
+            break;
+        case SDLK_4:
+            ula->setKeyDown(3, 3); // 4
+            break;
+        case SDLK_5:
+            ula->setKeyDown(3, 4); // 5
+            break;
+            
+        // Row 4: 0, 9, 8, 7, 6
+        case SDLK_0:
+            ula->setKeyDown(4, 0); // 0
+            break;
+        case SDLK_9:
+            ula->setKeyDown(4, 1); // 9
+            break;
+        case SDLK_8:
+            ula->setKeyDown(4, 2); // 8
+            break;
+        case SDLK_7:
+            ula->setKeyDown(4, 3); // 7
+            break;
+        case SDLK_6:
+            ula->setKeyDown(4, 4); // 6
+            break;
+            
+        // Row 5: P, O, I, U, Y
+        case SDLK_P:
+            ula->setKeyDown(5, 0); // P
+            break;
+        case SDLK_O:
+            ula->setKeyDown(5, 1); // O
+            break;
+        case SDLK_I:
+            ula->setKeyDown(5, 2); // I
+            break;
+        case SDLK_U:
+            ula->setKeyDown(5, 3); // U
+            break;
+        case SDLK_Y:
+            ula->setKeyDown(5, 4); // Y
+            break;
+            
+        // Row 6: ENTER, L, K, J, H
+        case SDLK_RETURN:
+        case SDLK_KP_ENTER:
+            ula->setKeyDown(6, 0); // ENTER
+            break;
+        case SDLK_L:
+            ula->setKeyDown(6, 1); // L
+            break;
+        case SDLK_K:
+            ula->setKeyDown(6, 2); // K
+            break;
+        case SDLK_J:
+            ula->setKeyDown(6, 3); // J
+            break;
+        case SDLK_H:
+            ula->setKeyDown(6, 4); // H
+            break;
+            
+        // Row 7: SPACE, SYM SHIFT, M, N, B
+        case SDLK_SPACE:
+            ula->setKeyDown(7, 0); // SPACE
+            break;
+        case SDLK_LCTRL:
+        case SDLK_RCTRL:
+            ula->setKeyDown(7, 1); // SYM SHIFT
+            break;
+        case SDLK_M:
+            ula->setKeyDown(7, 2); // M
+            break;
+        case SDLK_N:
+            ula->setKeyDown(7, 3); // N
+            break;
+        case SDLK_B:
+            ula->setKeyDown(7, 4); // B
+            break;
+    }
+}
+
+// Handle key up events
+void Emulator::handleKeyUp(SDL_Keycode key) {
+    // Map SDL keys to ZX Spectrum keyboard matrix
+    switch (key) {
+        // Row 0: CAPS SHIFT, Z, X, C, V
+        case SDLK_LSHIFT:
+            ula->setKeyUp(0, 0); // CAPS SHIFT
+            break;
+        case SDLK_RSHIFT:
+            ula->setKeyUp(7, 1); // SYM SHIFT
+            break;
+        case SDLK_Z:
+            ula->setKeyUp(0, 1); // Z
+            break;
+        case SDLK_X:
+            ula->setKeyUp(0, 2); // X
+            break;
+        case SDLK_C:
+            ula->setKeyUp(0, 3); // C
+            break;
+        case SDLK_V:
+            ula->setKeyUp(0, 4); // V
+            break;
+            
+        // Row 1: A, S, D, F, G
+        case SDLK_A:
+            ula->setKeyUp(1, 0); // A
+            break;
+        case SDLK_S:
+            ula->setKeyUp(1, 1); // S
+            break;
+        case SDLK_D:
+            ula->setKeyUp(1, 2); // D
+            break;
+        case SDLK_F:
+            ula->setKeyUp(1, 3); // F
+            break;
+        case SDLK_G:
+            ula->setKeyUp(1, 4); // G
+            break;
+            
+        // Row 2: Q, W, E, R, T
+        case SDLK_Q:
+            ula->setKeyUp(2, 0); // Q
+            break;
+        case SDLK_W:
+            ula->setKeyUp(2, 1); // W
+            break;
+        case SDLK_E:
+            ula->setKeyUp(2, 2); // E
+            break;
+        case SDLK_R:
+            ula->setKeyUp(2, 3); // R
+            break;
+        case SDLK_T:
+            ula->setKeyUp(2, 4); // T
+            break;
+            
+        // Row 3: 1, 2, 3, 4, 5
+        case SDLK_1:
+            ula->setKeyUp(3, 0); // 1
+            break;
+        case SDLK_2:
+            ula->setKeyUp(3, 1); // 2
+            break;
+        case SDLK_3:
+            ula->setKeyUp(3, 2); // 3
+            break;
+        case SDLK_4:
+            ula->setKeyUp(3, 3); // 4
+            break;
+        case SDLK_5:
+            ula->setKeyUp(3, 4); // 5
+            break;
+            
+        // Row 4: 0, 9, 8, 7, 6
+        case SDLK_0:
+            ula->setKeyUp(4, 0); // 0
+            break;
+        case SDLK_9:
+            ula->setKeyUp(4, 1); // 9
+            break;
+        case SDLK_8:
+            ula->setKeyUp(4, 2); // 8
+            break;
+        case SDLK_7:
+            ula->setKeyUp(4, 3); // 7
+            break;
+        case SDLK_6:
+            ula->setKeyUp(4, 4); // 6
+            break;
+            
+        // Row 5: P, O, I, U, Y
+        case SDLK_P:
+            ula->setKeyUp(5, 0); // P
+            break;
+        case SDLK_O:
+            ula->setKeyUp(5, 1); // O
+            break;
+        case SDLK_I:
+            ula->setKeyUp(5, 2); // I
+            break;
+        case SDLK_U:
+            ula->setKeyUp(5, 3); // U
+            break;
+        case SDLK_Y:
+            ula->setKeyUp(5, 4); // Y
+            break;
+            
+        // Row 6: ENTER, L, K, J, H
+        case SDLK_RETURN:
+        case SDLK_KP_ENTER:
+            ula->setKeyUp(6, 0); // ENTER
+            break;
+        case SDLK_L:
+            ula->setKeyUp(6, 1); // L
+            break;
+        case SDLK_K:
+            ula->setKeyUp(6, 2); // K
+            break;
+        case SDLK_J:
+            ula->setKeyUp(6, 3); // J
+            break;
+        case SDLK_H:
+            ula->setKeyUp(6, 4); // H
+            break;
+            
+        // Row 7: SPACE, SYM SHIFT, M, N, B
+        case SDLK_SPACE:
+            ula->setKeyUp(7, 0); // SPACE
+            break;
+        case SDLK_LCTRL:
+        case SDLK_RCTRL:
+            ula->setKeyUp(7, 1); // SYM SHIFT
+            break;
+        case SDLK_M:
+            ula->setKeyUp(7, 2); // M
+            break;
+        case SDLK_N:
+            ula->setKeyUp(7, 3); // N
+            break;
+        case SDLK_B:
+            ula->setKeyUp(7, 4); // B
+            break;
+    }
 }
 
 int main(void)

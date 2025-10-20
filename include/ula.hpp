@@ -27,6 +27,10 @@ private:
     // Border color
     uint8_t borderColor;
     
+    // Keyboard state (8 half-rows of 5 keys each)
+    // 0 = pressed, 1 = released (inverted logic)
+    uint8_t keyboard[8];
+    
     // Private helper functions
     void drawPixel(int);
     uint32_t getPixelColorFast(uint8_t x, uint8_t y);
@@ -52,6 +56,11 @@ public:
     
     // Reset ULA state
     void reset();
+    
+    // Keyboard handling functions
+    void setKeyState(int halfRow, uint8_t keyMask);
+    void setKeyDown(int halfRow, int keyBit);
+    void setKeyUp(int halfRow, int keyBit);
 };
 
 #endif // ULA_HPP
