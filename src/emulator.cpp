@@ -10,6 +10,7 @@
 #include "memory.hpp"
 #include "port.hpp"
 #include "z80.hpp"
+#include "kempston.hpp"
 
 // ImGui includes
 #include "imgui.h"
@@ -33,6 +34,7 @@ private:
     std::unique_ptr<Port> ports;
     std::unique_ptr<Z80> cpu;
     std::unique_ptr<ULA> ula;
+    std::unique_ptr<Kempston> kempston;
 
     // Thread synchronization
     std::mutex screenMutex;
@@ -60,6 +62,7 @@ public:
         ports = std::make_unique<Port>();
         cpu = std::make_unique<Z80>(memory.get(), ports.get());
         ula = std::make_unique<ULA>(memory.get());
+        kempston = std::make_unique<Kempston>();
 
         // Register ULA with port system
         ports->RegisterReadHandler(0xFE, [this](uint16_t port) -> uint8_t
@@ -68,12 +71,29 @@ public:
         ports->RegisterWriteHandler(0xFE, [this](uint16_t port, uint8_t value)
                                     { ula->writePort(port, value); });
 
-        // Initialize SDL
-        if (!SDL_Init(SDL_INIT_VIDEO))
+        // Register Kempston joystick with port system
+        ports->RegisterReadHandler(0x1F, [this](uint16_t port) -> uint8_t
+                                   { return kempston->readPort(port); });
+
+        // Initialize SDL with joystick support
+        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
         {
             std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
             std::cerr << "SDL Error code: " << SDL_GetError() << std::endl;
             return false;
+        }
+
+        // Enable joystick events
+        SDL_SetJoystickEventsEnabled(true);
+
+        // Try to open the first available joystick
+        int numJoysticks = SDL_NumJoysticks();
+        if (numJoysticks > 0) {
+            std::cout << "Found " << numJoysticks << " joystick(s)" << std::endl;
+            // We'll automatically handle joystick events without explicitly opening
+            // SDL will send events for connected joysticks
+        } else {
+            std::cout << "No joysticks found" << std::endl;
         }
 
         // Create window
@@ -148,6 +168,54 @@ public:
                 else if (e.type == SDL_EVENT_KEY_UP)
                 {
                     handleKeyUp(e.key.key);
+                }
+                else if (e.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN)
+                {
+                    // Map joystick buttons to Kempston joystick
+                    // Button 0 = Fire
+                    if (e.jbutton.button == 0 && kempston) {
+                        kempston->setFire(true);
+                    }
+                }
+                else if (e.type == SDL_EVENT_JOYSTICK_BUTTON_UP)
+                {
+                    // Map joystick buttons to Kempston joystick
+                    // Button 0 = Fire
+                    if (e.jbutton.button == 0 && kempston) {
+                        kempston->setFire(false);
+                    }
+                }
+                else if (e.type == SDL_EVENT_JOYSTICK_AXIS_MOTION)
+                {
+                    // Map joystick axes to Kempston joystick directions
+                    if (kempston) {
+                        // Axis 0 = X axis (Left/Right)
+                        if (e.jaxis.axis == 0) {
+                            if (e.jaxis.value < -16000) {
+                                kempston->setLeft(true);
+                                kempston->setRight(false);
+                            } else if (e.jaxis.value > 16000) {
+                                kempston->setRight(true);
+                                kempston->setLeft(false);
+                            } else {
+                                kempston->setLeft(false);
+                                kempston->setRight(false);
+                            }
+                        }
+                        // Axis 1 = Y axis (Up/Down)
+                        else if (e.jaxis.axis == 1) {
+                            if (e.jaxis.value < -16000) {
+                                kempston->setUp(true);
+                                kempston->setDown(false);
+                            } else if (e.jaxis.value > 16000) {
+                                kempston->setDown(true);
+                                kempston->setUp(false);
+                            } else {
+                                kempston->setUp(false);
+                                kempston->setDown(false);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -335,6 +403,27 @@ void Emulator::runZX()
 
 // Handle key down events
 void Emulator::handleKeyDown(SDL_Keycode key) {
+    // Handle Kempston joystick with arrow keys and Ctrl
+    if (kempston) {
+        switch (key) {
+            case SDLK_UP:
+                kempston->setUp(true);
+                break;
+            case SDLK_DOWN:
+                kempston->setDown(true);
+                break;
+            case SDLK_LEFT:
+                kempston->setLeft(true);
+                break;
+            case SDLK_RIGHT:
+                kempston->setRight(true);
+                break;
+            case SDLK_LCTRL:
+                kempston->setFire(true);
+                break;
+        }
+    }
+
     // Map SDL keys to ZX Spectrum keyboard matrix
     // ZX Spectrum keyboard matrix:
     // Half-row 0 (port 0xFEFE): CAPS SHIFT, Z, X, C, V
@@ -488,6 +577,27 @@ void Emulator::handleKeyDown(SDL_Keycode key) {
 
 // Handle key up events
 void Emulator::handleKeyUp(SDL_Keycode key) {
+    // Handle Kempston joystick with arrow keys and Ctrl
+    if (kempston) {
+        switch (key) {
+            case SDLK_UP:
+                kempston->setUp(false);
+                break;
+            case SDLK_DOWN:
+                kempston->setDown(false);
+                break;
+            case SDLK_LEFT:
+                kempston->setLeft(false);
+                break;
+            case SDLK_RIGHT:
+                kempston->setRight(false);
+                break;
+            case SDLK_LCTRL:
+                kempston->setFire(false);
+                break;
+        }
+    }
+
     // Map SDL keys to ZX Spectrum keyboard matrix
     switch (key) {
         // Row 0: CAPS SHIFT, Z, X, C, V
