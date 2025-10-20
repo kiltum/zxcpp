@@ -287,7 +287,8 @@ public:
 void Emulator::runZX()
 {
     threadRunning = true;
-    memory->Read48();
+    //memory->Read48();
+    memory->ReadDiag();
     emulationThread = std::thread([this]()
                                   {
         const int TARGET_FREQUENCY = 3500000; // 3.5 MHz

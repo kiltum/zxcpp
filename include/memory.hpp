@@ -24,6 +24,8 @@ public:
     void WriteWord(uint16_t address, uint16_t value);
     // Load 48k rom to memory
     void Read48(void);
+    // Load diag rom to memory
+    void ReadDiag(void);
 };
 
 #endif // MEMORY_HPP
