@@ -321,7 +321,6 @@ void Z80::rra() {
 
 // daa performs decimal adjust on accumulator
 void Z80::daa() {
-    uint8_t temp = A;
     uint8_t correction = 0;
 
     if (GetFlag(FLAG_H) || (A & 0x0F) > 9) {

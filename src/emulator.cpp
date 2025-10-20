@@ -11,6 +11,11 @@
 #include "port.hpp"
 #include "z80.hpp"
 
+// ImGui includes
+#include "imgui.h"
+#include "imgui_impl_sdl3.h"
+#include "imgui_impl_sdlrenderer3.h"
+
 class Emulator
 {
 private:
@@ -96,6 +101,19 @@ public:
         }
         SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 
+        // Setup ImGui
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+
+        // Setup ImGui style
+        ImGui::StyleColorsDark();
+
+        // Setup Platform/Renderer backends
+        ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+        ImGui_ImplSDLRenderer3_Init(renderer);
+
         return true;
     }
 
@@ -111,11 +129,33 @@ public:
             // Handle events
             while (SDL_PollEvent(&e) != 0)
             {
+                // Pass SDL events to ImGui
+                ImGui_ImplSDL3_ProcessEvent(&e);
+                
                 if (e.type == SDL_EVENT_QUIT)
                 {
                     std::cout << "Quit event received" << std::endl;
                     quit = true;
                 }
+            }
+
+            // Start the ImGui frame
+            ImGui_ImplSDLRenderer3_NewFrame();
+            ImGui_ImplSDL3_NewFrame();
+            ImGui::NewFrame();
+
+            // Create a simple menu bar
+            if (ImGui::BeginMainMenuBar())
+            {
+                if (ImGui::BeginMenu("File"))
+                {
+                    if (ImGui::MenuItem("Exit", "Alt+F4"))
+                    {
+                        quit = true;
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMainMenuBar();
             }
 
             // Check if screen was updated by emulation thread
@@ -155,6 +195,10 @@ public:
             // Render texture
             SDL_RenderTexture(renderer, texture, nullptr, &destRect);
 
+            // Rendering ImGui
+            ImGui::Render();
+            ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
+
             // Update screen
             SDL_RenderPresent(renderer);
         }
@@ -171,6 +215,11 @@ public:
                 emulationThread.join();
             }
         }
+
+        // Cleanup ImGui
+        ImGui_ImplSDLRenderer3_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImGui::DestroyContext();
 
         if (texture)
         {
