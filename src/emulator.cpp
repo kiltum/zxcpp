@@ -180,6 +180,10 @@ public:
             int windowWidth, windowHeight;
             SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
+            // Clear the screen with black color to prevent flickering
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderClear(renderer);
+
             // Calculate destination rectangle to maintain aspect ratio
             float scaleX = (float)windowWidth / 352.0f;
             float scaleY = (float)windowHeight / 288.0f;
@@ -221,6 +225,7 @@ public:
         ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
 
+        // Cleanup SDL resources
         if (texture)
         {
             SDL_DestroyTexture(texture);
