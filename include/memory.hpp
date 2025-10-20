@@ -26,6 +26,8 @@ public:
     void Read48(void);
     // Load diag rom to memory
     void ReadDiag(void);
+    // load another diag rom
+    void ReadDiag2(void);
 };
 
 #endif // MEMORY_HPP

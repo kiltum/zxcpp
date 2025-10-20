@@ -75,25 +75,12 @@ public:
         ports->RegisterReadHandler(0x1F, [this](uint16_t port) -> uint8_t
                                    { return kempston->readPort(port); });
 
-        // Initialize SDL with joystick support
-        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
+        // Initialize SDL
+        if (!SDL_Init(SDL_INIT_VIDEO))
         {
             std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
             std::cerr << "SDL Error code: " << SDL_GetError() << std::endl;
             return false;
-        }
-
-        // Enable joystick events
-        SDL_SetJoystickEventsEnabled(true);
-
-        // Try to open the first available joystick
-        int numJoysticks = SDL_NumJoysticks();
-        if (numJoysticks > 0) {
-            std::cout << "Found " << numJoysticks << " joystick(s)" << std::endl;
-            // We'll automatically handle joystick events without explicitly opening
-            // SDL will send events for connected joysticks
-        } else {
-            std::cout << "No joysticks found" << std::endl;
         }
 
         // Create window
@@ -168,54 +155,6 @@ public:
                 else if (e.type == SDL_EVENT_KEY_UP)
                 {
                     handleKeyUp(e.key.key);
-                }
-                else if (e.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN)
-                {
-                    // Map joystick buttons to Kempston joystick
-                    // Button 0 = Fire
-                    if (e.jbutton.button == 0 && kempston) {
-                        kempston->setFire(true);
-                    }
-                }
-                else if (e.type == SDL_EVENT_JOYSTICK_BUTTON_UP)
-                {
-                    // Map joystick buttons to Kempston joystick
-                    // Button 0 = Fire
-                    if (e.jbutton.button == 0 && kempston) {
-                        kempston->setFire(false);
-                    }
-                }
-                else if (e.type == SDL_EVENT_JOYSTICK_AXIS_MOTION)
-                {
-                    // Map joystick axes to Kempston joystick directions
-                    if (kempston) {
-                        // Axis 0 = X axis (Left/Right)
-                        if (e.jaxis.axis == 0) {
-                            if (e.jaxis.value < -16000) {
-                                kempston->setLeft(true);
-                                kempston->setRight(false);
-                            } else if (e.jaxis.value > 16000) {
-                                kempston->setRight(true);
-                                kempston->setLeft(false);
-                            } else {
-                                kempston->setLeft(false);
-                                kempston->setRight(false);
-                            }
-                        }
-                        // Axis 1 = Y axis (Up/Down)
-                        else if (e.jaxis.axis == 1) {
-                            if (e.jaxis.value < -16000) {
-                                kempston->setUp(true);
-                                kempston->setDown(false);
-                            } else if (e.jaxis.value > 16000) {
-                                kempston->setDown(true);
-                                kempston->setUp(false);
-                            } else {
-                                kempston->setUp(false);
-                                kempston->setDown(false);
-                            }
-                        }
-                    }
                 }
             }
 
@@ -356,7 +295,7 @@ void Emulator::runZX()
 {
     threadRunning = true;
     //memory->Read48();
-    memory->ReadDiag();
+    memory->ReadDiag2();
     emulationThread = std::thread([this]()
                                   {
         const int TARGET_FREQUENCY = 3500000; // 3.5 MHz
