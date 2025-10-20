@@ -200,15 +200,17 @@ void Emulator::runZX()
     memory->Read48();
     emulationThread = std::thread([this]()
                                   {
-                                    int totalTicks = 0;
+        const int TARGET_FREQUENCY = 3500000; // 3.5 MHz
+        const int FRAME_TICKS = TARGET_FREQUENCY / 50; // 50Hz screen refresh
+        auto frameStart = std::chrono::high_resolution_clock::now();
+        int frameTicks = 0;
+        
         while (threadRunning.load()) {
-            int ticks = 0;
+            int ticks = cpu->ExecuteOneInstruction();
+            frameTicks += ticks;
             
-            ticks = cpu->ExecuteOneInstruction();
-            totalTicks = totalTicks + ticks;
             for (int i = 0; i < ticks; i++) {
-                int ref = 0;
-                ref = ula->oneTick();
+                int ref = ula->oneTick();
                 if (ref == 0) {
                     // Signal that screen has been updated
                     {
@@ -216,12 +218,22 @@ void Emulator::runZX()
                         screenUpdated = true;
                     }
                 }
-                // Here need to check ref and CPU:PC and slow down because condenced memory
-        
             }
             
-            // Small delay to prevent excessive CPU usage
-            // std::this_thread::sleep_for(std::chrono::microseconds(100));
+            // Speed limiter - aim for 50Hz frame rate (typical for ZX Spectrum)
+            if (frameTicks >= FRAME_TICKS) {
+                frameTicks = 0;
+                auto frameEnd = std::chrono::high_resolution_clock::now();
+                auto frameTime = std::chrono::duration_cast<std::chrono::microseconds>(frameEnd - frameStart).count();
+                auto targetFrameTime = 20000; // 20ms for 50Hz
+                
+                if (frameTime < targetFrameTime) {
+                    auto sleepTime = targetFrameTime - frameTime;
+                    std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
+                }
+                
+                frameStart = std::chrono::high_resolution_clock::now();
+            }
         } });
 }
 
