@@ -155,6 +155,26 @@ public:
                     }
                     ImGui::EndMenu();
                 }
+                
+                if (ImGui::BeginMenu("Window"))
+                {
+                    if (ImGui::MenuItem("Scale 1x")) {
+                        // Set window size to 352x288
+                        SDL_SetWindowMinimumSize(window, 352, 288);
+                        SDL_SetWindowSize(window, 352, 288);
+                    }
+                    if (ImGui::MenuItem("Scale 2x")) {
+                        // Set window size to 704x576
+                        SDL_SetWindowMinimumSize(window, 704, 576);
+                        SDL_SetWindowSize(window, 704, 576);
+                    }
+                    if (ImGui::MenuItem("Scale 3x")) {
+                        // Set window size to 1056x864
+                        SDL_SetWindowMinimumSize(window, 1056, 864);
+                        SDL_SetWindowSize(window, 1056, 864);
+                    }
+                    ImGui::EndMenu();
+                }
                 ImGui::EndMainMenuBar();
             }
 
@@ -179,6 +199,10 @@ public:
             // Get window size
             int windowWidth, windowHeight;
             SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+
+            // Update ImGui display size
+            ImGuiIO& io = ImGui::GetIO();
+            io.DisplaySize = ImVec2((float)windowWidth, (float)windowHeight);
 
             // Clear the screen with black color to prevent flickering
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
