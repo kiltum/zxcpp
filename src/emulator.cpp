@@ -350,9 +350,6 @@ void Emulator::handleKeyDown(SDL_Keycode key) {
         case SDLK_LSHIFT:
             ula->setKeyDown(0, 0); // CAPS SHIFT
             break;
-        case SDLK_RSHIFT:
-            ula->setKeyDown(7, 1); // SYM SHIFT
-            break;
         case SDLK_Z:
             ula->setKeyDown(0, 1); // Z
             break;
@@ -473,8 +470,7 @@ void Emulator::handleKeyDown(SDL_Keycode key) {
         case SDLK_SPACE:
             ula->setKeyDown(7, 0); // SPACE
             break;
-        case SDLK_LCTRL:
-        case SDLK_RCTRL:
+        case SDLK_RSHIFT:
             ula->setKeyDown(7, 1); // SYM SHIFT
             break;
         case SDLK_M:
@@ -496,9 +492,6 @@ void Emulator::handleKeyUp(SDL_Keycode key) {
         // Row 0: CAPS SHIFT, Z, X, C, V
         case SDLK_LSHIFT:
             ula->setKeyUp(0, 0); // CAPS SHIFT
-            break;
-        case SDLK_RSHIFT:
-            ula->setKeyUp(7, 1); // SYM SHIFT
             break;
         case SDLK_Z:
             ula->setKeyUp(0, 1); // Z
@@ -620,8 +613,7 @@ void Emulator::handleKeyUp(SDL_Keycode key) {
         case SDLK_SPACE:
             ula->setKeyUp(7, 0); // SPACE
             break;
-        case SDLK_LCTRL:
-        case SDLK_RCTRL:
+        case SDLK_RSHIFT:
             ula->setKeyUp(7, 1); // SYM SHIFT
             break;
         case SDLK_M:
