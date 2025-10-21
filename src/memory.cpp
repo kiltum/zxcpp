@@ -18,6 +18,10 @@ uint8_t Memory::ReadByte(uint16_t address) {
 }
 
 void Memory::WriteByte(uint16_t address, uint8_t value) {
+    if(address < 0x4000) {
+        printf("Ignoring attempt to write byte to ROM %x %\n",address,value);
+        return;
+    }
     memory[address] = value;
 }
 
@@ -29,6 +33,10 @@ uint16_t Memory::ReadWord(uint16_t address) {
 }
 
 void Memory::WriteWord(uint16_t address, uint16_t value) {
+    if(address < 0x4000) {
+        printf("Ignoring attempt to write word to ROM %x %x\n",address,value);
+        return;
+    }
     // Write word in little-endian format (least significant byte first)
     memory[address] = static_cast<uint8_t>(value & 0xFF);
     memory[address + 1] = static_cast<uint8_t>((value >> 8) & 0xFF);
