@@ -5,7 +5,7 @@
 Kempston::Kempston()
 {
     // Initialize joystick state (all buttons released)
-    joystickState = 0xFF;
+    joystickState = 0x00;
 }
 
 // Destructor
