@@ -7,7 +7,7 @@
 ULA::ULA(Memory *mem) : memory(mem)
 {
     // Allocate screen buffer (352x288 to accommodate borders)
-    screenBuffer = new uint32_t[352 * 288];
+    screenBuffer = new uint32_t[(352 * 288)+2]; // +2 to prevent buffer overflow
 
     // Initialize state variables
     clock = 0;
@@ -201,7 +201,7 @@ void ULA::drawPixel(int color)
 {
     // printf("%d %d \n", line, horClock);
     //  One tick = 2 pixel to draw
-    screenBuffer[line * 352 + (horClock * 2 - 1)] = colors[color];
+    screenBuffer[line * 352 + (horClock * 2 + 1)] = colors[color];
     screenBuffer[line * 352 + horClock * 2] = colors[color];
 }
 
