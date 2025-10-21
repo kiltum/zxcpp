@@ -724,7 +724,7 @@ int Z80::ldir() {
 // cpir repeated CPI until BC=0 or A=(HL)
 int Z80::cpir() {
     cpi();
-
+    printf("CPIR %x %x %x %x %s\n", A, BC, HL, memory->ReadByte(HL), GetFlag(FLAG_Z) ? "T" : "F");
     if (BC != 0 && !GetFlag(FLAG_Z)) {
         PC -= 2; // Repeat instruction
 

@@ -6,6 +6,7 @@
 class Memory {
 private:
     uint8_t memory[65536]; // 64KB of memory
+    bool canWriteRom; // Can we overwrite ROM, as in Baltika version?
 
 public:
     // Constructor

@@ -24,7 +24,7 @@ Z80::Z80(Memory* mem, Port* port) {
     IY = 0;
     
     // Initialize internal registers to zero
-    SP = 0;
+    SP = 0xFFFF;
     PC = 0;
     I = 0;
     R = 0;
