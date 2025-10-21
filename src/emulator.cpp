@@ -305,7 +305,7 @@ void Emulator::runZX()
         long long checkTicks = 0;
         
         while (threadRunning.load()) {
-            printf("PC: %x %x\n",cpu->PC,memory->ReadByte(cpu->PC));
+            //printf("PC: %x %x\n",cpu->PC,memory->ReadByte(cpu->PC));
             int ticks = cpu->ExecuteOneInstruction();
             totalTicks += ticks;
             checkTicks += ticks;

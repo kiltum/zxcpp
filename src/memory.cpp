@@ -15,9 +15,9 @@ Memory::Memory() {
 }
 
 uint8_t Memory::ReadByte(uint16_t address) {
-    if(address > 0xfff0) {
-        printf("RB %x %x\n", address, memory[address]);
-    }
+    // if(address > 0xfff0) {
+    //     printf("RB %x %x\n", address, memory[address]);
+    // }
     return memory[address];
 }
 
@@ -26,22 +26,22 @@ void Memory::WriteByte(uint16_t address, uint8_t value) {
         printf("Ignoring attempt to write byte to ROM %x %x\n",address,value);
         return;
     }
-     if(address > 0xfff0) {
-        printf("WB %x %x\n", address, value);
-    }
+    //  if(address > 0xfff0) {
+    //     printf("WB %x %x\n", address, value);
+    // }
     memory[address] = value;
-    if(address > 0xfff0) {
-        printf("WB2 %x %x\n", address, memory[address]);
-    }
+    // if(address > 0xfff0) {
+    //     printf("WB2 %x %x\n", address, memory[address]);
+    // }
 }
 
 uint16_t Memory::ReadWord(uint16_t address) {
     // Read word in little-endian format (least significant byte first)
     uint8_t low = memory[address];
     uint8_t high = memory[address + 1];
-    if(address > 0xfff0) {
-        printf("RW %x %x%x\n", address, memory[address],memory[address+1]);
-    }
+    // if(address > 0xfff0) {
+    //     printf("RW %x %x%x\n", address, memory[address],memory[address+1]);
+    // }
     return (static_cast<uint16_t>(high) << 8) | static_cast<uint16_t>(low);
 }
 
@@ -50,9 +50,9 @@ void Memory::WriteWord(uint16_t address, uint16_t value) {
         printf("Ignoring attempt to write word to ROM %x %x\n",address,value);
         return;
     }
-    if(address > 0xfff0) {
-        printf("WW %x %x\n", address, value);
-    }
+    // if(address > 0xfff0) {
+    //     printf("WW %x %x\n", address, value);
+    // }
     // Write word in little-endian format (least significant byte first)
     memory[address] = static_cast<uint8_t>(value & 0xFF);
     memory[address + 1] = static_cast<uint8_t>((value >> 8) & 0xFF);

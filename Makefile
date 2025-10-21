@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -O3 -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends
+CXXFLAGS = -std=c++20 -O2 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends
 SRCDIR = src
 OBJDIR = obj
 IMGUI_DIR = lib/imgui
@@ -36,7 +36,7 @@ SDL_LIBS := $(shell pkg-config --libs sdl3 2>/dev/null || echo "-L/opt/homebrew/
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $@ $(SDL_LIBS)
+	$(CXX) $(OBJECTS) -g -fsanitize=address -o $@ $(SDL_LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
