@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -O2 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends
+CXXFLAGS = -std=c++20 -O2 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog
 SRCDIR = src
 OBJDIR = obj
 IMGUI_DIR = lib/imgui
@@ -10,6 +10,9 @@ IMGUI_SOURCES = $(IMGUI_DIR)/imgui.cpp \
                 $(IMGUI_DIR)/imgui_widgets.cpp \
                 $(IMGUI_DIR)/backends/imgui_impl_sdl3.cpp \
                 $(IMGUI_DIR)/backends/imgui_impl_sdlrenderer3.cpp
+
+IMGUIDIALOG_DIR = lib/imguifiledialog
+IMGUIDIALOG_SOURCES = $(IMGUIDIALOG_DIR)/ImGuiFileDialog.cpp
 SOURCES = $(SRCDIR)/emulator.cpp \
           $(SRCDIR)/memory.cpp \
           $(SRCDIR)/port.cpp \
@@ -23,10 +26,12 @@ SOURCES = $(SRCDIR)/emulator.cpp \
           $(SRCDIR)/z80_fdcb_opcodes.cpp \
           $(SRCDIR)/ula.cpp \
           $(SRCDIR)/kempston.cpp \
-          $(IMGUI_SOURCES)
+          $(IMGUI_SOURCES) \
+          $(IMGUIDIALOG_SOURCES)
 OBJECTS = $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 OBJECTS := $(OBJECTS:$(IMGUI_DIR)/%.cpp=$(OBJDIR)/%.o)
 OBJECTS := $(OBJECTS:$(IMGUI_DIR)/backends/%.cpp=$(OBJDIR)/%.o)
+OBJECTS := $(OBJECTS:$(IMGUIDIALOG_DIR)/%.cpp=$(OBJDIR)/%.o)
 TARGET = emulator
 
 # SDL3 flags
@@ -45,6 +50,9 @@ $(OBJDIR)/%.o: $(IMGUI_DIR)/%.cpp | $(OBJDIR)
 	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(IMGUI_DIR)/backends/%.cpp | $(OBJDIR)/backends
+	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: $(IMGUIDIALOG_DIR)/%.cpp | $(OBJDIR)
 	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
 
 $(OBJDIR)/backends:

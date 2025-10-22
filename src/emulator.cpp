@@ -16,6 +16,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
+#include "ImGuiFileDialog.h"
 
 class Emulator
 {
@@ -93,7 +94,6 @@ public:
 
         // Show window
         SDL_ShowWindow(window);
-
         // Create renderer
         renderer = SDL_CreateRenderer(window, nullptr);
         if (renderer == nullptr)
@@ -168,6 +168,12 @@ public:
             {
                 if (ImGui::BeginMenu("File"))
                 {
+                    if (ImGui::MenuItem("Open File", "Ctrl+O"))
+                    {
+                        IGFD::FileDialogConfig config;
+                        config.path = ".";
+                        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".rom,.bin,.z80", config);
+                    }
                     if (ImGui::MenuItem("Exit", "Alt+F4"))
                     {
                         quit = true;
@@ -195,6 +201,23 @@ public:
                     ImGui::EndMenu();
                 }
                 ImGui::EndMainMenuBar();
+            }
+
+            // display
+            if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
+            { 
+                // => will show a dialog
+                if (ImGuiFileDialog::Instance()->IsOk()) 
+                { 
+                    // action if OK
+                    std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+                    std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+                    // TODO: Load the selected file
+                    std::cout << "Selected file: " << filePathName << std::endl;
+                }
+                
+                // close
+                ImGuiFileDialog::Instance()->Close();
             }
 
             // Check if screen was updated by emulation thread
