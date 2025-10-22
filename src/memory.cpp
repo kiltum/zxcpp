@@ -23,7 +23,7 @@ uint8_t Memory::ReadByte(uint16_t address) {
 
 void Memory::WriteByte(uint16_t address, uint8_t value) {
     if(address < 0x4000 && canWriteRom == false) {
-        printf("Ignoring attempt to write byte to ROM %x %x\n",address,value);
+        //printf("Ignoring attempt to write byte to ROM %x %x\n",address,value);
         return;
     }
     //  if(address > 0xfff0) {

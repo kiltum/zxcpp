@@ -131,7 +131,7 @@ public:
     void run()
     {
         SDL_Event e;
-        std::cout << "Entering emulation loop" << std::endl;
+        //std::cout << "Entering emulation loop" << std::endl;
 
         runZX();
 
@@ -681,7 +681,7 @@ void Emulator::handleKeyUp(SDL_Keycode key) {
 
 int main(void)
 {
-    std::cout << "Starting emulator..." << std::endl;
+    //std::cout << "Starting emulator..." << std::endl;
 
     Emulator emulator;
 
@@ -691,12 +691,12 @@ int main(void)
         return -1;
     }
 
-    std::cout << "Emulator initialized successfully." << std::endl;
-    std::cout << "Starting emulation loop..." << std::endl;
+    //std::cout << "Emulator initialized successfully." << std::endl;
+    //std::cout << "Starting emulation loop..." << std::endl;
 
     emulator.run();
 
-    std::cout << "Emulation loop ended." << std::endl;
+    //std::cout << "Emulation loop ended." << std::endl;
 
     return 0;
 }
