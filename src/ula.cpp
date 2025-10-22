@@ -122,7 +122,7 @@ void ULA::writePort(uint16_t port, uint8_t value)
         borderColor = value & 0x07;
         // Sound output handling (we'll implement this later)
         // For now, just ignore sound output to avoid port access issues
-        bool micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
+        // micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
         //audioState = earBit || micBit;
         audioState = earBit;
