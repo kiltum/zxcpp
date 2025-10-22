@@ -303,12 +303,19 @@ void Emulator::runZX()
         auto startTime = std::chrono::high_resolution_clock::now();
         long long totalTicks = 0;
         long long checkTicks = 0;
+        long long refreshTicks = 0;
         
         while (threadRunning.load()) {
             //printf("PC: %x %x\n",cpu->PC,memory->ReadByte(cpu->PC));
             int ticks = cpu->ExecuteOneInstruction();
             totalTicks += ticks;
             checkTicks += ticks;
+            refreshTicks += ticks;
+            // if(refreshTicks > 100000) {
+            //     //printf("%d \n",refreshTicks);
+            //     refreshTicks = 0;
+            //     cpu->InterruptPending = true;
+            // }
             
             for (int i = 0; i < ticks; i++) {
                 int ref = ula->oneTick();

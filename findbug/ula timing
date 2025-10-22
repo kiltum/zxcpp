@@ -35,5 +35,19 @@ Cycle #    Delay
 69893 
 69887
 
+69895 
+69891 
+69893 
+69895 
+69893 
+69891 
+69895 
+
+if(refreshTicks > 100000) {
+                //printf("%d \n",refreshTicks);
+                refreshTicks = 0;
+                cpu->InterruptPending = true;
+            }
+
 
 
