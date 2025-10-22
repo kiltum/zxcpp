@@ -26,6 +26,7 @@ SOURCES = $(SRCDIR)/emulator.cpp \
           $(SRCDIR)/z80_fdcb_opcodes.cpp \
           $(SRCDIR)/ula.cpp \
           $(SRCDIR)/kempston.cpp \
+          $(SRCDIR)/sound.cpp \
           $(IMGUI_SOURCES) \
           $(IMGUIDIALOG_SOURCES)
 OBJECTS = $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)

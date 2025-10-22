@@ -11,6 +11,7 @@
 #include "port.hpp"
 #include "z80.hpp"
 #include "kempston.hpp"
+#include "sound.hpp"
 
 // ImGui includes
 #include "imgui.h"
@@ -36,6 +37,7 @@ private:
     std::unique_ptr<Z80> cpu;
     std::unique_ptr<ULA> ula;
     std::unique_ptr<Kempston> kempston;
+    std::unique_ptr<Sound> sound;
 
     // Thread synchronization
     std::mutex screenMutex;
@@ -76,12 +78,20 @@ public:
         ports->RegisterReadHandler(0x1F, [this](uint16_t port) -> uint8_t
                                    { return kempston->readPort(port); });
 
-        // Initialize SDL
-        if (!SDL_Init(SDL_INIT_VIDEO))
+        // Initialize SDL with both video and audio
+        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
         {
             std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
             std::cerr << "SDL Error code: " << SDL_GetError() << std::endl;
             return false;
+        }
+
+        // Initialize sound system
+        sound = std::make_unique<Sound>();
+        if (!sound->initialize())
+        {
+            std::cerr << "Warning: Failed to initialize sound system" << std::endl;
+            // Continue without sound
         }
 
         // Create window
@@ -366,6 +376,11 @@ void Emulator::runZX()
                         sleepTime = 1000;
                     }
                     std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
+                }
+                
+                // Run sound processing
+                if (sound) {
+                    sound->run();
                 }
             }
         } });
