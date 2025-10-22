@@ -16,36 +16,12 @@ bool Sound::initialize() {
         return false;
     }
 
-    // Create audio stream
-    // ZX Spectrum audio specifications
-    const int SAMPLE_RATE = 44100;  // 44.1 kHz
-    const SDL_AudioFormat FORMAT = SDL_AUDIO_F32;  // 32-bit floating point
-    const int CHANNELS = 1;  // Mono
-
-    SDL_AudioSpec src_spec, dst_spec;
-    SDL_zero(src_spec);
-    src_spec.format = FORMAT;
-    src_spec.channels = CHANNELS;
-    src_spec.freq = SAMPLE_RATE;
-    
-    SDL_zero(dst_spec);
-    dst_spec.format = FORMAT;
-    dst_spec.channels = CHANNELS;
-    dst_spec.freq = SAMPLE_RATE;
-
-    audioStream = SDL_CreateAudioStream(&src_spec, &dst_spec);
-    
-    if (!audioStream) {
-        std::cerr << "SDL could not create audio stream! SDL_Error: " << SDL_GetError() << std::endl;
-        return false;
-    }
-
-    // Open audio device
+    // Open audio device first
     SDL_AudioSpec spec;
     SDL_zero(spec);
-    spec.format = FORMAT;
-    spec.channels = CHANNELS;
-    spec.freq = SAMPLE_RATE;
+    spec.format = SDL_AUDIO_F32;  // 32-bit floating point
+    spec.channels = 1;            // Mono
+    spec.freq = 44100;            // 44.1 kHz
 
     audioDevice = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
     if (!audioDevice) {
@@ -53,9 +29,33 @@ bool Sound::initialize() {
         return false;
     }
 
+    // Get the actual device spec
+    SDL_AudioSpec deviceSpec;
+    int sampleFrames;
+    if (SDL_GetAudioDeviceFormat(audioDevice, &deviceSpec, &sampleFrames) != true) {
+        std::cerr << "SDL could not get audio device format! SDL_Error: " << SDL_GetError() << std::endl;
+        SDL_CloseAudioDevice(audioDevice);
+        audioDevice = 0;
+        return false;
+    }
+
+    // Create audio stream that matches the device
+    audioStream = SDL_CreateAudioStream(&spec, &deviceSpec);
+    
+    if (!audioStream) {
+        std::cerr << "SDL could not create audio stream! SDL_Error: " << SDL_GetError() << std::endl;
+        SDL_CloseAudioDevice(audioDevice);
+        audioDevice = 0;
+        return false;
+    }
+
     // Bind the stream to the device
     if (SDL_BindAudioStream(audioDevice, audioStream) != 0) {
         std::cerr << "SDL could not bind audio stream to device! SDL_Error: " << SDL_GetError() << std::endl;
+        SDL_DestroyAudioStream(audioStream);
+        audioStream = nullptr;
+        SDL_CloseAudioDevice(audioDevice);
+        audioDevice = 0;
         return false;
     }
 
@@ -88,6 +88,11 @@ void Sound::run() {
 }
 
 void Sound::cleanup() {
+    if (audioStream && audioDevice) {
+        // Unbind the stream from the device before destroying
+        SDL_UnbindAudioStream(audioStream);
+    }
+
     if (audioStream) {
         SDL_DestroyAudioStream(audioStream);
         audioStream = nullptr;
