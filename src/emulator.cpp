@@ -204,7 +204,7 @@ public:
             }
 
             // display
-            if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
+            if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, ImVec2(400, 300))) 
             { 
                 // => will show a dialog
                 if (ImGuiFileDialog::Instance()->IsOk()) 
