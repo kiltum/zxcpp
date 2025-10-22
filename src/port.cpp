@@ -67,6 +67,6 @@ uint8_t Port::Read(uint16_t port) {
     // printf("Handler for reading %x port not found\n", port);
     
     // Return 0 if no handler is registered for this port
-    return uint8_t(port >> 8); // this is for FUSE test
+    return uint8_t(port >> 8); // this is for FUSE test and Floating bus test
     //return 0xff;
 }
