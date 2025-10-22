@@ -7,7 +7,7 @@
 ULA::ULA(Memory *mem) : memory(mem)
 {
     // Allocate screen buffer (352x288 to accommodate borders)
-    screenBuffer = new uint32_t[(352 * 288)+2]; // +2 to prevent buffer overflow
+    screenBuffer = new uint32_t[(352 * 288) + 2]; // +2 to prevent buffer overflow
 
     // Initialize state variables
     clock = 0;
@@ -17,9 +17,11 @@ ULA::ULA(Memory *mem) : memory(mem)
     frameCnt = 0;
     borderColor = 0;
     horClock = 0;
+    audioState = false;
 
     // Initialize keyboard state (all keys released)
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
         keyboard[i] = 0xFF; // All bits set = all keys released
     }
 
@@ -67,19 +69,45 @@ uint8_t ULA::readPort(uint16_t port)
     {
         // Extract the half-row selection from bits 8-15 of the port address
         uint8_t halfRowSelect = (port >> 8) & 0xFF;
-        
+
         // Find the first zero bit in the half-row selection (active low)
         // This determines which half-row to read
-        for (int i = 0; i < 8; i++) {
-            if ((halfRowSelect & (1 << i)) == 0) {
+        for (int i = 0; i < 8; i++)
+        {
+            if ((halfRowSelect & (1 << i)) == 0)
+            {
                 // Return the state of the selected half-row
                 // 0 = key pressed, 1 = key released (inverted logic)
-                return keyboard[i];
+                uint8_t result = keyboard[i];
+                
+                // Set bit 6 based on audioState
+                if (audioState)
+                {
+                    result |= 0x40; // Set bit 6
+                }
+                else
+                {
+                    result &= ~0x40; // Clear bit 6
+                }
+                //printf("RA1 %d\n",audioState);
+                return result;
             }
         }
-        
+
         // If no half-row is selected, return all keys released
-        return 0xFF;
+        uint8_t result = 0xFF;
+        
+        // Set bit 6 based on audioState
+        if (audioState)
+        {
+            result |= 0x40; // Set bit 6
+        }
+        else
+        {
+            result &= ~0x40; // Clear bit 6
+        }
+        printf("RA2 %d\n",audioState);
+        return result;
     }
 
     return 0;
@@ -88,12 +116,17 @@ uint8_t ULA::readPort(uint16_t port)
 // Write a byte to the specified port
 void ULA::writePort(uint16_t port, uint8_t value)
 {
-    //printf("port %d", port);
+    // printf("port %d", port);
     if ((port & 0xFF) == 0xFE)
     {
         borderColor = value & 0x07;
         // Sound output handling (we'll implement this later)
         // For now, just ignore sound output to avoid port access issues
+        bool micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
+        bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
+        //audioState = earBit || micBit;
+        audioState = earBit;
+        //printf("WA %d %d %d\n",audioState,micBit,earBit);
     }
 }
 
@@ -119,12 +152,12 @@ uint32_t *ULA::getScreenBuffer()
 // Visible Height = (48+192+48) = 288
 
 // Process a single ULA tick
-// Returns internal clock state. 
+// Returns internal clock state.
 int ULA::oneTick()
 {
     // Process one clock tick
     clock++;
-    
+
     if (clock <= 3560)
     { // we are on flyback
         return clock;
@@ -162,7 +195,7 @@ int ULA::oneTick()
     { // beam on left border
         drawPixel(borderColor);
     }
-    if (horClock > 23 && horClock <= (24 + 128-1))
+    if (horClock > 23 && horClock <= (24 + 128 - 1))
     {
         if (line <= 47 || line >= (192 + 48)) // its up border, still no need to access screen
         {
@@ -172,11 +205,11 @@ int ULA::oneTick()
         {
             int x = (horClock - 24) * 2;
             int y = line - 48;
-            //printf("%d %d\n", x, y);
+            // printf("%d %d\n", x, y);
             screenBuffer[(y + 48) * 352 + x + 48] = getPixelColorFast(x, y);
             screenBuffer[(y + 48) * 352 + x + 48 + 1] = getPixelColorFast(x + 1, y);
-            //screenBuffer[(y + 48) * 352 + x + 48] = colors[2];
-            //screenBuffer[(y + 48) * 352 + x + 48 + 1] = colors[0];
+            // screenBuffer[(y + 48) * 352 + x + 48] = colors[2];
+            // screenBuffer[(y + 48) * 352 + x + 48 + 1] = colors[0];
         }
     }
 
@@ -284,30 +317,37 @@ void ULA::reset()
     {
         screenBuffer[i] = blackColor;
     }
-    
+
     // Reinitialize keyboard state (all keys released)
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
         keyboard[i] = 0xFF; // All bits set = all keys released
     }
 }
 
 // Set the state of a key in the keyboard matrix
-void ULA::setKeyState(int halfRow, uint8_t keyMask) {
-    if (halfRow >= 0 && halfRow < 8) {
+void ULA::setKeyState(int halfRow, uint8_t keyMask)
+{
+    if (halfRow >= 0 && halfRow < 8)
+    {
         keyboard[halfRow] = keyMask;
     }
 }
 
 // Set a key as pressed (0 = pressed)
-void ULA::setKeyDown(int halfRow, int keyBit) {
-    if (halfRow >= 0 && halfRow < 8 && keyBit >= 0 && keyBit < 8) {
+void ULA::setKeyDown(int halfRow, int keyBit)
+{
+    if (halfRow >= 0 && halfRow < 8 && keyBit >= 0 && keyBit < 8)
+    {
         keyboard[halfRow] &= ~(1 << keyBit); // Clear bit to press key (0 = pressed)
     }
 }
 
 // Set a key as released (1 = released)
-void ULA::setKeyUp(int halfRow, int keyBit) {
-    if (halfRow >= 0 && halfRow < 8 && keyBit >= 0 && keyBit < 8) {
+void ULA::setKeyUp(int halfRow, int keyBit)
+{
+    if (halfRow >= 0 && halfRow < 8 && keyBit >= 0 && keyBit < 8)
+    {
         keyboard[halfRow] |= (1 << keyBit); // Set bit to release key (1 = released)
     }
 }
