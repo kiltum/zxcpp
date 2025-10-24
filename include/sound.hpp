@@ -17,9 +17,9 @@ public:
     ~Sound();
     
     bool initialize();
-    void run();
     void cleanup();
     void writePort(uint16_t port, uint8_t value);
+    void generateAudio(long long ticks, bool value);
     long long ticks;
 };
 

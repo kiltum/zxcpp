@@ -1,6 +1,7 @@
 #include "sound.hpp"
 #include <iostream>
 #include <cstring>
+#include <vector>
 
 Sound::Sound() : audioStream(nullptr), audioDevice(0), initialized(false)
 {
@@ -47,28 +48,6 @@ bool Sound::initialize()
     return true;
 }
 
-void Sound::run()
-{
-    if (!initialized)
-    {
-        return;
-    }
-
-    // For now, we're not generating any audio
-    // This method will be expanded in the future to generate and queue audio data
-    // Example placeholder for future implementation:
-    /*
-    const size_t BUFFER_SAMPLES = 1024;
-    float buffer[BUFFER_SAMPLES];
-
-    // Generate audio data (this is where the actual sound generation will happen)
-    // generateAudio(buffer, BUFFER_SAMPLES);
-
-    // Queue the audio data to the stream
-    SDL_PutAudioStreamData(audioStream, buffer, BUFFER_SAMPLES * sizeof(float));
-    */
-}
-
 void Sound::cleanup()
 {
     // For now, just reset the flags since we're not creating actual streams
@@ -95,6 +74,51 @@ void Sound::writePort(uint16_t port, uint8_t value)
         else
         { // ok, we need to generate some sound
             printf("%lld\n", ticks - ticksPassed);
+            generateAudio(ticks - ticksPassed, true); // Membrana of speaker set to up
+            generateAudio(ticks - ticksPassed, false); // set to down
+            //SDL_FlushAudioStream(audioStream);
         }
+    }
+}
+
+void Sound::generateAudio(long long ticks, bool value)
+{
+    if (!initialized || !audioStream) {
+        return;
+    }
+
+    // Calculate duration in seconds
+    // 1 tick = 1/3500000 seconds
+    double duration = static_cast<double>(ticks) / 3500000.0;
+    
+    // Calculate number of samples (assuming 44100 Hz sample rate)
+    int sampleRate = 44100;
+    int numSamples = static_cast<int>(duration * sampleRate);
+    
+    // If no samples to generate, return early
+    if (numSamples <= 0) {
+        return;
+    }
+    
+    // Create buffer for samples (16-bit stereo)
+    // Allocate memory for stereo samples (2 channels)
+    std::vector<int16_t> buffer(numSamples * 2);
+    
+    // Generate samples based on speaker membrane position
+    int16_t sampleValue = value ? 10000 : -10000; // Amplitude for up/down position
+    
+    // Fill buffer with samples
+    for (int i = 0; i < numSamples; ++i) {
+        // Stereo - same value for both channels
+        buffer[i * 2] = sampleValue;     // Left channel
+        buffer[i * 2 + 1] = sampleValue; // Right channel
+    }
+    
+    // Put audio data into the stream
+    if(!SDL_PutAudioStreamData(audioStream, buffer.data(), numSamples * 2 * sizeof(int16_t))) {
+        printf("Put audio failed: %s\n", SDL_GetError());
+    }
+    else {
+        printf("--- %d\n", numSamples);
     }
 }
