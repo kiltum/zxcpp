@@ -94,6 +94,10 @@ public:
             // Continue without sound
         }
 
+        ports->RegisterWriteHandler(0xFE, [this](uint16_t port, uint8_t value)
+                                    { sound->writePort(port, value); });
+
+
         // Create window
         window = SDL_CreateWindow("ZX Spectrum Emulator", 704, 576, SDL_WINDOW_RESIZABLE);
         if (window == nullptr)
@@ -336,7 +340,7 @@ void Emulator::runZX()
         auto startTime = std::chrono::high_resolution_clock::now();
         long long totalTicks = 0;
         long long checkTicks = 0;
-        long long refreshTicks = 0;
+        //long long refreshTicks = 0;
         
         while (threadRunning.load()) {
             //printf("PC: %x %x\n",cpu->PC,memory->ReadByte(cpu->PC));

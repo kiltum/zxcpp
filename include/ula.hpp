@@ -34,8 +34,7 @@ private:
     // Private helper functions
     void drawPixel(int);
     uint32_t getPixelColorFast(uint8_t x, uint8_t y);
-    bool audioState; // Audio output state
-
+    bool audioState;
 public:
 uint32_t clock;
     // Constructor

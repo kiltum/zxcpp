@@ -18,10 +18,7 @@ public:
     bool initialize();
     void run();
     void cleanup();
-    
-    // Future methods for audio generation will go here
-    // void generateAudio(float* buffer, size_t samples);
-    // void queueAudio(const float* data, size_t samples);
+    void writePort(uint16_t port, uint8_t value);
 };
 
 #endif // SOUND_HPP

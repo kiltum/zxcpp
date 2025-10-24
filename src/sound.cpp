@@ -49,3 +49,16 @@ void Sound::cleanup() {
     audioDevice = 0;
     initialized = false;
 }
+
+void Sound::writePort(uint16_t port, uint8_t value)
+{
+    // printf("port %d", port);
+    if ((port & 0xFF) == 0xFE)
+    {
+        bool micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
+        bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
+        //audioState = earBit || micBit;
+        //audioState = earBit;
+        printf("WA %d T:%d  E:%d\n",micBit|earBit, micBit,earBit);
+    }
+}

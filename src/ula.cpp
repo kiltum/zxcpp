@@ -100,7 +100,7 @@ uint8_t ULA::readPort(uint16_t port)
         {
             result &= ~0x40; // Clear bit 6
         }
-        printf("RA2 %d\n",audioState);
+        //printf("RA2 %d\n",audioState);
         return result;
     }
 
@@ -114,11 +114,8 @@ void ULA::writePort(uint16_t port, uint8_t value)
     if ((port & 0xFF) == 0xFE)
     {
         borderColor = value & 0x07;
-        bool micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
-        //audioState = earBit || micBit;
-        audioState = earBit;
-        printf("WA %d T:%d  E:%d\n",micBit|earBit, micBit,earBit);
+        audioState = earBit; // This is stub for tests. Actual sound handling in sound.cpp
     }
 }
 

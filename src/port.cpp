@@ -42,7 +42,7 @@ void Port::Write(uint16_t port, uint8_t value) {
         for (const auto& handler : maskedIt->second) {
             handler(port, value);
             //("Handled write %x\n",port);
-            return;
+            //return;
         }
     }
     // printf("Handler for writing %x to %x port not found\n",value, port);
