@@ -65,7 +65,8 @@ int Z80::ExecuteEDOpcode() {
     case 0x43: // LD (nn), BC
         {
             uint16_t addr = ReadImmediateWord();
-            memory->WriteWord(addr, BC);
+            memory->WriteByte(addr, uint8_t(BC & 0xFF));
+            memory->WriteByte(addr + 1, uint8_t((BC >> 8) & 0xFF));
             // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
@@ -110,7 +111,7 @@ int Z80::ExecuteEDOpcode() {
     case 0x4B: // LD BC, (nn)
         {
             uint16_t addr = ReadImmediateWord();
-            BC = memory->ReadWord(addr);
+            BC = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
             // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
@@ -137,7 +138,8 @@ int Z80::ExecuteEDOpcode() {
     case 0x53: // LD (nn), DE
         {
             uint16_t addr = ReadImmediateWord();
-            memory->WriteWord(addr, DE);
+            memory->WriteByte(addr, uint8_t(DE & 0xFF));
+            memory->WriteByte(addr + 1, uint8_t((DE >> 8) & 0xFF));
             // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
@@ -162,7 +164,7 @@ int Z80::ExecuteEDOpcode() {
     case 0x5B: // LD DE, (nn)
         {
             uint16_t addr = ReadImmediateWord();
-            DE = memory->ReadWord(addr);
+            DE = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
             // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
@@ -187,7 +189,8 @@ int Z80::ExecuteEDOpcode() {
     case 0x63: // LD (nn), HL
         {
             uint16_t addr = ReadImmediateWord();
-            memory->WriteWord(addr, HL);
+            memory->WriteByte(addr, uint8_t(HL & 0xFF));
+            memory->WriteByte(addr + 1, uint8_t((HL >> 8) & 0xFF));
             // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
@@ -208,7 +211,7 @@ int Z80::ExecuteEDOpcode() {
     case 0x6B: // LD HL, (nn)
         {
             uint16_t addr = ReadImmediateWord();
-            HL = memory->ReadWord(addr);
+            HL = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
             // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
@@ -245,7 +248,8 @@ int Z80::ExecuteEDOpcode() {
     case 0x73: // LD (nn), SP
         {
             uint16_t addr = ReadImmediateWord();
-            memory->WriteWord(addr, SP);
+            memory->WriteByte(addr, uint8_t(SP & 0xFF));
+            memory->WriteByte(addr + 1, uint8_t((SP >> 8) & 0xFF));
             // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }
@@ -263,7 +267,7 @@ int Z80::ExecuteEDOpcode() {
     case 0x7B: // LD SP, (nn)
         {
             uint16_t addr = ReadImmediateWord();
-            SP = memory->ReadWord(addr);
+            SP = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
             // MEMPTR = addr + 1
             MEMPTR = addr + 1;
         }

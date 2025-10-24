@@ -146,7 +146,8 @@ int Z80::ExecuteOpcode() {
         case 0x22: // LD (nn), HL
             {
                 uint16_t addr = ReadImmediateWord();
-                memory->WriteWord(addr, HL);
+                memory->WriteByte(addr, uint8_t(HL & 0xFF));
+                memory->WriteByte(addr + 1, uint8_t((HL >> 8) & 0xFF));
                 MEMPTR = addr + 1;
             }
             return 16;
@@ -184,7 +185,7 @@ int Z80::ExecuteOpcode() {
         case 0x2A: // LD HL, (nn)
             {
                 uint16_t addr = ReadImmediateWord();
-                HL = memory->ReadWord(addr);
+                HL = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
                 MEMPTR = addr + 1;
             }
             return 16;
@@ -938,8 +939,9 @@ int Z80::ExecuteOpcode() {
             }
         case 0xE3: // EX (SP), HL
             {
-                uint16_t temp = memory->ReadWord(SP);
-                memory->WriteWord(SP, HL);
+                uint16_t temp = (uint16_t(memory->ReadByte(SP + 1)) << 8) | uint16_t(memory->ReadByte(SP));
+                memory->WriteByte(SP, uint8_t(HL & 0xFF));
+                memory->WriteByte(SP + 1, uint8_t((HL >> 8) & 0xFF));
                 HL = temp;
                 MEMPTR = temp;
             }
@@ -1129,4 +1131,3 @@ int Z80::ExecuteOpcode() {
     // Default return (should not reach here)
     return 4;
 }
-

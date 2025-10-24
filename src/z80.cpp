@@ -111,7 +111,7 @@ int Z80::HandleInterrupt() {
             Push(PC);
             {
                 uint16_t vectorAddr = (uint16_t(I) << 8) | 0xFF; // Use 0xFF as vector for non-maskable interrupt
-                PC = memory->ReadWord(vectorAddr);
+                PC = (uint16_t(memory->ReadByte(vectorAddr + 1)) << 8) | uint16_t(memory->ReadByte(vectorAddr));
             }
             return 19; // 19 T-states for interrupt handling
             
@@ -239,7 +239,8 @@ uint8_t Z80::ReadOpcode() {
 // Push pushes a 16-bit value onto the stack
 void Z80::Push(uint16_t value) {
     SP -= 2;
-    memory->WriteWord(SP, value);
+    memory->WriteByte(SP, uint8_t(value & 0xFF));
+    memory->WriteByte(SP + 1, uint8_t((value >> 8) & 0xFF));
 }
 
 // Pop pops a 16-bit value from the stack

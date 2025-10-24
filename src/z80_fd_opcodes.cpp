@@ -32,7 +32,8 @@ int Z80::ExecuteFDOpcode() {
     case 0x22: // LD (nn), IY
         {
             uint16_t addr = ReadImmediateWord();
-            memory->WriteWord(addr, IY);
+            memory->WriteByte(addr, uint8_t(IY & 0xFF));
+            memory->WriteByte(addr + 1, uint8_t((IY >> 8) & 0xFF));
             MEMPTR = addr + 1;
         }
         return 20;
@@ -59,7 +60,7 @@ int Z80::ExecuteFDOpcode() {
     case 0x2A: // LD IY, (nn)
         {
             uint16_t addr = ReadImmediateWord();
-            IY = memory->ReadWord(addr);
+            IY = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
             MEMPTR = addr + 1;
         }
         return 20;
@@ -271,8 +272,9 @@ int Z80::ExecuteFDOpcode() {
         return 14;
     case 0xE3: // EX (SP), IY
         {
-            uint16_t temp = memory->ReadWord(SP);
-            memory->WriteWord(SP, IY);
+            uint16_t temp = (uint16_t(memory->ReadByte(SP + 1)) << 8) | uint16_t(memory->ReadByte(SP));
+            memory->WriteByte(SP, uint8_t(IY & 0xFF));
+            memory->WriteByte(SP + 1, uint8_t((IY >> 8) & 0xFF));
             IY = temp;
             MEMPTR = IY;
         }

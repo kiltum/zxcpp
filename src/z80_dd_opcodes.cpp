@@ -32,7 +32,8 @@ int Z80::ExecuteDDOpcode() {
     case 0x22: // LD (nn), IX
         {
             uint16_t addr = ReadImmediateWord();
-            memory->WriteWord(addr, IX);
+            memory->WriteByte(addr, uint8_t(IX & 0xFF));
+            memory->WriteByte(addr + 1, uint8_t((IX >> 8) & 0xFF));
             MEMPTR = addr + 1;
         }
         return 20;
@@ -59,7 +60,7 @@ int Z80::ExecuteDDOpcode() {
     case 0x2A: // LD IX, (nn)
         {
             uint16_t addr = ReadImmediateWord();
-            IX = memory->ReadWord(addr);
+            IX = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
             MEMPTR = addr + 1;
         }
         return 20;
@@ -273,8 +274,9 @@ int Z80::ExecuteDDOpcode() {
         return 14;
     case 0xE3: // EX (SP), IX
         {
-            uint16_t temp = memory->ReadWord(SP);
-            memory->WriteWord(SP, IX);
+            uint16_t temp = (uint16_t(memory->ReadByte(SP + 1)) << 8) | uint16_t(memory->ReadByte(SP));
+            memory->WriteByte(SP, uint8_t(IX & 0xFF));
+            memory->WriteByte(SP + 1, uint8_t((IX >> 8) & 0xFF));
             IX = temp;
             MEMPTR = temp;
         }
