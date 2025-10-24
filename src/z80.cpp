@@ -44,6 +44,7 @@ int Z80::ExecuteOneInstruction() {
         InterruptPending = false;
         return HandleInterrupt();
     }
+    InterruptPending = false;
     
     // Handle HALT state
     if (HALT) {

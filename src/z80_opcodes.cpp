@@ -1044,6 +1044,7 @@ int Z80::ExecuteOpcode() {
         case 0xF3: // DI
             IFF1 = false;
             IFF2 = false;
+            //printf("DI: %x\n",PC);
             return 4;
         case 0xF4: // CALL P, nn
             {
@@ -1093,6 +1094,7 @@ int Z80::ExecuteOpcode() {
         case 0xFB: // EI
             IFF1 = true;
             IFF2 = true;
+            //printf("EI: %x\n",PC);
             return 4;
         case 0xFC: // CALL M, nn
             {

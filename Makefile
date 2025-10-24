@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -O2 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog
+CXXFLAGS = -std=c++20 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog
 SRCDIR = src
 OBJDIR = obj
 IMGUI_DIR = lib/imgui

@@ -17,7 +17,7 @@ private:
     uint32_t colors[16];
     
     // ULA internal state
-    int clock;
+    
     int line;
     bool flash;
     int flashCnt;
@@ -37,6 +37,7 @@ private:
     bool audioState; // Audio output state
 
 public:
+uint32_t clock;
     // Constructor
     ULA(Memory* mem);
     
