@@ -54,12 +54,6 @@ ULA::~ULA()
     delete[] screenBuffer;
 }
 
-// Check if this handler can handle the specified port
-bool ULA::canHandlePort(uint16_t port)
-{
-    // ULA typically handles port 0xFE for border color and keyboard input
-    return (port & 0xFF) == 0xFE;
-}
 
 // Read a byte from the specified port
 uint8_t ULA::readPort(uint16_t port)
@@ -120,13 +114,11 @@ void ULA::writePort(uint16_t port, uint8_t value)
     if ((port & 0xFF) == 0xFE)
     {
         borderColor = value & 0x07;
-        // Sound output handling (we'll implement this later)
-        // For now, just ignore sound output to avoid port access issues
-        // micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
+        bool micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
         //audioState = earBit || micBit;
         audioState = earBit;
-        //printf("WA %d %d %d\n",audioState,micBit,earBit);
+        printf("WA %d T:%d  E:%d\n",micBit|earBit, micBit,earBit);
     }
 }
 

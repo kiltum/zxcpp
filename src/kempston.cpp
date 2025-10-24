@@ -14,13 +14,6 @@ Kempston::~Kempston()
     // Nothing to clean up
 }
 
-// Check if this handler can handle the specified port
-bool Kempston::canHandlePort(uint16_t port)
-{
-    // Kempston joystick typically handles port 0x1F
-    return (port & 0xFF) == 0x1F;
-}
-
 // Read a byte from the specified port
 uint8_t Kempston::readPort(uint16_t port)
 {
@@ -34,13 +27,6 @@ uint8_t Kempston::readPort(uint16_t port)
     }
 
     return 0;
-}
-
-// Write a byte to the specified port (not typically used for Kempston)
-void Kempston::writePort(uint16_t port, uint8_t value)
-{
-    // Kempston joystick is read-only, so writes are ignored
-    // This function exists to satisfy the port interface
 }
 
 // Set the right direction button state

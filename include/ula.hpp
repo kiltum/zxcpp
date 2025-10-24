@@ -45,7 +45,6 @@ uint32_t clock;
     ~ULA();
     
     // Port handling functions
-    bool canHandlePort(uint16_t port);
     uint8_t readPort(uint16_t port);
     void writePort(uint16_t port, uint8_t value);
     
