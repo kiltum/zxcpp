@@ -20,6 +20,8 @@ public:
     void cleanup();
     void writePort(uint16_t port, uint8_t value);
     void generateAudio(long long ticks, bool value);
+    void generateTone(int frequency, double duration);
+    void generate1000HzTone(double duration = 1.0);
     long long ticks;
 };
 
