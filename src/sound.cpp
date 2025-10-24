@@ -103,10 +103,10 @@ void Sound::writePort(uint16_t port, uint8_t value)
         else
         { // ok, we need to generate some sound
             printf("%lld\n", ticks - ticksPassed);
-            //generateAudio(ticks - ticksPassed, true); // Membrana of speaker set to up
-            //generateAudio(ticks - ticksPassed, false); // set to down
-            generate1000HzTone(1.0);
-            //SDL_FlushAudioStream(audioStream);
+            generateAudio(ticks - ticksPassed, true); // Membrana of speaker set to up
+            generateAudio(ticks - ticksPassed, false); // set to down
+            //generate1000HzTone(1.0);
+            SDL_FlushAudioStream(audioStream);
         }
     }
 }
