@@ -102,11 +102,11 @@ void Sound::writePort(uint16_t port, uint8_t value)
         }
         else
         { // ok, we need to generate some sound
-            printf("%lld\n", ticks - ticksPassed);
+            //printf("%lld\n", ticks - ticksPassed);
             generateAudio(ticks - ticksPassed, true); // Membrana of speaker set to up
             generateAudio(ticks - ticksPassed, false); // set to down
             //generate1000HzTone(1.0);
-            SDL_FlushAudioStream(audioStream);
+            //SDL_FlushAudioStream(audioStream);
         }
     }
 }
@@ -185,7 +185,7 @@ void Sound::generateAudio(long long ticks, bool value)
     std::vector<int16_t> buffer(numSamples * 2);
     
     // Generate samples based on speaker membrane position
-    int16_t sampleValue = value ? 30000 : -30000; // Amplitude for up/down position
+    int16_t sampleValue = value ? 10000 : -10000; // Amplitude for up/down position
     
     // Fill buffer with samples
     for (int i = 0; i < numSamples; ++i) {
@@ -199,6 +199,6 @@ void Sound::generateAudio(long long ticks, bool value)
         printf("Put audio failed: %s\n", SDL_GetError());
     }
     else {
-        printf("--- %d\n", numSamples);
+        //printf("--- %d\n", numSamples);
     }
 }
