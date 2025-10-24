@@ -353,6 +353,7 @@ void Emulator::runZX()
 
             totalTicks += ticks;
             checkTicks += ticks;
+            sound->ticks = totalTicks; // refresh sound, so it knows, how long audio does
             //refreshTicks++;
             // if(refreshTicks > 69888) {
             //     //printf("%d \n",refreshTicks);

@@ -2,29 +2,55 @@
 #include <iostream>
 #include <cstring>
 
-Sound::Sound() : audioStream(nullptr), audioDevice(0), initialized(false) {
+Sound::Sound() : audioStream(nullptr), audioDevice(0), initialized(false)
+{
 }
 
-Sound::~Sound() {
+Sound::~Sound()
+{
     cleanup();
 }
 
-bool Sound::initialize() {
+bool Sound::initialize()
+{
     // Check if audio subsystem is available
-    if (!(SDL_WasInit(SDL_INIT_AUDIO) & SDL_INIT_AUDIO)) {
+    if (!(SDL_WasInit(SDL_INIT_AUDIO) & SDL_INIT_AUDIO))
+    {
         std::cerr << "SDL audio subsystem not initialized, skipping sound initialization" << std::endl;
         return false;
     }
 
+    SDL_AudioSpec desired_src_spec;
+    SDL_zero(desired_src_spec);
+    desired_src_spec.format = SDL_AUDIO_S16;
+    desired_src_spec.freq = 44100;
+    desired_src_spec.channels = 2;
+
+    SDL_AudioSpec desired_dst_spec;
+    SDL_zero(desired_dst_spec);
+    desired_dst_spec.format = SDL_AUDIO_S16;
+    desired_dst_spec.freq = 48000;
+    desired_dst_spec.channels = 2;
+
+    audioStream = SDL_CreateAudioStream(&desired_src_spec, &desired_dst_spec);
+    if (!audioStream)
+    {
+        printf("Error creating audio stream: %s\n", SDL_GetError());
+        return false;
+    }
     // For now, just initialize without creating streams
     // We'll add proper audio stream implementation later
     initialized = true;
+    ticks = 0;
+    ticksPassed = 0;
     std::cout << "Sound system initialized successfully" << std::endl;
     return true;
 }
 
-void Sound::run() {
-    if (!initialized) {
+void Sound::run()
+{
+    if (!initialized)
+    {
         return;
     }
 
@@ -34,17 +60,19 @@ void Sound::run() {
     /*
     const size_t BUFFER_SAMPLES = 1024;
     float buffer[BUFFER_SAMPLES];
-    
+
     // Generate audio data (this is where the actual sound generation will happen)
     // generateAudio(buffer, BUFFER_SAMPLES);
-    
+
     // Queue the audio data to the stream
     SDL_PutAudioStreamData(audioStream, buffer, BUFFER_SAMPLES * sizeof(float));
     */
 }
 
-void Sound::cleanup() {
+void Sound::cleanup()
+{
     // For now, just reset the flags since we're not creating actual streams
+    //SDL_DestroyAudioStream(audioStream);
     audioStream = nullptr;
     audioDevice = 0;
     initialized = false;
@@ -57,8 +85,16 @@ void Sound::writePort(uint16_t port, uint8_t value)
     {
         bool micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
-        //audioState = earBit || micBit;
-        //audioState = earBit;
-        printf("WA %d T:%d  E:%d\n",micBit|earBit, micBit,earBit);
+        // audioState = earBit || micBit;
+        // audioState = earBit;
+        // printf("%d %d\n", micBit, earBit);
+        if (earBit || micBit)
+        { // Volume on specker or tape raised to up
+            ticksPassed = ticks;
+        }
+        else
+        { // ok, we need to generate some sound
+            printf("%lld\n", ticks - ticksPassed);
+        }
     }
 }

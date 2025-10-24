@@ -10,6 +10,7 @@ private:
     SDL_AudioStream* audioStream;
     SDL_AudioDeviceID audioDevice;
     bool initialized;
+    long long ticksPassed;
     
 public:
     Sound();
@@ -19,6 +20,7 @@ public:
     void run();
     void cleanup();
     void writePort(uint16_t port, uint8_t value);
+    long long ticks;
 };
 
 #endif // SOUND_HPP
