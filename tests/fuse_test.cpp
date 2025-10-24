@@ -290,6 +290,8 @@ public:
         cpu.IM = test.IM;
         cpu.HALT = test.HALT;
         
+        memory.canWriteRom = true;
+
         // Initialize memory
         for (const auto& block : test.memoryBlocks) {
             uint16_t addr = block.first;

@@ -98,7 +98,7 @@ bool loadZEXALL(Memory* memory, const std::string& filename) {
     uint8_t* buffer = new uint8_t[fileSize];
     file.read(reinterpret_cast<char*>(buffer), fileSize);
     file.close();
-
+    memory->canWriteRom = true;
     // Load into memory at address 0x100
     uint16_t loadAddress = 0x100;
     for (size_t i = 0; i < fileSize && loadAddress + i < 0x10000; i++) {
