@@ -5,10 +5,6 @@
 #include <algorithm>
 #include <cmath>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 Sound::Sound() : audioStream(nullptr), audioDevice(0), initialized(false)
 {
 }
@@ -90,16 +86,13 @@ void Sound::cleanup()
 
 void Sound::writePort(uint16_t port, uint8_t value)
 {
-    // printf("port %d", port);
     if ((port & 0xFF) == 0xFE)
     {
         bool micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
-        // audioState = earBit || micBit;
-        // audioState = earBit;
-        // printf("%d %d\n", micBit, earBit);
+
         if (earBit || micBit)
-        { // Volume on specker or tape raised to up
+        { // Volume on speaker or tape raised to up
             ticksPassed = ticks;
         }
         else
@@ -107,68 +100,9 @@ void Sound::writePort(uint16_t port, uint8_t value)
             // printf("%lld\n", ticks - ticksPassed);
             generateAudio(ticks - ticksPassed, true);  // Membrana of speaker set to up
             generateAudio(ticks - ticksPassed, false); // set to down
-            // generate1000HzTone(1.0);
             SDL_FlushAudioStream(audioStream);
         }
     }
-}
-
-void Sound::generateTone(int frequency, double duration)
-{
-    if (!initialized || !audioStream)
-    {
-        return;
-    }
-
-    // Calculate number of samples for the requested duration
-    int sampleRate = 44100;
-    int numSamples = static_cast<int>(duration * sampleRate);
-
-    // If no samples to generate, return early
-    if (numSamples <= 0)
-    {
-        return;
-    }
-
-    // Create buffer for samples (16-bit stereo)
-    std::vector<int16_t> buffer(numSamples * 2);
-
-    // Generate sine wave samples
-    const double amplitude = 30000.0; // Amplitude for the tone
-    const double phaseIncrement = 2.0 * M_PI * frequency / sampleRate;
-    double phase = 0.0;
-
-    // Fill buffer with sine wave samples
-    for (int i = 0; i < numSamples; ++i)
-    {
-        int16_t sampleValue = static_cast<int16_t>(amplitude * sin(phase));
-
-        // Stereo - same value for both channels
-        buffer[i * 2] = sampleValue;     // Left channel
-        buffer[i * 2 + 1] = sampleValue; // Right channel
-
-        // Advance phase
-        phase += phaseIncrement;
-        if (phase >= 2.0 * M_PI)
-        {
-            phase -= 2.0 * M_PI;
-        }
-    }
-
-    // Put audio data into the stream
-    if (!SDL_PutAudioStreamData(audioStream, buffer.data(), numSamples * 2 * sizeof(int16_t)))
-    {
-        printf("Put audio failed: %s\n", SDL_GetError());
-    }
-    else
-    {
-        printf("Generated %d samples for %dHz tone\n", numSamples, frequency);
-    }
-}
-
-void Sound::generate1000HzTone(double duration)
-{
-    generateTone(1000, duration);
 }
 
 void Sound::generateAudio(long long ticks, bool value)
@@ -211,9 +145,5 @@ void Sound::generateAudio(long long ticks, bool value)
     if (!SDL_PutAudioStreamData(audioStream, buffer.data(), numSamples * 2 * sizeof(int16_t)))
     {
         printf("Put audio failed: %s\n", SDL_GetError());
-    }
-    else
-    {
-        // printf("--- %d\n", numSamples);
     }
 }

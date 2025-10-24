@@ -2,13 +2,15 @@
 #include "memory.hpp"
 
 // Implementation of ED prefixed Z80 opcodes (extended instructions)
-int Z80::ExecuteEDOpcode() {
+int Z80::ExecuteEDOpcode()
+{
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
     // R should not be incremented twice (already incremented in ExecuteOneInstruction for ED prefix)
-    //R = (R & 0x80) | ((R - 1) & 0x7F);
+    // R = (R & 0x80) | ((R - 1) & 0x7F);
     R++;
-    switch (opcode) {
+    switch (opcode)
+    {
     // Block transfer instructions
     case 0xA0: // LDI
         ldi();
@@ -57,19 +59,19 @@ int Z80::ExecuteEDOpcode() {
     case 0x41: // OUT (C), B
         return executeOUT(0);
     case 0x42: // SBC HL, BC
-        {
-            uint16_t result = sbc16WithMEMPTR(HL, BC);
-            HL = result;
-        }
+    {
+        uint16_t result = sbc16WithMEMPTR(HL, BC);
+        HL = result;
+    }
         return 15;
     case 0x43: // LD (nn), BC
-        {
-            uint16_t addr = ReadImmediateWord();
-            memory->WriteByte(addr, uint8_t(BC & 0xFF));
-            memory->WriteByte(addr + 1, uint8_t((BC >> 8) & 0xFF));
-            // MEMPTR = addr + 1
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        memory->WriteByte(addr, uint8_t(BC & 0xFF));
+        memory->WriteByte(addr + 1, uint8_t((BC >> 8) & 0xFF));
+        // MEMPTR = addr + 1
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x44: // NEG (various undocumented versions)
     case 0x4C:
@@ -103,18 +105,18 @@ int Z80::ExecuteEDOpcode() {
     case 0x49: // OUT (C), C
         return executeOUT(1);
     case 0x4A: // ADC HL, BC
-        {
-            uint16_t result = adc16WithMEMPTR(HL, BC);
-            HL = result;
-        }
+    {
+        uint16_t result = adc16WithMEMPTR(HL, BC);
+        HL = result;
+    }
         return 15;
     case 0x4B: // LD BC, (nn)
-        {
-            uint16_t addr = ReadImmediateWord();
-            BC = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
-            // MEMPTR = addr + 1
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        BC = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
+        // MEMPTR = addr + 1
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x4D: // RETI
         reti();
@@ -122,7 +124,7 @@ int Z80::ExecuteEDOpcode() {
     case 0x4F: // LD R, A
         // R register is only 7 bits, bit 7 remains unchanged
         R = (R & 0x80) | (A & 0x7F);
-        //gs
+        // gs
         R = A; // fix zen80 tests
         return 9;
     case 0x50: // IN D, (C)
@@ -130,19 +132,19 @@ int Z80::ExecuteEDOpcode() {
     case 0x51: // OUT (C), D
         return executeOUT(2);
     case 0x52: // SBC HL, DE
-        {
-            uint16_t result = sbc16WithMEMPTR(HL, DE);
-            HL = result;
-        }
+    {
+        uint16_t result = sbc16WithMEMPTR(HL, DE);
+        HL = result;
+    }
         return 15;
     case 0x53: // LD (nn), DE
-        {
-            uint16_t addr = ReadImmediateWord();
-            memory->WriteByte(addr, uint8_t(DE & 0xFF));
-            memory->WriteByte(addr + 1, uint8_t((DE >> 8) & 0xFF));
-            // MEMPTR = addr + 1
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        memory->WriteByte(addr, uint8_t(DE & 0xFF));
+        memory->WriteByte(addr + 1, uint8_t((DE >> 8) & 0xFF));
+        // MEMPTR = addr + 1
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x56: // IM 1 (various undocumented versions)
     case 0x76:
@@ -156,18 +158,18 @@ int Z80::ExecuteEDOpcode() {
     case 0x59: // OUT (C), E
         return executeOUT(3);
     case 0x5A: // ADC HL, DE
-        {
-            uint16_t result = adc16WithMEMPTR(HL, DE);
-            HL = result;
-        }
+    {
+        uint16_t result = adc16WithMEMPTR(HL, DE);
+        HL = result;
+    }
         return 15;
     case 0x5B: // LD DE, (nn)
-        {
-            uint16_t addr = ReadImmediateWord();
-            DE = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
-            // MEMPTR = addr + 1
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        DE = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
+        // MEMPTR = addr + 1
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x5E: // IM 2 (various undocumented versions)
     case 0x7E:
@@ -181,19 +183,19 @@ int Z80::ExecuteEDOpcode() {
     case 0x61: // OUT (C), H
         return executeOUT(4);
     case 0x62: // SBC HL, HL
-        {
-            uint16_t result = sbc16WithMEMPTR(HL, HL);
-            HL = result;
-        }
+    {
+        uint16_t result = sbc16WithMEMPTR(HL, HL);
+        HL = result;
+    }
         return 15;
     case 0x63: // LD (nn), HL
-        {
-            uint16_t addr = ReadImmediateWord();
-            memory->WriteByte(addr, uint8_t(HL & 0xFF));
-            memory->WriteByte(addr + 1, uint8_t((HL >> 8) & 0xFF));
-            // MEMPTR = addr + 1
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        memory->WriteByte(addr, uint8_t(HL & 0xFF));
+        memory->WriteByte(addr + 1, uint8_t((HL >> 8) & 0xFF));
+        // MEMPTR = addr + 1
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x67: // RRD
         rrd();
@@ -203,74 +205,74 @@ int Z80::ExecuteEDOpcode() {
     case 0x69: // OUT (C), L
         return executeOUT(5);
     case 0x6A: // ADC HL, HL
-        {
-            uint16_t result = adc16WithMEMPTR(HL, HL);
-            HL = result;
-        }
+    {
+        uint16_t result = adc16WithMEMPTR(HL, HL);
+        HL = result;
+    }
         return 15;
     case 0x6B: // LD HL, (nn)
-        {
-            uint16_t addr = ReadImmediateWord();
-            HL = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
-            // MEMPTR = addr + 1
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        HL = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
+        // MEMPTR = addr + 1
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x6F: // RLD
         rld();
         return 18;
     case 0x70: // IN (C) (Undocumented - input to dummy register)
-        {
-            uint16_t bc = BC; // Save BC before doing anything
-            uint8_t value = inC();
-            UpdateSZXYFlags(value);
-            ClearFlag(FLAG_H);
-            ClearFlag(FLAG_N);
-            // Set PV flag based on parity of the result
-            SetFlag(FLAG_PV, parity(value));
-            // MEMPTR = BC + 1 (using the original BC value)
-            MEMPTR = bc + 1;
-        }
+    {
+        uint16_t bc = BC; // Save BC before doing anything
+        uint8_t value = inC();
+        UpdateSZXYFlags(value);
+        ClearFlag(FLAG_H);
+        ClearFlag(FLAG_N);
+        // Set PV flag based on parity of the result
+        SetFlag(FLAG_PV, parity(value));
+        // MEMPTR = BC + 1 (using the original BC value)
+        MEMPTR = bc + 1;
+    }
         return 12;
     case 0x71: // OUT (C), 0 (Undocumented)
-        {
-            outC(0);
-            // MEMPTR = BC + 1
-            MEMPTR = BC + 1;
-        }
+    {
+        outC(0);
+        // MEMPTR = BC + 1
+        MEMPTR = BC + 1;
+    }
         return 12;
     case 0x72: // SBC HL, SP
-        {
-            uint16_t result = sbc16WithMEMPTR(HL, SP);
-            HL = result;
-        }
+    {
+        uint16_t result = sbc16WithMEMPTR(HL, SP);
+        HL = result;
+    }
         return 15;
     case 0x73: // LD (nn), SP
-        {
-            uint16_t addr = ReadImmediateWord();
-            memory->WriteByte(addr, uint8_t(SP & 0xFF));
-            memory->WriteByte(addr + 1, uint8_t((SP >> 8) & 0xFF));
-            // MEMPTR = addr + 1
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        memory->WriteByte(addr, uint8_t(SP & 0xFF));
+        memory->WriteByte(addr + 1, uint8_t((SP >> 8) & 0xFF));
+        // MEMPTR = addr + 1
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x78: // IN A, (C)
         return executeIN(7);
     case 0x79: // OUT (C), A
         return executeOUT(7);
     case 0x7A: // ADC HL, SP
-        {
-            uint16_t result = adc16WithMEMPTR(HL, SP);
-            HL = result;
-        }
+    {
+        uint16_t result = adc16WithMEMPTR(HL, SP);
+        HL = result;
+    }
         return 15;
     case 0x7B: // LD SP, (nn)
-        {
-            uint16_t addr = ReadImmediateWord();
-            SP = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
-            // MEMPTR = addr + 1
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        SP = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
+        // MEMPTR = addr + 1
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x80: // undefined NOP
         return 8;
@@ -284,9 +286,11 @@ int Z80::ExecuteEDOpcode() {
 }
 
 // sbc16 subtracts 16-bit value with carry from HL
-uint16_t Z80::sbc16(uint16_t val1, uint16_t val2) {
+uint16_t Z80::sbc16(uint16_t val1, uint16_t val2)
+{
     uint32_t carry = 0;
-    if (GetFlag(FLAG_C)) {
+    if (GetFlag(FLAG_C))
+    {
         carry = 1;
     }
     int32_t result = (int32_t)val1 - (int32_t)val2 - (int32_t)carry;
@@ -309,16 +313,19 @@ uint16_t Z80::sbc16(uint16_t val1, uint16_t val2) {
 }
 
 // sbc16WithMEMPTR subtracts 16-bit value with carry from HL and sets MEMPTR
-uint16_t Z80::sbc16WithMEMPTR(uint16_t a, uint16_t b) {
+uint16_t Z80::sbc16WithMEMPTR(uint16_t a, uint16_t b)
+{
     uint16_t result = sbc16(a, b);
     MEMPTR = a + 1;
     return result;
 }
 
 // adc16 adds 16-bit value with carry to HL
-uint16_t Z80::adc16(uint16_t val1, uint16_t val2) {
+uint16_t Z80::adc16(uint16_t val1, uint16_t val2)
+{
     uint32_t carry = 0;
-    if (GetFlag(FLAG_C)) {
+    if (GetFlag(FLAG_C))
+    {
         carry = 1;
     }
     uint32_t result = (uint32_t)val1 + (uint32_t)val2 + carry;
@@ -342,35 +349,40 @@ uint16_t Z80::adc16(uint16_t val1, uint16_t val2) {
 }
 
 // adc16WithMEMPTR adds 16-bit value with carry to HL and sets MEMPTR
-uint16_t Z80::adc16WithMEMPTR(uint16_t a, uint16_t b) {
+uint16_t Z80::adc16WithMEMPTR(uint16_t a, uint16_t b)
+{
     uint16_t result = adc16(a, b);
     MEMPTR = a + 1;
     return result;
 }
 
 // neg negates the accumulator
-void Z80::neg() {
+void Z80::neg()
+{
     uint8_t value = A;
     A = 0;
     sub8(value);
 }
 
 // retn returns from interrupt and restores IFF1 from IFF2
-void Z80::retn() {
+void Z80::retn()
+{
     PC = Pop();
     MEMPTR = PC;
     IFF1 = IFF2;
 }
 
 // reti returns from interrupt (same as retn for Z80)
-void Z80::reti() {
+void Z80::reti()
+{
     PC = Pop();
     MEMPTR = PC;
     IFF1 = IFF2;
 }
 
 // ldAI loads I register into A and updates flags
-void Z80::ldAI() {
+void Z80::ldAI()
+{
     A = I;
     UpdateSZXYFlags(A);
     ClearFlag(FLAG_H);
@@ -379,7 +391,8 @@ void Z80::ldAI() {
 }
 
 // ldAR loads R register into A and updates flags
-void Z80::ldAR() {
+void Z80::ldAR()
+{
     // Load the R register into A
     A = R;
     UpdateSZXYFlags(A);
@@ -389,7 +402,8 @@ void Z80::ldAR() {
 }
 
 // rrd rotates digit between A and (HL) right
-void Z80::rrd() {
+void Z80::rrd()
+{
     uint8_t value = memory->ReadByte(HL);
     uint8_t ah = A & 0xF0;
     uint8_t al = A & 0x0F;
@@ -411,7 +425,8 @@ void Z80::rrd() {
 }
 
 // rld rotates digit between A and (HL) left
-void Z80::rld() {
+void Z80::rld()
+{
     uint8_t value = memory->ReadByte(HL);
     uint8_t ah = A & 0xF0;
     uint8_t al = A & 0x0F;
@@ -433,7 +448,8 @@ void Z80::rld() {
 }
 
 // executeIN handles the IN r, (C) instructions
-int Z80::executeIN(uint8_t reg) {
+int Z80::executeIN(uint8_t reg)
+{
     uint16_t bc = BC; // Save BC before doing anything
     uint8_t value = inC();
 
@@ -447,7 +463,8 @@ int Z80::executeIN(uint8_t reg) {
     MEMPTR = bc + 1;
 
     // Set the appropriate register
-    switch (reg) {
+    switch (reg)
+    {
     case 0:
         B = value;
         break;
@@ -475,11 +492,13 @@ int Z80::executeIN(uint8_t reg) {
 }
 
 // executeOUT handles the OUT (C), r instructions
-int Z80::executeOUT(uint8_t reg) {
+int Z80::executeOUT(uint8_t reg)
+{
     uint8_t value;
 
     // Get the appropriate register value
-    switch (reg) {
+    switch (reg)
+    {
     case 0:
         value = B;
         break;
@@ -514,7 +533,8 @@ int Z80::executeOUT(uint8_t reg) {
 }
 
 // ldi loads byte from (HL) to (DE), increments pointers, decrements BC
-void Z80::ldi() {
+void Z80::ldi()
+{
     uint8_t value = memory->ReadByte(HL);
     memory->WriteByte(DE, value);
 
@@ -533,7 +553,8 @@ void Z80::ldi() {
 }
 
 // cpi compares A with (HL), increments HL, decrements BC
-void Z80::cpi() {
+void Z80::cpi()
+{
     uint8_t value = memory->ReadByte(HL);
     uint8_t result = A - value;
 
@@ -552,9 +573,12 @@ void Z80::cpi() {
     SetFlag(FLAG_X, (temp & 0x08) != 0); // Bit 3
     SetFlag(FLAG_Y, (temp & 0x02) != 0); // Bit 1
 
-    if (BC != 0) {
+    if (BC != 0)
+    {
         SetFlag(FLAG_PV, true);
-    } else {
+    }
+    else
+    {
         ClearFlag(FLAG_PV);
     }
 
@@ -563,7 +587,8 @@ void Z80::cpi() {
 }
 
 // ini inputs byte to (HL), increments HL, decrements B
-void Z80::ini() {
+void Z80::ini()
+{
     uint8_t value = port->Read(uint16_t(C) | (uint16_t(B) << 8));
     memory->WriteByte(HL, value);
     HL++;
@@ -587,7 +612,8 @@ void Z80::ini() {
 }
 
 // outi outputs byte from (HL) to port, increments HL, decrements B
-void Z80::outi() {
+void Z80::outi()
+{
     uint8_t val = memory->ReadByte(HL);
     B--;
     port->Write(BC, val);
@@ -612,7 +638,8 @@ void Z80::outi() {
 }
 
 // ldd loads byte from (HL) to (DE), decrements pointers, decrements BC
-void Z80::ldd() {
+void Z80::ldd()
+{
     uint8_t value = memory->ReadByte(HL);
     memory->WriteByte(DE, value);
     HL--;
@@ -630,7 +657,8 @@ void Z80::ldd() {
 }
 
 // cpd compares A with (HL), decrements HL, decrements BC
-void Z80::cpd() {
+void Z80::cpd()
+{
     uint8_t val = memory->ReadByte(HL);
     int16_t result = (int16_t)A - (int16_t)val;
     HL--;
@@ -644,7 +672,8 @@ void Z80::cpd() {
 
     // Y flag calculation - preserve S, Z, H, PV, N, C flags
     uint8_t n = uint8_t(result);
-    if (GetFlag(FLAG_H)) {
+    if (GetFlag(FLAG_H))
+    {
         n--;
     }
     F = (F & (FLAG_S | FLAG_Z | FLAG_H | FLAG_PV | FLAG_N | FLAG_C)) | (n & FLAG_X) | ((n & 0x02) << 4);
@@ -652,7 +681,8 @@ void Z80::cpd() {
 }
 
 // ind inputs byte to (HL), decrements HL, decrements B
-void Z80::ind() {
+void Z80::ind()
+{
     uint8_t val = port->Read(BC);
     memory->WriteByte(HL, val);
     HL--;
@@ -662,7 +692,7 @@ void Z80::ind() {
     // Enhanced: Accurate flag calculation for IND
     // Note: Based on Z80 documentation, k = val + C (not C-1)
     // HUMAN: based on fuse test , ITS + C-1
-    //k := int(val) + int(cpu.C)
+    // k := int(val) + int(cpu.C)
 
     SetFlag(FLAG_Z, B == 0);
     SetFlag(FLAG_S, (B & 0x80) != 0);
@@ -679,7 +709,8 @@ void Z80::ind() {
     SetFlag(FLAG_C, diff > 0xFF);
     uint8_t temp = uint8_t((diff & 0x07) ^ uint16_t(B));
     uint8_t parity_val = 0;
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
         parity_val ^= (temp >> i) & 1;
     }
     SetFlag(FLAG_PV, parity_val == 0);
@@ -689,7 +720,8 @@ void Z80::ind() {
 }
 
 // outd outputs byte from (HL) to port, decrements HL, decrements B
-void Z80::outd() {
+void Z80::outd()
+{
     uint8_t val = memory->ReadByte(HL);
     B--;
     port->Write(uint16_t(C) | (uint16_t(B) << 8), val);
@@ -712,29 +744,37 @@ void Z80::outd() {
 }
 
 // ldir repeated LDI until BC=0
-int Z80::ldir() {
+int Z80::ldir()
+{
     ldi();
 
     // Add T-states for this iteration (21 for continuing, 16 for final)
-    if (BC != 0) {
+    if (BC != 0)
+    {
         PC -= 2;
         MEMPTR = PC + 1;
         return 21;
-    } else {
+    }
+    else
+    {
         return 16;
     }
 }
 
 // cpir repeated CPI until BC=0 or A=(HL)
-int Z80::cpir() {
+int Z80::cpir()
+{
     cpi();
-    //printf("CPIR %x %x %x %x %s\n", A, BC, HL, memory->ReadByte(HL), GetFlag(FLAG_Z) ? "T" : "F");
-    if (BC != 0 && !GetFlag(FLAG_Z)) {
+    // printf("CPIR %x %x %x %x %s\n", A, BC, HL, memory->ReadByte(HL), GetFlag(FLAG_Z) ? "T" : "F");
+    if (BC != 0 && !GetFlag(FLAG_Z))
+    {
         PC -= 2; // Repeat instruction
 
         // Return T-states for continuing iteration
         return 21;
-    } else {
+    }
+    else
+    {
         // Return T-states for final iteration
         MEMPTR = PC;
         return 16;
@@ -742,60 +782,76 @@ int Z80::cpir() {
 }
 
 // inir repeated INI until B=0
-int Z80::inir() {
+int Z80::inir()
+{
     ini();
 
-    if (B != 0) {
+    if (B != 0)
+    {
         PC -= 2; // Repeat instruction
         // Return T-states for continuing iteration
         return 21;
-    } else {
+    }
+    else
+    {
         // Set MEMPTR to PC+1 at the end of the instruction
-        //cpu.MEMPTR = cpu.PC
+        // cpu.MEMPTR = cpu.PC
         // Return T-states for final iteration
         return 16;
     }
 }
 
 // otir repeated OUTI until B=0
-int Z80::otir() {
+int Z80::otir()
+{
     outi();
 
-    if (B != 0) {
+    if (B != 0)
+    {
         PC -= 2; // Repeat instruction
         // Return T-states for continuing iteration
         return 21;
-    } else {
+    }
+    else
+    {
         // Return T-states for final iteration
         return 16;
     }
 }
 
 // lddr repeated LDD until BC=0
-int Z80::lddr() {
+int Z80::lddr()
+{
     // Execute one LDD operation
     ldd();
 
     // Add T-states for this iteration (21 for continuing, 16 for final)
-    if (BC != 0) {
+    if (BC != 0)
+    {
         PC -= 2;
         MEMPTR = PC + 1;
         return 21;
-    } else {
+    }
+    else
+    {
         return 16;
     }
 }
 
 // cpdr repeated CPD until BC=0 or A=(HL)
-int Z80::cpdr() {
+int Z80::cpdr()
+{
     cpd();
 
-    if (BC != 0 && !GetFlag(FLAG_Z)) {
+    if (BC != 0 && !GetFlag(FLAG_Z))
+    {
         PC -= 2; // Repeat instruction
         // Return T-states for continuing iteration
         MEMPTR = PC + 1;
         return 21;
-    } else {
+    }
+    else
+    {
         MEMPTR = PC - 2;
         // Return T-states for final iteration
         return 16;
@@ -803,38 +859,48 @@ int Z80::cpdr() {
 }
 
 // indr repeated IND until B=0
-int Z80::indr() {
+int Z80::indr()
+{
     ind();
 
-    if (B != 0) {
+    if (B != 0)
+    {
         PC -= 2; // Repeat instruction
         // Return T-states for continuing iteration
         return 21;
-    } else {
+    }
+    else
+    {
         // Return T-states for final iteration
         return 16;
     }
 }
 
 // otdr repeated OUTD until B=0
-int Z80::otdr() {
+int Z80::otdr()
+{
     outd();
 
-    if (B != 0) {
+    if (B != 0)
+    {
         PC -= 2; // Repeat instruction
         // Return T-states for continuing iteration
         return 21;
-    } else {
+    }
+    else
+    {
         return 16;
     }
 }
 
 // inC reads from port (BC)
-uint8_t Z80::inC() {
+uint8_t Z80::inC()
+{
     return port->Read(BC);
 }
 
 // outC writes to port (BC)
-void Z80::outC(uint8_t value) {
+void Z80::outC(uint8_t value)
+{
     port->Write(BC, value);
 }

@@ -2,40 +2,42 @@
 #include "memory.hpp"
 
 // Implementation of FD prefixed Z80 opcodes (IY instructions)
-int Z80::ExecuteFDOpcode() {
+int Z80::ExecuteFDOpcode()
+{
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
     // R should not be incremented twice (already incremented in ExecuteOneInstruction for FD prefix)
-    //R = (R & 0x80) | ((R - 1) & 0x7F);
+    // R = (R & 0x80) | ((R - 1) & 0x7F);
     R++;
-    switch (opcode) {
+    switch (opcode)
+    {
     // Load instructions
     case 0x09: // ADD IY, BC
-        {
-            uint16_t oldIY = IY;
-            uint16_t result = add16IY(IY, BC);
-            MEMPTR = oldIY + 1;
-            IY = result;
-        }
+    {
+        uint16_t oldIY = IY;
+        uint16_t result = add16IY(IY, BC);
+        MEMPTR = oldIY + 1;
+        IY = result;
+    }
         return 15;
     case 0x19: // ADD IY, DE
-        {
-            uint16_t oldIY = IY;
-            uint16_t result = add16IY(IY, DE);
-            MEMPTR = oldIY + 1;
-            IY = result;
-        }
+    {
+        uint16_t oldIY = IY;
+        uint16_t result = add16IY(IY, DE);
+        MEMPTR = oldIY + 1;
+        IY = result;
+    }
         return 15;
     case 0x21: // LD IY, nn
         IY = ReadImmediateWord();
         return 14;
     case 0x22: // LD (nn), IY
-        {
-            uint16_t addr = ReadImmediateWord();
-            memory->WriteByte(addr, uint8_t(IY & 0xFF));
-            memory->WriteByte(addr + 1, uint8_t((IY >> 8) & 0xFF));
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        memory->WriteByte(addr, uint8_t(IY & 0xFF));
+        memory->WriteByte(addr + 1, uint8_t((IY >> 8) & 0xFF));
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x23: // INC IY
         IY++;
@@ -50,19 +52,19 @@ int Z80::ExecuteFDOpcode() {
         SetIYH(ReadImmediateByte());
         return 11;
     case 0x29: // ADD IY, IY
-        {
-            uint16_t oldIY = IY;
-            uint16_t result = add16IY(IY, IY);
-            MEMPTR = oldIY + 1;
-            IY = result;
-        }
+    {
+        uint16_t oldIY = IY;
+        uint16_t result = add16IY(IY, IY);
+        MEMPTR = oldIY + 1;
+        IY = result;
+    }
         return 15;
     case 0x2A: // LD IY, (nn)
-        {
-            uint16_t addr = ReadImmediateWord();
-            IY = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        IY = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x2B: // DEC IY
         IY--;
@@ -81,21 +83,21 @@ int Z80::ExecuteFDOpcode() {
     case 0x35: // DEC (IY+d)
         return executeIncDecIndexedIY(false);
     case 0x36: // LD (IY+d), n
-        {
-            int8_t displacement = ReadDisplacement();
-            uint8_t value = ReadImmediateByte();
-            uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
-            memory->WriteByte(addr, value);
-            MEMPTR = addr;
-        }
+    {
+        int8_t displacement = ReadDisplacement();
+        uint8_t value = ReadImmediateByte();
+        uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
+        memory->WriteByte(addr, value);
+        MEMPTR = addr;
+    }
         return 19;
     case 0x39: // ADD IY, SP
-        {
-            uint16_t oldIY = IY;
-            uint16_t result = add16IY(IY, SP);
-            MEMPTR = oldIY + 1;
-            IY = result;
-        }
+    {
+        uint16_t oldIY = IY;
+        uint16_t result = add16IY(IY, SP);
+        MEMPTR = oldIY + 1;
+        IY = result;
+    }
         return 15;
 
     // Load register from IY register
@@ -271,13 +273,13 @@ int Z80::ExecuteFDOpcode() {
         IY = Pop();
         return 14;
     case 0xE3: // EX (SP), IY
-        {
-            uint16_t temp = (uint16_t(memory->ReadByte(SP + 1)) << 8) | uint16_t(memory->ReadByte(SP));
-            memory->WriteByte(SP, uint8_t(IY & 0xFF));
-            memory->WriteByte(SP + 1, uint8_t((IY >> 8) & 0xFF));
-            IY = temp;
-            MEMPTR = IY;
-        }
+    {
+        uint16_t temp = (uint16_t(memory->ReadByte(SP + 1)) << 8) | uint16_t(memory->ReadByte(SP));
+        memory->WriteByte(SP, uint8_t(IY & 0xFF));
+        memory->WriteByte(SP + 1, uint8_t((IY >> 8) & 0xFF));
+        IY = temp;
+        MEMPTR = IY;
+    }
         return 23;
     case 0xE5: // PUSH IY
         Push(IY);
@@ -307,7 +309,8 @@ int Z80::ExecuteFDOpcode() {
 }
 
 // add16IY adds two 16-bit values for IY register and updates flags
-uint16_t Z80::add16IY(uint16_t a, uint16_t b) {
+uint16_t Z80::add16IY(uint16_t a, uint16_t b)
+{
     uint32_t result = (uint32_t)a + (uint32_t)b;
     SetFlag(FLAG_C, result > 0xFFFF);
     SetFlag(FLAG_H, (a & 0x0FFF) + (b & 0x0FFF) > 0x0FFF);
@@ -318,34 +321,42 @@ uint16_t Z80::add16IY(uint16_t a, uint16_t b) {
 }
 
 // Get IYH (high byte of IY)
-uint8_t Z80::GetIYH() {
+uint8_t Z80::GetIYH()
+{
     return uint8_t(IY >> 8);
 }
 
 // Get IYL (low byte of IY)
-uint8_t Z80::GetIYL() {
+uint8_t Z80::GetIYL()
+{
     return uint8_t(IY & 0xFF);
 }
 
 // Set IYH (high byte of IY)
-void Z80::SetIYH(uint8_t value) {
+void Z80::SetIYH(uint8_t value)
+{
     IY = (IY & 0x00FF) | (uint16_t(value) << 8);
 }
 
 // Set IYL (low byte of IY)
-void Z80::SetIYL(uint8_t value) {
+void Z80::SetIYL(uint8_t value)
+{
     IY = (IY & 0xFF00) | uint16_t(value);
 }
 
 // executeIncDecIndexedIY handles INC/DEC (IY+d) instructions
-int Z80::executeIncDecIndexedIY(bool isInc) {
+int Z80::executeIncDecIndexedIY(bool isInc)
+{
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
     uint8_t value = memory->ReadByte(addr);
     uint8_t result;
-    if (isInc) {
+    if (isInc)
+    {
         result = inc8(value);
-    } else {
+    }
+    else
+    {
         result = dec8(value);
     }
     memory->WriteByte(addr, result);
@@ -354,12 +365,14 @@ int Z80::executeIncDecIndexedIY(bool isInc) {
 }
 
 // executeLoadFromIndexedIY handles LD r, (IY+d) instructions
-int Z80::executeLoadFromIndexedIY(uint8_t reg) {
+int Z80::executeLoadFromIndexedIY(uint8_t reg)
+{
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
     uint8_t value = memory->ReadByte(addr);
 
-    switch (reg) {
+    switch (reg)
+    {
     case 0:
         B = value;
         break;
@@ -388,7 +401,8 @@ int Z80::executeLoadFromIndexedIY(uint8_t reg) {
 }
 
 // executeStoreToIndexedIY handles LD (IY+d), r instructions
-int Z80::executeStoreToIndexedIY(uint8_t value) {
+int Z80::executeStoreToIndexedIY(uint8_t value)
+{
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
     memory->WriteByte(addr, value);
@@ -397,12 +411,14 @@ int Z80::executeStoreToIndexedIY(uint8_t value) {
 }
 
 // executeALUIndexedIY handles ALU operations with (IY+d) operand
-int Z80::executeALUIndexedIY(uint8_t opType) {
+int Z80::executeALUIndexedIY(uint8_t opType)
+{
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
     uint8_t value = memory->ReadByte(addr);
 
-    switch (opType) {
+    switch (opType)
+    {
     case 0: // ADD
         add8(value);
         break;

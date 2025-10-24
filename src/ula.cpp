@@ -54,7 +54,6 @@ ULA::~ULA()
     delete[] screenBuffer;
 }
 
-
 // Read a byte from the specified port
 uint8_t ULA::readPort(uint16_t port)
 {
@@ -73,7 +72,7 @@ uint8_t ULA::readPort(uint16_t port)
                 // Return the state of the selected half-row
                 // 0 = key pressed, 1 = key released (inverted logic)
                 uint8_t result = keyboard[i];
-                
+
                 // Set bit 6 based on audioState
                 if (audioState)
                 {
@@ -83,14 +82,14 @@ uint8_t ULA::readPort(uint16_t port)
                 {
                     result &= ~0x40; // Clear bit 6
                 }
-                //printf("RA1 %d\n",audioState);
+                // printf("RA1 %d\n",audioState);
                 return result;
             }
         }
 
         // If no half-row is selected, return all keys released
         uint8_t result = 0xFF;
-        
+
         // Set bit 6 based on audioState
         if (audioState)
         {
@@ -100,7 +99,7 @@ uint8_t ULA::readPort(uint16_t port)
         {
             result &= ~0x40; // Clear bit 6
         }
-        //printf("RA2 %d\n",audioState);
+        // printf("RA2 %d\n",audioState);
         return result;
     }
 
@@ -115,7 +114,7 @@ void ULA::writePort(uint16_t port, uint8_t value)
     {
         borderColor = value & 0x07;
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
-        audioState = earBit; // This is stub for tests. Actual sound handling in sound.cpp
+        audioState = earBit;               // This is stub for tests. Actual sound handling in sound.cpp
     }
 }
 

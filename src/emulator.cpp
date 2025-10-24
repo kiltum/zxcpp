@@ -346,23 +346,11 @@ void Emulator::runZX()
         //long long refreshTicks = 0;
         
         while (threadRunning.load()) {
-            //printf("PC: %x %x\n",cpu->PC,memory->ReadByte(cpu->PC));
             int ticks = cpu->ExecuteOneInstruction();
-
-            // if(cpu->PC > 0x238c && cpu->PC < 0x239b) {
-            //     if(refreshTicks==0) refreshTicks = totalTicks;
-            //     printf("T: %d U: %d PC: %x A: %x HL: %x I: %d\n", totalTicks-refreshTicks, ula->clock, cpu->PC,cpu->A,cpu->HL, cpu->InterruptPending);
-            // }
 
             totalTicks += ticks;
             checkTicks += ticks;
             sound->ticks = totalTicks; // refresh sound, so it knows, how long audio does
-            //refreshTicks++;
-            // if(refreshTicks > 69888) {
-            //     //printf("%d \n",refreshTicks);
-            //     refreshTicks = 0;
-            //     cpu->InterruptPending = true;
-            // }
             
             for (int i = 0; i < ticks; i++) {
                 int ref = ula->oneTick();
@@ -743,8 +731,6 @@ void Emulator::handleKeyUp(SDL_Keycode key)
 
 int main(void)
 {
-    // std::cout << "Starting emulator..." << std::endl;
-
     Emulator emulator;
 
     if (!emulator.initialize())
@@ -752,13 +738,6 @@ int main(void)
         std::cerr << "Failed to initialize emulator!" << std::endl;
         return -1;
     }
-
-    // std::cout << "Emulator initialized successfully." << std::endl;
-    // std::cout << "Starting emulation loop..." << std::endl;
-
     emulator.run();
-
-    // std::cout << "Emulation loop ended." << std::endl;
-
     return 0;
 }
