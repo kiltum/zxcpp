@@ -1,0 +1,140 @@
+interrupt_test
+
+                rst cls_rst
+                
+                ld hl,irq_txt
+                rst $30
+                ld bc,22
+                rst press_any_key_rst
+                
+                ld bc,$0004
+                ld hl,loops_between_irqs_txt
+                rst print_string_rst
+                
+irq_test_lp     ld ix,$+7                                       ;raster will be at unknown point in frame here so wait for new IRQ (frame)
+                jp wait_for_irq
+                
+                ld ix,$+7                                       ;14 - wait for IRQ from known point
+                jp wait_for_irq                                 ;10 
+               
+                ld l,h                                          ;HL = number of cycles per IRQ /10  (HL= A:HL<<8)
+                ld h,a
+                ld de,0+(24+32+20+20)/10                        ;add on set-up and IRQ processing overhead (last +20 is assumed CPU response delay)
+                add hl,de
+                
+;     ld hl,8000            			  ;uncomment to test!
+                
+                push hl                                         
+                ld bc,$1904                                     ;IRQ occured! Show count at coords BC
+                call show_word_as_dec_chars
+                ld hl,zero_txt                                  ;count is / 10 so stick a zero on the end
+                rst print_string_rst
+                pop hl
+
+                ld de,6989                                      ;expected 16/48 count
+                xor a
+                sbc hl,de
+                ld bc,irq_48_ok_txt
+                jr z,irq_on_target
+                add hl,de
+                
+                ld de,7091                                      ;expected 128 count
+                xor a
+                sbc hl,de
+                ld bc,irq_128_ok_txt
+                jr z,irq_on_target
+                add hl,de               
+                
+                ld de,6989                                      ;too few cycles?
+                xor a
+                sbc hl,de
+                ld bc,early_irq_txt 
+                jr c,irq_error
+                add hl,de                                       ;put HL back to original value
+                
+                ld de,65535-7092                                ;any more cycles above what is expected for Spectrum 128?
+                xor a
+                adc hl,de
+                ld bc,late_irq_txt 
+                jr c,irq_error                   
+                
+                ld bc,off_spec_txt
+irq_on_target   push bc
+                pop hl
+                ld bc,$0008
+                rst $30
+                jr irq_ok
+                  
+irq_ok          call test_jbk_press
+                jp c,system_test_menu
+                jr irq_test_lp
+                                
+
+                
+;------------------------------------------------------------------------------------------------------------------------------------------
+       
+                        
+wait_for_irq    ld hl,0        238D                                 ;10  - when IRQ occurs, jump made to IX
+                ei                                              ;4   - if no IRQ occurs before HL loops, show time out message
+                xor a          2391                                 ;4
+                ld e,a         2392                                 ;4 
+                ld bc,$280     2393                                 ;10   - ie: 2.5 in decimal (25 cycles / 10 to make dec-conversion easier)
+
+wfirq_lp        add hl,bc      2396                                 ;11
+                adc a,e                                         ;4
+                jp nc,wfirq_lp 2398                                 ;10 = 25 cycles per loop 
+                
+irq_time_out    ld bc,irq_timed_out_txt
+irq_error       push bc
+                pop hl
+                ld bc,$0008
+                rst $30
+                call error_beep
+                rst wait_key_press_rst
+                                
+                jp system_test_menu
+                      
+;---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+	
+irq_txt 	db 1,"50Hz ",Interrupt_token,test_token,"IM1",$90
+		db $9f,$90,$90,0
+
+loops_between_irqs_txt
+
+                db $80,$46,"IRQ->IRQ cycles (approx):",$90,$90
+                db $80,$47,"Status:",0
+
+irq_48_ok_txt   db 1,$80,$44,normal_token,"for ",spectrum_token,"16/48K",0
+irq_128_ok_txt  db 1,$80,$44,normal_token,"for ",spectrum_token,"128K",0
+off_spec_txt    db 1,$80,$57,"Off-Spec ???",0
+
+
+irq_timed_out_txt
+
+                db $01,$80,$d7," * ",Interrupt_token,"Timed out! * ",0
+
+early_irq_txt              
+                
+                db $01,$80,$d7," * ",Interrupt_token,"frequency high! * ",0
+                                
+late_irq_txt              
+                
+                db $01,$80,$d7," * ",Interrupt_token,"frequency low! * ",0
+
+zero_txt        db "0",0
+      
+;--------------------------------------------------------------------------------------------------
+
+
+!! 30438 
+
+T: 0 PC: 238d A: 0 HL: 23e1 I: 1 <--- WTF???
+T: 10 PC: 2390 A: 0 HL: 0 I: 1
+T: 20 PC: 2391 A: 0 HL: 0 I: 1
+
+T: 71 PC: 238d A: 0 HL: 0 I: 0
+T: 81 PC: 2390 A: 0 HL: 0 I: 0
+T: 91 PC: 2391 A: 0 HL: 0 I: 0
+T: 95 PC: 2392 A: 0 HL: 0 I: 0

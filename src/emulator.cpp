@@ -341,10 +341,16 @@ void Emulator::runZX()
         while (threadRunning.load()) {
             //printf("PC: %x %x\n",cpu->PC,memory->ReadByte(cpu->PC));
             int ticks = cpu->ExecuteOneInstruction();
+
+            if(cpu->PC > 0x238c && cpu->PC < 0x239b) {
+                if(refreshTicks==0) refreshTicks = totalTicks;
+                printf("T: %d PC: %x A: %x HL: %x I: %d\n", totalTicks-refreshTicks, cpu->PC,cpu->A,cpu->HL, cpu->InterruptPending);
+            }
+
             totalTicks += ticks;
             checkTicks += ticks;
-            refreshTicks += ticks;
-            // if(refreshTicks > 100000) {
+            //refreshTicks++;
+            // if(refreshTicks > 69888) {
             //     //printf("%d \n",refreshTicks);
             //     refreshTicks = 0;
             //     cpu->InterruptPending = true;
