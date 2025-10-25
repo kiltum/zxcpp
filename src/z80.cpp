@@ -87,6 +87,14 @@ int Z80::ExecuteOneInstruction()
     }
 }
 
+void Z80::NMI() 
+{
+    IFF2 = IFF1;
+    IFF1 = false;
+    Push(PC);
+    PC = 0x0066;
+}
+
 // HandleInterrupt handles interrupt processing
 int Z80::HandleInterrupt()
 {
