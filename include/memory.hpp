@@ -5,8 +5,10 @@
 
 class Memory {
 private:
-    uint8_t memory[65536]; // 64KB of memory
     uint8_t bank[7][16384]; // banks of memory
+    uint8_t rom[2][16384]; // banks of ROMs
+    bool is48; // machine version
+    uint8_t bankMapping[4]; // Which bank mapped now 
 
 public:
     // Constructor
@@ -26,7 +28,7 @@ public:
     void ReadDiag2(void);
     bool canWriteRom; // Can we overwrite ROM, as in Baltika version?
     // true, is we emulate 48k. No banks, no any reaction to write to 7FFD. false - we emulate 128k
-    void change48(bool is48); 
+    void change48(bool is48s); 
     void writePort(uint16_t port, uint8_t value); // handler for 7ffd
 };
 

@@ -10,11 +10,6 @@
 
 Memory::Memory()
 {
-    // Initialize all memory to zero
-    for (int i = 0; i < 65536; i++)
-    {
-        memory[i] = 0x00;
-    }
     // clear all 128k memory
     for (int i = 0; i < 7; i++)
     {
@@ -24,19 +19,48 @@ Memory::Memory()
         }
     }
     canWriteRom = false;
+    is48 = true;
+    bankMapping[0] = 0; // 0 ROM - specially, mapped to 0x0000-0x3fff
+    bankMapping[1] = 5; // bank 5 mapped to 0x4000-0x7fff
+    bankMapping[2] = 2; // bank 2 always mapped to 0x8000-0xbfff
+    bankMapping[3] = 0; // bank 0 mapped 0xc000-0xffff
 }
 
 void Memory::writePort(uint16_t port, uint8_t value)
 {
     if (port == 0x7ffd)
     {
-        printf("%x port\n", port);
+        if (is48)
+        {
+            printf("Memory: We are in 48k, so ignoring write to 7ffd\n");
+        }
+        else
+        {
+            printf("%x port\n", port);
+        }
     }
 }
 
 uint8_t Memory::ReadByte(uint16_t address)
 {
-    return memory[address];
+    if (address <= 0x3fff) // ROM 0 or ROM 1
+    {
+        return rom[bankMapping[0]][address];
+    }
+    if (address >= 0x4000 && address < 0x7fff)
+    {
+        return bank[bankMapping[1]][address-0x4000];
+
+    }
+    if (address >= 0x8000 && address < 0xbfff)
+    {
+        return bank[bankMapping[2]][address-0x8000];
+    }
+    if (address >= 0xc000)
+    {
+        return bank[bankMapping[3]][address-0xc000];
+    }
+    
 }
 
 void Memory::WriteByte(uint16_t address, uint8_t value)
@@ -46,11 +70,27 @@ void Memory::WriteByte(uint16_t address, uint8_t value)
         // printf("Ignoring attempt to write byte to ROM %x %x\n",address,value);
         return;
     }
-    memory[address] = value;
+    if (address <= 0x3fff) // ROM 0 or ROM 1
+    {
+        rom[bankMapping[0]][address] = value;
+    }
+    if (address >= 0x4000 && address < 0x7fff)
+    {
+        bank[bankMapping[1]][address-0x4000] = value;
+    }
+    if (address >= 0x8000 && address < 0xbfff)
+    {
+        bank[bankMapping[2]][address-0x8000] = value;
+    }
+    if (address >= 0xc000)
+    {
+        bank[bankMapping[3]][address-0xc000] = value;
+    }
 }
 
-void Memory::change48(bool is48)
+void Memory::change48(bool is48s)
 {
+    is48 = is48s;
 }
 
 void Memory::Read48(void)
