@@ -11,7 +11,7 @@
 Memory::Memory()
 {
     // clear all 128k memory
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 8; i++)
     {
         for (int b = 0; b < 16384; b++)
         {
@@ -37,7 +37,10 @@ void Memory::writePort(uint16_t port, uint8_t value)
         }
         else
         {
-            printf("%x port\n", port);
+            bankMapping[3] = value & 0x07;
+            ULAShadow = (value & 0x08) ? true:false;
+            bankMapping[0] = value & 0x10;
+            printf("%x -> %x bank %d shadow %d rom %d\n", port, value,bankMapping[3],ULAShadow,bankMapping[0]);
         }
     }
 }
