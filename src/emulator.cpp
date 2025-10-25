@@ -334,12 +334,13 @@ public:
 void Emulator::runZX()
 {
     threadRunning = true;
-    //memory->Read48();
+    // memory->Read48();
     memory->ReadDiag2();
     cpu->isNMOS = false;
+    ula->switchULA(false);
     emulationThread = std::thread([this]()
                                   {
-        const int TARGET_FREQUENCY = 3500000; // 3.5 MHz
+        const int TARGET_FREQUENCY = 3500000; // 3.5 MHz 3.54690
         const int CHECK_INTERVAL = TARGET_FREQUENCY / 1000; // Check timing every 1ms
         auto startTime = std::chrono::high_resolution_clock::now();
         long long totalTicks = 0;

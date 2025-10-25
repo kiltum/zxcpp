@@ -46,6 +46,7 @@ ULA::ULA(Memory *mem) : memory(mem)
     {
         screenBuffer[i] = colors[0];
     }
+    switchULA(true);
 }
 
 // Destructor
@@ -118,12 +119,30 @@ void ULA::writePort(uint16_t port, uint8_t value)
     }
 }
 
+void ULA::switchULA(bool is48)
+{
+    if (is48)
+    {
+        clockFlyback = 3560;
+        clockEndFrame = 69888;
+        clockBottomRight = 68072;
+        clockPerLine = 224;
+    }
+    else
+    {
+        clockFlyback = 3368;
+        clockEndFrame = 70908;
+        clockBottomRight = 69032;
+        clockPerLine = 228;
+    }
+}
+
 // Get screen buffer
 uint32_t *ULA::getScreenBuffer()
 {
     return screenBuffer;
 }
-
+// 48 version
 // 3560 - flyback
 // *----------------------------* 48*224 = 10752
 // *   V48                      *
@@ -139,6 +158,20 @@ uint32_t *ULA::getScreenBuffer()
 // Visible Width = (24+128+24) * 2 = 352
 // Visible Height = (48+192+48) = 288
 
+// 128 version
+// 3368 - flyback
+// *----------------------------* 48*228 = 10944
+// *   V48                      *
+// *  +----------------------*  * 3368 + 10944 + 24 = 14336 till first byte
+// *  !V192                  !  *
+// *24!     H128             !24* - 52 retrace = 228 (!)
+// *  !                      !  * 192 * 228 = 43776
+// *  +----------------------+  * 14336 + 43776 = 58112 till right corner
+// *   v48                      * 48 * 228 = 10944
+// *----------------------------* 69032 on brc
+// 1876 overscan.
+// 3368 + 10944 + 43776 + 10944 + 1876 = 70908
+
 // Process a single ULA tick
 // Returns internal clock state.
 int ULA::oneTick()
@@ -146,18 +179,18 @@ int ULA::oneTick()
     // Process one clock tick
     clock++;
 
-    if (clock <= 3560)
+    if (clock <= clockFlyback)
     { // we are on flyback
         return clock;
     }
 
-    if (clock > 68072 && clock < 69888)
+    if (clock > clockBottomRight && clock < clockEndFrame)
     { // we are on over scan
         return clock;
     }
 
     // Check if we've completed a frame
-    if (clock >= 69888)
+    if (clock >= clockEndFrame)
     {
         // Reset counters for next frame
         clock = 0;
@@ -176,7 +209,7 @@ int ULA::oneTick()
         return 0;
     }
 
-    line = (clock - 3560) / 224;
+    line = (clock - clockFlyback) / clockPerLine;
 
     // now lets draw screen
     if (horClock <= 24)
@@ -207,7 +240,7 @@ int ULA::oneTick()
     }
 
     horClock++;
-    if (horClock > 223)
+    if (horClock > (clockPerLine-1))
     { // beam end line and return back
         horClock = 0;
         // printf("---- %d %d \n", clock, clock-3560);

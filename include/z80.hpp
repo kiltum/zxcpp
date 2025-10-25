@@ -112,7 +112,7 @@ public:
     
     // Handle interrupt processing
     int HandleInterrupt();
-    bool isNMOS; // cpu type NMOS or Zilog/SGS
+    bool isNMOS; // cpu type NMOS (true, default) or Zilog/SGS (false)
     
 private:
 // Flag update functions
