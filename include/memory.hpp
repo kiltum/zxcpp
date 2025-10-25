@@ -5,10 +5,11 @@
 
 class Memory {
 private:
-    uint8_t bank[7][16384]; // banks of memory
+    uint8_t bank[8][16384]; // banks of memory
     uint8_t rom[2][16384]; // banks of ROMs
     bool is48; // machine version
     uint8_t bankMapping[4]; // Which bank mapped now 
+    bool ULAShadow;
 
 public:
     // Constructor
@@ -16,7 +17,8 @@ public:
     
     // Read a byte from memory
     uint8_t ReadByte(uint16_t address);
-    
+    // Special function for ULA reading screen (main or shadow)
+    uint8_t ULAReadByte(uint16_t address);
     // Write a byte to memory
     void WriteByte(uint16_t address, uint8_t value);
     

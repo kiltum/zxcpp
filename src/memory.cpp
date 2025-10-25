@@ -24,6 +24,7 @@ Memory::Memory()
     bankMapping[1] = 5; // bank 5 mapped to 0x4000-0x7fff
     bankMapping[2] = 2; // bank 2 always mapped to 0x8000-0xbfff
     bankMapping[3] = 0; // bank 0 mapped 0xc000-0xffff
+    ULAShadow = false; // ULA reading from bank 5 (false) or bank 7 (true) 
 }
 
 void Memory::writePort(uint16_t port, uint8_t value)
@@ -57,6 +58,18 @@ uint8_t Memory::ReadByte(uint16_t address)
     }
     // address >= 0xc000
     return bank[bankMapping[3]][address-0xc000];
+}
+
+uint8_t Memory::ULAReadByte(uint16_t address) 
+{
+    if (ULAShadow) // read from shadow
+    {
+        return bank[7][address-0x4000];
+    }
+    else 
+    {
+        return bank[5][address-0x4000];
+    }
 }
 
 void Memory::WriteByte(uint16_t address, uint8_t value)

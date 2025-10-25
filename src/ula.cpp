@@ -271,7 +271,7 @@ uint32_t ULA::getPixelColorFast(uint8_t x, uint8_t y)
     uint16_t addr = 0x4000 + ((y & 0xC0) << 5) + ((y & 0x07) << 8) + ((y & 0x38) << 2) + (x >> 3);
 
     // Read bitmap byte
-    uint8_t bitmap = memory->ReadByte(addr);
+    uint8_t bitmap = memory->ULAReadByte(addr);
 
     // Calculate attribute address
     // Formula: 0x5800 + (y >> 3) * 32 + (x >> 3)
@@ -282,7 +282,7 @@ uint32_t ULA::getPixelColorFast(uint8_t x, uint8_t y)
     // Bits 3-5: Paper color
     // Bit 6: Bright flag
     // Bit 7: Flash flag
-    uint8_t attr = memory->ReadByte(attrAddr);
+    uint8_t attr = memory->ULAReadByte(attrAddr);
 
     // Get bit value for this pixel
     uint8_t bit = 0x80 >> (x & 0x07);
