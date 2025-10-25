@@ -71,7 +71,7 @@ public:
     void setKeyDown(int halfRow, int keyBit);
     void setKeyUp(int halfRow, int keyBit);
     // switch ula to 48 or 128 state
-    void switchULA(bool is48);
+    void change48(bool is48);
 };
 
 #endif // ULA_HPP

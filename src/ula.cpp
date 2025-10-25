@@ -46,7 +46,7 @@ ULA::ULA(Memory *mem) : memory(mem)
     {
         screenBuffer[i] = colors[0];
     }
-    switchULA(true);
+    change48(true);
 }
 
 // Destructor
@@ -119,7 +119,7 @@ void ULA::writePort(uint16_t port, uint8_t value)
     }
 }
 
-void ULA::switchULA(bool is48)
+void ULA::change48(bool is48)
 {
     if (is48)
     {

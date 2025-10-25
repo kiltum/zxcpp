@@ -46,6 +46,10 @@ private:
     // Keyboard handling functions
     void handleKeyDown(SDL_Keycode key);
     void handleKeyUp(SDL_Keycode key);
+    // change machine type. true - 48k, false - 128k
+    void change48(bool is48);
+    int TARGET_FREQUENCY; // target cpu frequency
+    int CHECK_INTERVAL;   // target check interval
 
 public:
     Emulator() : window(nullptr), renderer(nullptr), texture(nullptr), quit(false), threadRunning(false), screenUpdated(false) {}
@@ -138,7 +142,7 @@ public:
         // Setup Platform/Renderer backends
         ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
         ImGui_ImplSDLRenderer3_Init(renderer);
-
+        change48(true); // default is 48k
         return true;
     }
 
@@ -331,17 +335,31 @@ public:
     }
 };
 
+void Emulator::change48(bool is48)
+{
+    if (is48)
+    {
+        TARGET_FREQUENCY = 3500000;               // 3.5 MHz
+        CHECK_INTERVAL = TARGET_FREQUENCY / 1000; // Check timing every 1ms
+        ula->change48(true);
+    }
+    else
+    {
+        TARGET_FREQUENCY = 3546900;               // 3.54690 Mhz
+        CHECK_INTERVAL = TARGET_FREQUENCY / 1000; // Check timing every 1ms
+        ula->change48(false);
+    }
+}
+
 void Emulator::runZX()
 {
     threadRunning = true;
     // memory->Read48();
     memory->ReadDiag2();
     cpu->isNMOS = false;
-    ula->switchULA(false);
+
     emulationThread = std::thread([this]()
                                   {
-        const int TARGET_FREQUENCY = 3500000; // 3.5 MHz 3.54690
-        const int CHECK_INTERVAL = TARGET_FREQUENCY / 1000; // Check timing every 1ms
         auto startTime = std::chrono::high_resolution_clock::now();
         long long totalTicks = 0;
         long long checkTicks = 0;
