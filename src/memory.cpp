@@ -47,20 +47,16 @@ uint8_t Memory::ReadByte(uint16_t address)
     {
         return rom[bankMapping[0]][address];
     }
-    if (address >= 0x4000 && address < 0x7fff)
+    if (address >= 0x4000 && address < 0x8000)
     {
         return bank[bankMapping[1]][address-0x4000];
-
     }
-    if (address >= 0x8000 && address < 0xbfff)
+    if (address >= 0x8000 && address < 0xc000)
     {
         return bank[bankMapping[2]][address-0x8000];
     }
-    if (address >= 0xc000)
-    {
-        return bank[bankMapping[3]][address-0xc000];
-    }
-    
+    // address >= 0xc000
+    return bank[bankMapping[3]][address-0xc000];
 }
 
 void Memory::WriteByte(uint16_t address, uint8_t value)
@@ -74,15 +70,15 @@ void Memory::WriteByte(uint16_t address, uint8_t value)
     {
         rom[bankMapping[0]][address] = value;
     }
-    if (address >= 0x4000 && address < 0x7fff)
+    else if (address >= 0x4000 && address < 0x8000)
     {
         bank[bankMapping[1]][address-0x4000] = value;
     }
-    if (address >= 0x8000 && address < 0xbfff)
+    else if (address >= 0x8000 && address < 0xc000)
     {
         bank[bankMapping[2]][address-0x8000] = value;
     }
-    if (address >= 0xc000)
+    else // address >= 0xc000
     {
         bank[bankMapping[3]][address-0xc000] = value;
     }
