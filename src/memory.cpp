@@ -5,6 +5,8 @@
 #include "48rom.h"
 #include "diagrom.h"
 #include "diagrom2.h"
+#include "1280.h"
+#include "1281.h"
 
 Memory::Memory()
 {
@@ -13,7 +15,23 @@ Memory::Memory()
     {
         memory[i] = 0x00;
     }
+    // clear all 128k memory
+    for (int i = 0; i < 7; i++)
+    {
+        for (int b = 0; b < 16384; b++)
+        {
+            bank[i][b] = 0x00;
+        }
+    }
     canWriteRom = false;
+}
+
+void Memory::writePort(uint16_t port, uint8_t value)
+{
+    if (port == 0x7ffd)
+    {
+        printf("%x port\n", port);
+    }
 }
 
 uint8_t Memory::ReadByte(uint16_t address)
@@ -29,6 +47,10 @@ void Memory::WriteByte(uint16_t address, uint8_t value)
         return;
     }
     memory[address] = value;
+}
+
+void Memory::change48(bool is48)
+{
 }
 
 void Memory::Read48(void)

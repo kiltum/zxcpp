@@ -81,6 +81,10 @@ public:
         // Register Kempston joystick with port system
         ports->RegisterReadHandler(0x1F, [this](uint16_t port) -> uint8_t
                                    { return kempston->readPort(port); });
+        
+        // Register Memory interface
+        ports->RegisterWriteHandler(0xFD, [this](uint16_t port, uint8_t value)
+                                   { return memory->writePort(port, value); });
 
         // Initialize SDL with both video and audio
         if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
