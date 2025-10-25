@@ -332,6 +332,7 @@ public:
         cpu.HALT = test.HALT;
 
         memory.canWriteRom = true;
+        cpu.isNMOS = false;
 
         // Initialize memory
         for (const auto &block : test.memoryBlocks)

@@ -37,6 +37,7 @@ Z80::Z80(Memory *mem, Port *port)
     IM = 0;
     HALT = false;
     InterruptPending = false;
+    isNMOS = true;
 }
 
 int Z80::ExecuteOneInstruction()
@@ -423,8 +424,20 @@ void Z80::scf()
     SetFlag(FLAG_C, true);
     SetFlag(FLAG_N, false);
     SetFlag(FLAG_H, false);
-    SetFlag(FLAG_X, (A & FLAG_X) != 0);
-    SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
+    if (isNMOS)
+    {
+        SetFlag(FLAG_X, (A & FLAG_X) != 0);
+        SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
+    }
+    else
+    {
+        // This sets both flags if BOTH bits 3 and 5 are set in A, otherwise clears both
+        if ((A & FLAG_Y) == FLAG_Y && (A & FLAG_X) == FLAG_X)
+        {
+            SetFlag(FLAG_Y, true);
+            SetFlag(FLAG_X, true);
+        }
+    }
 }
 
 // ccf complements the carry flag
@@ -434,8 +447,19 @@ void Z80::ccf()
     SetFlag(FLAG_C, !oldCarry);
     SetFlag(FLAG_H, oldCarry); // H = old C
     SetFlag(FLAG_N, false);
-    SetFlag(FLAG_X, (A & FLAG_X) != 0);
-    SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
+    if (isNMOS)
+    {
+        SetFlag(FLAG_X, (A & FLAG_X) != 0);
+        SetFlag(FLAG_Y, (A & FLAG_Y) != 0);
+    }
+    else
+    {
+        if ((A & FLAG_Y) == FLAG_Y && (A & FLAG_X) == FLAG_X)
+        {
+            SetFlag(FLAG_Y, true);
+            SetFlag(FLAG_X, true);
+        }
+    }
 }
 
 // add16 adds two 16-bit values and updates flags

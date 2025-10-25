@@ -139,6 +139,8 @@ void TestZEXALL()
     // Program counter starts at 0x100 for .COM files
     cpu->PC = 0x100;
 
+    cpu->isNMOS = true;
+
     // Load zexall.com file
     if (!loadZEXALL(memory, "testdata/zexall.com"))
     {
