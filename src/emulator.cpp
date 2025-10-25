@@ -359,7 +359,9 @@ void Emulator::runZX()
 {
     threadRunning = true;
     // memory->Read48();
-    memory->ReadDiag2();
+    memory->Read128();
+    memory->change48(false);
+    //memory->ReadDiag2();
     cpu->isNMOS = false;
 
     emulationThread = std::thread([this]()

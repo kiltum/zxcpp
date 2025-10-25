@@ -24,7 +24,7 @@ Memory::Memory()
     bankMapping[1] = 5; // bank 5 mapped to 0x4000-0x7fff
     bankMapping[2] = 2; // bank 2 always mapped to 0x8000-0xbfff
     bankMapping[3] = 0; // bank 0 mapped 0xc000-0xffff
-    ULAShadow = false; // ULA reading from bank 5 (false) or bank 7 (true) 
+    ULAShadow = false;  // ULA reading from bank 5 (false) or bank 7 (true)
 }
 
 void Memory::writePort(uint16_t port, uint8_t value)
@@ -38,9 +38,10 @@ void Memory::writePort(uint16_t port, uint8_t value)
         else
         {
             bankMapping[3] = value & 0x07;
-            ULAShadow = (value & 0x08) ? true:false;
-            bankMapping[0] = value & 0x10;
-            printf("%x -> %x bank %d shadow %d rom %d\n", port, value,bankMapping[3],ULAShadow,bankMapping[0]);
+            ULAShadow = (value & 0x08) ? true : false;
+            bankMapping[0] = (value & 0x10) ? 1 : 0;
+            is48 = (value & 0x20) ? true : false; // disable future using of this port
+            printf("%x -> %x bank %d shadow %d rom %d\n", port, value, bankMapping[3], ULAShadow, bankMapping[0]);
         }
     }
 }
@@ -53,25 +54,25 @@ uint8_t Memory::ReadByte(uint16_t address)
     }
     if (address >= 0x4000 && address < 0x8000)
     {
-        return bank[bankMapping[1]][address-0x4000];
+        return bank[bankMapping[1]][address - 0x4000];
     }
     if (address >= 0x8000 && address < 0xc000)
     {
-        return bank[bankMapping[2]][address-0x8000];
+        return bank[bankMapping[2]][address - 0x8000];
     }
     // address >= 0xc000
-    return bank[bankMapping[3]][address-0xc000];
+    return bank[bankMapping[3]][address - 0xc000];
 }
 
-uint8_t Memory::ULAReadByte(uint16_t address) 
+uint8_t Memory::ULAReadByte(uint16_t address)
 {
     if (ULAShadow) // read from shadow
     {
-        return bank[7][address-0x4000];
+        return bank[7][address - 0x4000];
     }
-    else 
+    else
     {
-        return bank[5][address-0x4000];
+        return bank[5][address - 0x4000];
     }
 }
 
@@ -88,15 +89,15 @@ void Memory::WriteByte(uint16_t address, uint8_t value)
     }
     else if (address >= 0x4000 && address < 0x8000)
     {
-        bank[bankMapping[1]][address-0x4000] = value;
+        bank[bankMapping[1]][address - 0x4000] = value;
     }
     else if (address >= 0x8000 && address < 0xc000)
     {
-        bank[bankMapping[2]][address-0x8000] = value;
+        bank[bankMapping[2]][address - 0x8000] = value;
     }
     else // address >= 0xc000
     {
-        bank[bankMapping[3]][address-0xc000] = value;
+        bank[bankMapping[3]][address - 0xc000] = value;
     }
 }
 
@@ -115,9 +116,28 @@ void Memory::Read48(void)
     canWriteRom = false;
 }
 
+void Memory::Read128(void)
+{
+    canWriteRom = true;
+    bankMapping[0] = 0;
+    for (unsigned int i = 0; i < __128_0_rom_len; i++)
+    {
+        WriteByte(i, __128_0_rom[i]);
+    }
+    bankMapping[0] = 1;
+    for (unsigned int i = 0; i < __128_1_rom_len; i++)
+    {
+        WriteByte(i, __128_1_rom[i]);
+    }
+    bankMapping[0] = 0;
+    canWriteRom = false;
+}
+
+
 void Memory::ReadDiag(void)
 {
     canWriteRom = true;
+    bankMapping[0] = 0;
     for (unsigned int i = 0; i < testrom_bin_len; i++)
     {
         WriteByte(i, testrom_bin[i]);
@@ -128,6 +148,7 @@ void Memory::ReadDiag(void)
 void Memory::ReadDiag2(void)
 {
     canWriteRom = true;
+    bankMapping[0] = 0;
     for (unsigned int i = 0; i < DiagROMv_173_len; i++)
     {
         WriteByte(i, DiagROMv_173[i]);

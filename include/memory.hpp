@@ -24,6 +24,8 @@ public:
     
     // Load 48k rom to memory
     void Read48(void);
+    // load 128 rom to memory
+    void Read128(void);
     // Load diag rom to memory
     void ReadDiag(void);
     // load another diag rom
