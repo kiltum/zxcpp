@@ -10,7 +10,7 @@ private:
     bool is48; // machine version
     uint8_t bankMapping[4]; // Which bank mapped now 
     bool ULAShadow;
-
+    bool canWriteRom; // Can we overwrite ROM, as in Baltika version?
 public:
     // Constructor
     Memory();
@@ -30,7 +30,7 @@ public:
     void ReadDiag(void);
     // load another diag rom
     void ReadDiag2(void);
-    bool canWriteRom; // Can we overwrite ROM, as in Baltika version?
+    
     // true, is we emulate 48k. No banks, no any reaction to write to 7FFD. false - we emulate 128k
     void change48(bool is48s); 
     void writePort(uint16_t port, uint8_t value); // handler for 7ffd
