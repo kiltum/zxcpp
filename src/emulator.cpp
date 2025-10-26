@@ -12,6 +12,7 @@
 #include "z80.hpp"
 #include "kempston.hpp"
 #include "sound.hpp"
+#include "tape.hpp"
 
 // ImGui includes
 #include "imgui.h"
@@ -38,6 +39,7 @@ private:
     std::unique_ptr<ULA> ula;
     std::unique_ptr<Kempston> kempston;
     std::unique_ptr<Sound> sound;
+    std::unique_ptr<Tape> tape;
 
     // Thread synchronization
     std::mutex screenMutex;
@@ -70,6 +72,7 @@ public:
         cpu = std::make_unique<Z80>(memory.get(), ports.get());
         ula = std::make_unique<ULA>(memory.get());
         kempston = std::make_unique<Kempston>();
+        tape = std::make_unique<Tape>();
 
         // Register ULA with port system
         ports->RegisterReadHandler(0xFE, [this](uint16_t port) -> uint8_t
