@@ -4,11 +4,13 @@
 all: run_test
 
 # Compile and run the test
-run_test: fuse_test zex_test
+run_test: fuse_test zex_test tape_test
 	./fuse_test --failfast
 	rm -f fuse_test
 	time ./zex_test
 	rm -f zex_test
+	./tape_test
+	rm -f tape_test
 
 
 # Compile the fuse test
@@ -19,14 +21,23 @@ fuse_test: fuse_test.cpp ../src/z80.cpp ../src/memory.cpp ../src/port.cpp ../src
 zex_test: zex_test.cpp ../src/z80.cpp ../src/memory.cpp ../src/port.cpp ../src/z80_opcodes.cpp ../src/z80_dd_opcodes.cpp  ../src/z80_ddcb_opcodes.cpp ../src/z80_fd_opcodes.cpp ../src/z80_cb_opcodes.cpp ../src/z80_ed_opcodes.cpp ../src/z80_fdcb_opcodes.cpp
 	g++ -std=c++11 -O3 -march=native -o zex_test zex_test.cpp ../src/z80.cpp ../src/memory.cpp ../src/port.cpp ../src/z80_opcodes.cpp ../src/z80_dd_opcodes.cpp ../src/z80_ddcb_opcodes.cpp ../src/z80_fd_opcodes.cpp ../src/z80_cb_opcodes.cpp ../src/z80_ed_opcodes.cpp ../src/z80_fdcb_opcodes.cpp -I../include
 
+# Compile the tape test
+tape_test: tape_test.cpp ../src/tape.cpp
+	g++ -std=c++11 -o tape_test tape_test.cpp ../src/tape.cpp -I../include -I/opt/homebrew/Cellar/libzip/1.11.4/include $(shell pkg-config --libs libzip 2>/dev/null)
+
 # Run ZEXALL test
 run_zexall: zex_test
 	./zex_test
 	rm -f zex_test
 
+# Run tape tests
+run_tape: tape_test
+	./tape_test
+	rm -f tape_test
+
 
 # Clean up any executables
 clean:
-	rm -f fuse_test zex_test
+	rm -f fuse_test zex_test tape_test
 
-.PHONY: all run_test clean run_zexall
+.PHONY: all run_test clean run_zexall run_tape
