@@ -12,6 +12,8 @@ private:
     SDL_AudioDeviceID audioDevice;
     bool initialized;
     long long ticksPassed;
+    bool lastMicBit;
+    bool lastEarBit;
 
 public:
     Sound();

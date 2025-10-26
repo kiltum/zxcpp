@@ -231,7 +231,6 @@ public:
                     }
                     ImGui::EndMenu();
                 }
-
                 
                 if (ImGui::BeginMenu("Tape"))
                 {
@@ -239,7 +238,7 @@ public:
                     {
                         IGFD::FileDialogConfig config;
                         config.path = ".";
-                        ImGuiFileDialog::Instance()->OpenDialog("ChooseTapeDlgKey", "Choose Tape File", ".tap,.tzx,.TAP,.TZX", config);
+                        ImGuiFileDialog::Instance()->OpenDialog("ChooseTapeDlgKey", "Choose Tape File", ".TAP,.TZX,.tap,.tzx", config);
                     }
                     if (ImGui::MenuItem("Play"))
                     {

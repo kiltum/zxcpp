@@ -433,7 +433,9 @@ void Tape::prepareBitStream()
 
 // Get next audio input state for ULA
 bool Tape::getNextBit()
-{
+{   
+    // If no tape played, return 
+    if(!isTapePlayed) return false;
     // If no bit stream has been generated, return false
     if (bitStream.empty()) {
         isTapePlayed = false;
@@ -458,7 +460,7 @@ bool Tape::getNextBit()
         currentImpulseIndex++;
         currentImpulseTicks = 0;
     }
-    
+    //printf("%d ",currentImpulseIndex);
     // Return the value of the current impulse
     return currentImpulse.value;
 }

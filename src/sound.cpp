@@ -91,6 +91,11 @@ void Sound::writePort(uint16_t port, uint8_t value)
         bool micBit = (value & 0x08) == 0; // MIC is bit 3 (0x08) - active low
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
 
+        // prevent flooding of sound subsytem when border changes rapidly, but no sound output. Like when tape loads
+        if(micBit == lastMicBit && earBit == lastEarBit) return;
+        lastEarBit = earBit;
+        lastMicBit = micBit;
+
         if (earBit || micBit)
         { // Volume on speaker or tape raised to up
             ticksPassed = ticks;
