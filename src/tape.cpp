@@ -23,6 +23,13 @@ void Tape::reset()
 {
     isTapePlayed = false;
     tapeData.clear();
+    tapBlocks.clear();
+    tapePilotLenHeader=8063;
+    tapePilotLenData=3223;
+    tapePilot = 2168;
+    tapePilotPause=350000;
+    tape0 = 855;
+    tape1 = 1710; 
 }
 
 // Helper function to check if a string ends with a specific suffix
@@ -31,6 +38,47 @@ bool endsWith(const std::string& str, const std::string& suffix) {
         return false;
     }
     return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+}
+
+// Helper function to validate checksum
+bool Tape::validateChecksum(const std::vector<uint8_t>& blockData)
+{
+    if (blockData.size() < 2) {
+        return false;
+    }
+    
+    uint8_t calculatedChecksum = 0;
+    for (size_t i = 0; i < blockData.size() - 1; i++) {
+        calculatedChecksum ^= blockData[i];
+    }
+    
+    return calculatedChecksum == blockData.back();
+}
+
+// Helper function to parse header information
+void Tape::parseHeaderInfo(TapBlock& block)
+{
+    if (block.flag != 0x00 || block.data.size() < 17) {
+        // Not a header block or insufficient data
+        return;
+    }
+    
+    // Parse header fields
+    block.fileType = block.data[0];
+    
+    // Extract filename (10 characters)
+    block.filename = std::string(reinterpret_cast<const char*>(block.data.data() + 1), 10);
+    
+    // Extract data length (2 bytes, little-endian)
+    block.dataLength = static_cast<uint16_t>(block.data[11]) | 
+                      (static_cast<uint16_t>(block.data[12]) << 8);
+    
+    // Extract parameters (2 bytes each, little-endian)
+    block.param1 = static_cast<uint16_t>(block.data[13]) | 
+                  (static_cast<uint16_t>(block.data[14]) << 8);
+    
+    block.param2 = static_cast<uint16_t>(block.data[15]) | 
+                  (static_cast<uint16_t>(block.data[16]) << 8);
 }
 
 // Load tape file
@@ -177,8 +225,67 @@ bool Tape::loadFile(const std::string& fileName)
 // Parse TAP file format
 void Tape::parseTap(const std::vector<uint8_t>& data)
 {
-    // Empty implementation - to be filled later
     std::cout << "Parsing TAP file with " << data.size() << " bytes" << std::endl;
+    
+    // Clear any existing blocks
+    tapBlocks.clear();
+    
+    size_t pos = 0;
+    while (pos + 2 <= data.size()) {
+        // Read block length (2 bytes, little-endian)
+        uint16_t blockLength = static_cast<uint16_t>(data[pos]) | 
+                              (static_cast<uint16_t>(data[pos + 1]) << 8);
+        
+        // Check if we have enough data for the complete block
+        if (pos + 2 + blockLength > data.size()) {
+            std::cerr << "Incomplete block at position " << pos << std::endl;
+            break;
+        }
+        
+        // Create a new block
+        TapBlock block;
+        block.length = blockLength;
+        
+        // Extract flag byte
+        block.flag = data[pos + 2];
+        
+        // Extract data (excluding flag and checksum)
+        if (blockLength >= 2) {
+            block.data.assign(data.begin() + pos + 3, data.begin() + pos + 2 + blockLength - 1);
+        }
+        
+        // Extract checksum
+        if (blockLength >= 1) {
+            block.checksum = data[pos + 2 + blockLength - 1];
+        }
+        
+        // Validate checksum
+        // Create temporary vector with flag + data for checksum calculation
+        std::vector<uint8_t> blockForChecksum;
+        blockForChecksum.push_back(block.flag);
+        blockForChecksum.insert(blockForChecksum.end(), block.data.begin(), block.data.end());
+        blockForChecksum.push_back(block.checksum);
+        
+        block.isValid = validateChecksum(blockForChecksum);
+        
+        // Parse header information if this is a header block
+        if (block.flag == 0x00) {
+            parseHeaderInfo(block);
+        }
+        
+        // Add block to our collection
+        tapBlocks.push_back(block);
+        
+        // Move to next block
+        pos += 2 + blockLength;
+        
+        std::cout << "  Parsed block: length=" << blockLength 
+                  << ", flag=0x" << std::hex << static_cast<int>(block.flag) << std::dec
+                  << ", data_size=" << block.data.size() 
+                  << ", checksum_valid=" << (block.isValid ? "yes" : "no") << std::endl;
+    }
+    
+    std::cout << "Parsed " << tapBlocks.size() << " blocks from TAP file" << std::endl;
 }
 
 // Parse TZX file format
@@ -186,6 +293,22 @@ void Tape::parseTzx(const std::vector<uint8_t>& data)
 {
     // Empty implementation - to be filled later
     std::cout << "Parsing TZX file with " << data.size() << " bytes" << std::endl;
+}
+
+// Get number of parsed blocks
+size_t Tape::getBlockCount() const
+{
+    return tapBlocks.size();
+}
+
+// Get a specific block
+const TapBlock& Tape::getBlock(size_t index) const
+{
+    static TapBlock emptyBlock; // Return empty block if index is out of bounds
+    if (index >= tapBlocks.size()) {
+        return emptyBlock;
+    }
+    return tapBlocks[index];
 }
 
 // Get next audio input state for ULA

@@ -5,9 +5,39 @@
 #include <string>
 #include <vector>
 
+// Structure to represent a TAP block
+struct TapBlock {
+    uint16_t length;           // Length of the block (including flag and checksum)
+    uint8_t flag;              // Flag byte (0x00 for headers, 0xFF for data blocks)
+    std::vector<uint8_t> data; // Data bytes (without length, flag, and checksum)
+    uint8_t checksum;          // Checksum byte
+    bool isValid;              // Whether the checksum is valid
+    
+    // Header-specific fields (only valid for header blocks)
+    uint8_t fileType;          // Type of file (0=Program, 1=Number array, 2=Character array, 3=Bytes)
+    std::string filename;      // Filename (10 characters, padded with spaces)
+    uint16_t dataLength;       // Length of the data block
+    uint16_t param1;           // Parameter 1 (depends on file type)
+    uint16_t param2;           // Parameter 2 (depends on file type)
+};
+
 class Tape {
 private:
     std::vector<uint8_t> tapeData;
+    std::vector<TapBlock> tapBlocks; // Store parsed TAP blocks
+    
+    // Helper function to validate checksum
+    bool validateChecksum(const std::vector<uint8_t>& blockData);
+    
+    // Helper function to parse header information
+    void parseHeaderInfo(TapBlock& block);
+
+    uint tapePilotLenHeader; // How many impulses in pilot tone for header
+    uint tapePilotLenData;   // and for data
+    uint tapePilot;          // Lenght in ticks how many ticks in one impulse
+    uint tapePilotPause;     // lenght in ticks pause between blocks 
+    uint tape0;              // length in ticks 0 bit
+    uint tape1;              // lenhth in ticks 1 bit
     
 public:
     // Constructor
@@ -27,6 +57,12 @@ public:
     
     // Parse TZX file format
     void parseTzx(const std::vector<uint8_t>& data);
+    
+    // Get number of parsed blocks
+    size_t getBlockCount() const;
+    
+    // Get a specific block
+    const TapBlock& getBlock(size_t index) const;
     
     long long ticks;
     bool isTapePlayed;

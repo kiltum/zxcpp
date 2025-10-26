@@ -60,6 +60,28 @@ public:
         
         if (result) {
             std::cout << "  SUCCESS: File loaded successfully" << std::endl;
+            
+            // Display information about parsed blocks
+            size_t blockCount = tape.getBlockCount();
+            std::cout << "  Parsed " << blockCount << " blocks" << std::endl;
+            
+            for (size_t i = 0; i < blockCount; i++) {
+                const TapBlock& block = tape.getBlock(i);
+                std::cout << "    Block " << i << ": length=" << block.length 
+                          << ", flag=0x" << std::hex << static_cast<int>(block.flag) << std::dec
+                          << ", data_size=" << block.data.size()
+                          << ", checksum_valid=" << (block.isValid ? "yes" : "no") << std::endl;
+                
+                // Display header information if this is a header block
+                if (block.flag == 0x00 && block.data.size() >= 17) {
+                    std::cout << "      Header block:" << std::endl;
+                    std::cout << "        File type: " << static_cast<int>(block.fileType) << std::endl;
+                    std::cout << "        Filename: '" << block.filename << "'" << std::endl;
+                    std::cout << "        Data length: " << block.dataLength << std::endl;
+                    std::cout << "        Param1: " << block.param1 << std::endl;
+                    std::cout << "        Param2: " << block.param2 << std::endl;
+                }
+            }
         } else {
             std::cout << "  FAILED: Could not load file" << std::endl;
         }
