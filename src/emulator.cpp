@@ -69,10 +69,11 @@ public:
         // Initialize emulator components
         memory = std::make_unique<Memory>();
         ports = std::make_unique<Port>();
-        cpu = std::make_unique<Z80>(memory.get(), ports.get());
-        ula = std::make_unique<ULA>(memory.get());
-        kempston = std::make_unique<Kempston>();
         tape = std::make_unique<Tape>();
+        cpu = std::make_unique<Z80>(memory.get(), ports.get());
+        ula = std::make_unique<ULA>(memory.get(), tape.get());
+        kempston = std::make_unique<Kempston>();
+        
 
         // Register ULA with port system
         ports->RegisterReadHandler(0xFE, [this](uint16_t port) -> uint8_t
@@ -380,6 +381,7 @@ void Emulator::runZX()
             totalTicks += ticks;
             checkTicks += ticks;
             sound->ticks = totalTicks; // refresh sound, so it knows, how long audio does
+            tape->ticks = totalTicks;  // refresh tape
             
             for (int i = 0; i < ticks; i++) {
                 int ref = ula->oneTick();

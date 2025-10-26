@@ -44,6 +44,7 @@ uint8_t Port::Read(uint16_t port)
 {
     // For ZX Spectrum compatibility, try masked port addressing
     uint8_t lowByte = port & 0xFF;
+    uint8_t result = 0x00;
     auto maskedIt = readHandlers.find(lowByte);
     if (maskedIt != readHandlers.end())
     {

@@ -4,8 +4,10 @@
 #include <iostream>
 
 // Constructor
-ULA::ULA(Memory *mem) : memory(mem)
+ULA::ULA(Memory *mem, Tape *tap)
 {
+    memory = mem;
+    tape = tap;
     // Allocate screen buffer (352x288 to accommodate borders)
     screenBuffer = new uint32_t[(352 * 288) + 2]; // +2 to prevent buffer overflow
 
@@ -73,15 +75,28 @@ uint8_t ULA::readPort(uint16_t port)
                 // Return the state of the selected half-row
                 // 0 = key pressed, 1 = key released (inverted logic)
                 uint8_t result = keyboard[i];
-
-                // Set bit 6 based on audioState
-                if (audioState)
+                if (!tape->isTapePlayed) // If tape not played, simple revert back output of port. Just for test "not stuck high" on DiagRom
                 {
-                    result |= 0x40; // Set bit 6
+                    // Set bit 6 based on audioState
+                    if (audioState)
+                    {
+                        result |= 0x40; // Set bit 6
+                    }
+                    else
+                    {
+                        result &= ~0x40; // Clear bit 6
+                    }
                 }
-                else
+                else // Ok, tape played, so lets feed input by bit-by-bit stream
                 {
-                    result &= ~0x40; // Clear bit 6
+                    if (tape->getNextBit())
+                    {
+                        result |= 0x40; // Set bit 6
+                    }
+                    else
+                    {
+                        result &= ~0x40; // Clear bit 6
+                    }
                 }
                 // printf("RA1 %d\n",audioState);
                 return result;
@@ -240,7 +255,7 @@ int ULA::oneTick()
     }
 
     horClock++;
-    if (horClock > (clockPerLine-1))
+    if (horClock > (clockPerLine - 1))
     { // beam end line and return back
         horClock = 0;
         // printf("---- %d %d \n", clock, clock-3560);

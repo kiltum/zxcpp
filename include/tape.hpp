@@ -17,6 +17,9 @@ public:
     
     // Reset tape state
     void reset();
+    long long ticks;
+    bool isTapePlayed;
+    bool getNextBit();
 };
 
 #endif // TAPE_HPP

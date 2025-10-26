@@ -5,11 +5,13 @@
 #include <memory>
 #include "memory.hpp"
 #include "port.hpp"
+#include "tape.hpp"
 
 class ULA
 {
 private:
     Memory *memory;
+    Tape *tape;
 
     // Screen buffer (256x192 pixels with border)
     uint32_t *screenBuffer;
@@ -47,7 +49,7 @@ public:
     uint32_t clock;
     
     // Constructor
-    ULA(Memory *mem);
+    ULA(Memory *mem, Tape *tap);
 
     // Destructor
     ~ULA();
