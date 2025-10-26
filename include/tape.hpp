@@ -49,6 +49,7 @@ private:
     uint tapePilotPause;     // lenght in ticks pause between blocks 
     uint tape0;              // length in ticks 0 bit
     uint tape1;              // length in ticks 1 bit
+    uint tapeFinalSync;      // last sync impulse
     
 public:
     // Constructor

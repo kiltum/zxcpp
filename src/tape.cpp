@@ -35,6 +35,7 @@ void Tape::reset()
     tape1 = 1710; 
     tapeSync1 = 667;
     tapeSync2 = 735;
+    tapeFinalSync = 945;
 }
 
 // Helper function to check if a string ends with a specific suffix
@@ -418,7 +419,7 @@ void Tape::prepareBitStream()
             }
         }
         
-        sync2Impulse.ticks = 945;
+        sync2Impulse.ticks = tapeFinalSync;
         sync2Impulse.value = true;
         bitStream.push_back(sync2Impulse); 
         // Generate pause between blocks
