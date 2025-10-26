@@ -27,7 +27,7 @@ void Tape::reset()
     bitStream.clear();
     currentImpulseIndex = 0;
     currentImpulseTicks = 0;
-    tapePilotLenHeader=8063;
+    tapePilotLenHeader=3000;//8063;
     tapePilotLenData=3223;
     tapePilot = 2168;
     tapePilotPause=3500000;
@@ -258,31 +258,38 @@ void Tape::parseTap(const std::vector<uint8_t>& data)
         TapBlock block;
         block.length = blockLength;
         
-        // Extract flag byte
-        block.flag = data[pos + 2];
-        
-        // Extract data (excluding flag and checksum)
-        if (blockLength >= 2) {
-            block.data.assign(data.begin() + pos + 3, data.begin() + pos + 2 + blockLength - 1);
+        // Extract all data (including flag and checksum)
+        if (blockLength > 0) {
+            block.data.assign(data.begin() + pos + 2, data.begin() + pos + 2 + blockLength);
         }
         
-        // Extract checksum
-        if (blockLength >= 1) {
-            block.checksum = data[pos + 2 + blockLength - 1];
+        // Extract flag byte from data for compatibility
+        if (block.data.size() > 0) {
+            block.flag = block.data[0];
+        }
+        
+        // Extract checksum from data for compatibility
+        if (block.data.size() > 0) {
+            block.checksum = block.data.back();
         }
         
         // Validate checksum
-        // Create temporary vector with flag + data for checksum calculation
-        std::vector<uint8_t> blockForChecksum;
-        blockForChecksum.push_back(block.flag);
-        blockForChecksum.insert(blockForChecksum.end(), block.data.begin(), block.data.end());
-        blockForChecksum.push_back(block.checksum);
-        
-        block.isValid = validateChecksum(blockForChecksum);
+        block.isValid = validateChecksum(block.data);
         
         // Parse header information if this is a header block
-        if (block.flag == 0x00) {
-            parseHeaderInfo(block);
+        if (block.flag == 0x00 && block.data.size() >= 18) {  // Need at least 18 bytes for header (flag + 17 header bytes)
+            // For header blocks, we need to parse the header info from data[1] to data[17]
+            // We temporarily modify the block to match the expected format for parseHeaderInfo
+            std::vector<uint8_t> tempData(block.data.begin() + 1, block.data.end() - 1);  // Exclude flag and checksum
+            TapBlock tempBlock = block;
+            tempBlock.data = tempData;
+            parseHeaderInfo(tempBlock);
+            // Copy back the parsed header info
+            block.fileType = tempBlock.fileType;
+            block.filename = tempBlock.filename;
+            block.dataLength = tempBlock.dataLength;
+            block.param1 = tempBlock.param1;
+            block.param2 = tempBlock.param2;
         }
         
         // Add block to our collection
@@ -386,23 +393,17 @@ void Tape::prepareBitStream()
         bitStream.push_back(sync2Impulse);
         
         // Generate data bits
-        // For each byte in the block (including flag and data):
+        // For each byte in the block (including flag, data, and checksum):
         //   - For each bit (MSB first):
         //     - Generate bit impulse (tape0 for 0, tape1 for 1)
         //     - Each impulse consists of value=1 then value=0
         
-        // First, add the flag byte to the data for processing
-        std::vector<uint8_t> blockDataWithFlag;
-        blockDataWithFlag.push_back(block.flag);
-        blockDataWithFlag.insert(blockDataWithFlag.end(), block.data.begin(), block.data.end());
-        blockDataWithFlag.push_back(block.checksum);
-        
-        // Process each byte
-        for (size_t byteIndex = 0; byteIndex < blockDataWithFlag.size(); ++byteIndex) {
-            uint8_t byte = blockDataWithFlag[byteIndex];
-            
+        // Process each byte directly from block.data
+        for (size_t byteIndex = 0; byteIndex < block.data.size(); ++byteIndex) {
+            uint8_t byte = block.data[byteIndex];
+            //printf("Parse %d %zu\n", i,byteIndex);
             // Process each bit (MSB first)
-            for (int bitIndex = 7; bitIndex >= 0; --bitIndex) {
+            for (int bitIndex = 7; bitIndex >= 0; --bitIndex)  {
                 bool bitValue = (byte >> bitIndex) & 1;
                 
                 // Determine pulse length based on bit value
