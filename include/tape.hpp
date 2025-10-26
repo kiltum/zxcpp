@@ -21,10 +21,19 @@ struct TapBlock {
     uint16_t param2;           // Parameter 2 (depends on file type)
 };
 
+// Structure to represent a bit stream impulse
+struct TapeImpulse {
+    uint32_t ticks;  // Duration in ticks
+    bool value;      // Signal value (true/false)
+};
+
 class Tape {
 private:
     std::vector<uint8_t> tapeData;
     std::vector<TapBlock> tapBlocks; // Store parsed TAP blocks
+    std::vector<TapeImpulse> bitStream; // Store generated bit stream
+    size_t currentImpulseIndex; // Index of current impulse in bit stream
+    uint32_t currentImpulseTicks; // Ticks elapsed in current impulse
     
     // Helper function to validate checksum
     bool validateChecksum(const std::vector<uint8_t>& blockData);
@@ -35,9 +44,11 @@ private:
     uint tapePilotLenHeader; // How many impulses in pilot tone for header
     uint tapePilotLenData;   // and for data
     uint tapePilot;          // Lenght in ticks how many ticks in one impulse
+    uint tapeSync1;          // length of sync impulses
+    uint tapeSync2;
     uint tapePilotPause;     // lenght in ticks pause between blocks 
     uint tape0;              // length in ticks 0 bit
-    uint tape1;              // lenhth in ticks 1 bit
+    uint tape1;              // length in ticks 1 bit
     
 public:
     // Constructor
@@ -57,6 +68,9 @@ public:
     
     // Parse TZX file format
     void parseTzx(const std::vector<uint8_t>& data);
+    
+    // Prepare bit stream from parsed blocks
+    void prepareBitStream();
     
     // Get number of parsed blocks
     size_t getBlockCount() const;

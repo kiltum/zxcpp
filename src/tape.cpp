@@ -24,12 +24,17 @@ void Tape::reset()
     isTapePlayed = false;
     tapeData.clear();
     tapBlocks.clear();
+    bitStream.clear();
+    currentImpulseIndex = 0;
+    currentImpulseTicks = 0;
     tapePilotLenHeader=8063;
     tapePilotLenData=3223;
     tapePilot = 2168;
-    tapePilotPause=350000;
+    tapePilotPause=3500000;
     tape0 = 855;
     tape1 = 1710; 
+    tapeSync1 = 667;
+    tapeSync2 = 337;
 }
 
 // Helper function to check if a string ends with a specific suffix
@@ -311,8 +316,126 @@ const TapBlock& Tape::getBlock(size_t index) const
     return tapBlocks[index];
 }
 
+// Prepare bit stream from parsed blocks
+// This function generates a byte stream where each impulse is represented as (uint32_t ticks, bool value)
+void Tape::prepareBitStream()
+{
+    // Clear any existing bit stream
+    this->bitStream.clear();
+    
+    // Process each block and generate the corresponding impulses
+    for (size_t i = 0; i < tapBlocks.size(); ++i) {
+        const TapBlock& block = tapBlocks[i];
+        
+        // Determine if this is a header or data block to set appropriate pilot tone length
+        uint pilotLength = (block.flag == 0x00) ? tapePilotLenHeader : tapePilotLenData;
+        
+        // Generate pilot tone
+        // For each impulse: value=1 for tapePilot ticks, then value=0 for tapePilot ticks
+        for (uint j = 0; j < pilotLength; ++j) {
+            // High impulse
+            TapeImpulse highImpulse;
+            highImpulse.ticks = tapePilot;
+            highImpulse.value = true;
+            bitStream.push_back(highImpulse);
+            
+            // Low impulse
+            TapeImpulse lowImpulse;
+            lowImpulse.ticks = tapePilot;
+            lowImpulse.value = false;
+            bitStream.push_back(lowImpulse);
+        }
+        
+        // Generate sync pulses
+        // First sync pulse: tapeSync1 ticks with value=1
+        TapeImpulse sync1Impulse;
+        sync1Impulse.ticks = tapeSync1;
+        sync1Impulse.value = true;
+        bitStream.push_back(sync1Impulse);
+        sync1Impulse.ticks = tapeSync1;
+        sync1Impulse.value = false;
+        bitStream.push_back(sync1Impulse);
+        
+        // Second sync pulse: tapeSync2 ticks with value=1
+        TapeImpulse sync2Impulse;
+        sync2Impulse.ticks = tapeSync2;
+        sync2Impulse.value = true;
+        bitStream.push_back(sync2Impulse);
+        sync2Impulse.ticks = tapeSync2;
+        sync2Impulse.value = false;
+        bitStream.push_back(sync2Impulse);
+        
+        // Generate data bits
+        // For each byte in the block (including flag and data):
+        //   - For each bit (MSB first):
+        //     - Generate bit impulse (tape0 for 0, tape1 for 1)
+        //     - Each impulse consists of value=1 then value=0
+        
+        // First, add the flag byte to the data for processing
+        std::vector<uint8_t> blockDataWithFlag;
+        blockDataWithFlag.push_back(block.flag);
+        blockDataWithFlag.insert(blockDataWithFlag.end(), block.data.begin(), block.data.end());
+        blockDataWithFlag.push_back(block.checksum);
+        
+        // Process each byte
+        for (size_t byteIndex = 0; byteIndex < blockDataWithFlag.size(); ++byteIndex) {
+            uint8_t byte = blockDataWithFlag[byteIndex];
+            
+            // Process each bit (MSB first)
+            for (int bitIndex = 7; bitIndex >= 0; --bitIndex) {
+                bool bitValue = (byte >> bitIndex) & 1;
+                
+                // Determine pulse length based on bit value
+                uint pulseLength = bitValue ? tape1 : tape0;
+                
+                // Generate impulse: value=1 for pulseLength ticks
+                TapeImpulse highImpulse;
+                highImpulse.ticks = pulseLength;
+                highImpulse.value = true;
+                bitStream.push_back(highImpulse);
+                
+                // Generate impulse: value=0 for pulseLength ticks
+                TapeImpulse lowImpulse;
+                lowImpulse.ticks = pulseLength;
+                lowImpulse.value = false;
+                bitStream.push_back(lowImpulse);
+            }
+        }
+        
+        // Generate pause between blocks
+        // Pause is all 0 for tapePilotPause length
+        TapeImpulse pauseImpulse;
+        pauseImpulse.ticks = tapePilotPause;
+        pauseImpulse.value = false;
+        bitStream.push_back(pauseImpulse);
+    }
+    
+    // TODO: Store the generated bit stream for later use
+}
+
 // Get next audio input state for ULA
 bool Tape::getNextBit()
 {
+    // If no bit stream has been generated, return false
+    if (bitStream.empty()) {
+        return false;
+    }
+    
+    // Process ticks to find the current impulse
+    long long totalTicks = 0;
+    
+    // Find the impulse that corresponds to the current tick count
+    for (size_t i = 0; i < bitStream.size(); ++i) {
+        // Check if the current tick count falls within this impulse
+        if (ticks >= totalTicks && ticks < totalTicks + bitStream[i].ticks) {
+            // Return the value of this impulse
+            return bitStream[i].value;
+        }
+        
+        // Add this impulse's ticks to the total
+        totalTicks += bitStream[i].ticks;
+    }
+    
+    // If we've gone past the end of the bit stream, return false (pause state)
     return false;
 }
