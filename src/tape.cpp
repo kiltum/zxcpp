@@ -34,7 +34,7 @@ void Tape::reset()
     tape0 = 855;
     tape1 = 1710; 
     tapeSync1 = 667;
-    tapeSync2 = 337;
+    tapeSync2 = 735;
 }
 
 // Helper function to check if a string ends with a specific suffix
@@ -379,15 +379,9 @@ void Tape::prepareBitStream()
         sync1Impulse.ticks = tapeSync1;
         sync1Impulse.value = true;
         bitStream.push_back(sync1Impulse);
-        sync1Impulse.ticks = tapeSync1;
-        sync1Impulse.value = false;
-        bitStream.push_back(sync1Impulse);
         
-        // Second sync pulse: tapeSync2 ticks with value=1
+        // Second sync pulse: tapeSync2 ticks with value=0
         TapeImpulse sync2Impulse;
-        sync2Impulse.ticks = tapeSync2;
-        sync2Impulse.value = true;
-        bitStream.push_back(sync2Impulse);
         sync2Impulse.ticks = tapeSync2;
         sync2Impulse.value = false;
         bitStream.push_back(sync2Impulse);
@@ -403,7 +397,8 @@ void Tape::prepareBitStream()
             uint8_t byte = block.data[byteIndex];
             //printf("Parse %d %zu\n", i,byteIndex);
             // Process each bit (MSB first)
-            for (int bitIndex = 7; bitIndex >= 0; --bitIndex)  {
+            //for (int bitIndex = 7; bitIndex >= 0; --bitIndex)  {
+            for (int bitIndex = 0; bitIndex <7; bitIndex++)  {
                 bool bitValue = (byte >> bitIndex) & 1;
                 
                 // Determine pulse length based on bit value
