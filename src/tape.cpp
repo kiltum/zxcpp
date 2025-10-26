@@ -397,8 +397,8 @@ void Tape::prepareBitStream()
             uint8_t byte = block.data[byteIndex];
             //printf("Parse %d %zu\n", i,byteIndex);
             // Process each bit (MSB first)
-            //for (int bitIndex = 7; bitIndex >= 0; --bitIndex)  {
-            for (int bitIndex = 0; bitIndex <7; bitIndex++)  {
+            for (int bitIndex = 7; bitIndex >= 0; --bitIndex)  {
+            //for (int bitIndex = 0; bitIndex <7; bitIndex++)  {
                 bool bitValue = (byte >> bitIndex) & 1;
                 
                 // Determine pulse length based on bit value
@@ -418,6 +418,9 @@ void Tape::prepareBitStream()
             }
         }
         
+        sync2Impulse.ticks = 945;
+        sync2Impulse.value = true;
+        bitStream.push_back(sync2Impulse); 
         // Generate pause between blocks
         // Pause is all 0 for tapePilotPause length
         TapeImpulse pauseImpulse;
