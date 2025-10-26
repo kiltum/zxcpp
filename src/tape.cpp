@@ -328,6 +328,14 @@ const std::vector<TapeImpulse>& Tape::getBitStream() const {
     return bitStream;
 }
 
+// For testing purposes: set up a test bit stream
+void Tape::setTestBitStream(const std::vector<TapeImpulse>& testStream) {
+    bitStream = testStream;
+    currentImpulseIndex = 0;
+    currentImpulseTicks = 0;
+    ticks = 0;
+}
+
 // Prepare bit stream from parsed blocks
 // This function generates a byte stream where each impulse is represented as (uint32_t ticks, bool value)
 void Tape::prepareBitStream()
@@ -434,21 +442,24 @@ bool Tape::getNextBit()
         return false;
     }
     
-    // Process ticks to find the current impulse
-    long long totalTicks = 0;
-    
-    // Find the impulse that corresponds to the current tick count
-    for (size_t i = 0; i < bitStream.size(); ++i) {
-        // Check if the current tick count falls within this impulse
-        if (ticks >= totalTicks && ticks < totalTicks + bitStream[i].ticks) {
-            // Return the value of this impulse
-            return bitStream[i].value;
-        }
-        
-        // Add this impulse's ticks to the total
-        totalTicks += bitStream[i].ticks;
+    // If we've processed all impulses, return false (pause state)
+    if (currentImpulseIndex >= bitStream.size()) {
+        return false;
     }
     
-    // If we've gone past the end of the bit stream, return false (pause state)
-    return false;
+    // Get the current impulse
+    const TapeImpulse& currentImpulse = bitStream[currentImpulseIndex];
+    
+    // Increment the tick counter for the current impulse
+    currentImpulseTicks++;
+    
+    // Check if we've exhausted the current impulse
+    if (currentImpulseTicks >= currentImpulse.ticks) {
+        // Move to the next impulse
+        currentImpulseIndex++;
+        currentImpulseTicks = 0;
+    }
+    
+    // Return the value of the current impulse
+    return currentImpulse.value;
 }

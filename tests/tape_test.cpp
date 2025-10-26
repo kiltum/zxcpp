@@ -162,7 +162,8 @@ public:
         const std::vector<TapeImpulse>& bitStream = tape.getBitStream();
         std::cout << "  Generated bit stream with " << bitStream.size() << " impulses" << std::endl;
         
-        for (size_t i = 0; i < bitStream.size(); ++i) {
+        //for (size_t i = 0; i < bitStream.size(); ++i) {
+        for (size_t i = 0; i < 10; ++i) {    
             const TapeImpulse& impulse = bitStream[i];
             std::cout << "    Impulse " << i << ": ticks=" << impulse.ticks 
                       << ", value=" << (impulse.value ? "1" : "0") << std::endl;
@@ -170,6 +171,55 @@ public:
         
         std::cout << "  SUCCESS: Virtual tape parsed and bit stream generated" << std::endl;
         return true;
+    }
+    
+    // Test getNextBit function with specific bit stream
+    bool testGetNextBit() {
+        std::cout << "\nTesting getNextBit function..." << std::endl;
+        
+        Tape tape;
+        
+        // Manually create a bit stream with (10,0),(10,1) as specified in the requirements
+        std::vector<TapeImpulse> testBitStream(2);
+        testBitStream[0].ticks = 10;
+        testBitStream[0].value = false;  // 10 ticks of 0
+        testBitStream[1].ticks = 10;
+        testBitStream[1].value = true;   // 10 ticks of 1
+        
+        // Set up the test bit stream using the public method
+        tape.setTestBitStream(testBitStream);
+        
+        bool result = true;
+        
+        // Test first 10 calls should return 0
+        std::cout << "  Testing first 10 calls (should all return 0):" << std::endl;
+        for (int i = 1; i <= 10; i++) {
+            bool bit = tape.getNextBit();
+            std::cout << "    Call " << i << ": " << (bit ? "1" : "0") << std::endl;
+            if (bit != false) {
+                std::cout << "    ERROR: Expected 0, got 1" << std::endl;
+                result = false;
+            }
+        }
+        
+        // Test next 10 calls should return 1
+        std::cout << "  Testing next 10 calls (should all return 1):" << std::endl;
+        for (int i = 11; i <= 20; i++) {
+            bool bit = tape.getNextBit();
+            std::cout << "    Call " << i << ": " << (bit ? "1" : "0") << std::endl;
+            if (bit != true) {
+                std::cout << "    ERROR: Expected 1, got 0" << std::endl;
+                result = false;
+            }
+        }
+        
+        if (result) {
+            std::cout << "  SUCCESS: getNextBit function works correctly" << std::endl;
+        } else {
+            std::cout << "  FAILED: getNextBit function does not work as expected" << std::endl;
+        }
+        
+        return result;
     }
 };
 
@@ -189,6 +239,9 @@ int main() {
     
     // Test virtual tape
     bool virtualSuccess = tester.testVirtualTape();
+    
+    // Test getNextBit function
+    bool getNextBitSuccess = tester.testGetNextBit();
 
-    return (virtualSuccess) ? 0 : 1;
+    return (virtualSuccess && getNextBitSuccess) ? 0 : 1;
 }
