@@ -1,7 +1,7 @@
 CXX = g++
 LIBZIP_CFLAGS := $(shell pkg-config --cflags libzip 2>/dev/null)
 LIBZIP_LIBS := $(shell pkg-config --libs libzip 2>/dev/null)
-CXXFLAGS = -std=c++20 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog $(LIBZIP_CFLAGS)
+CXXFLAGS = -std=c++20 -O3 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog $(LIBZIP_CFLAGS)
 SRCDIR = src
 OBJDIR = obj
 IMGUI_DIR = lib/imgui

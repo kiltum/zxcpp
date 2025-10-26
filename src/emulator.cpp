@@ -50,6 +50,8 @@ private:
     void handleKeyUp(SDL_Keycode key);
     // change machine type. true - 48k, false - 128k
     void change48(bool is48);
+    // Start tape playback
+    void StartTape();
     int TARGET_FREQUENCY; // target cpu frequency
     int CHECK_INTERVAL;   // target check interval
 
@@ -229,10 +231,25 @@ public:
                     }
                     ImGui::EndMenu();
                 }
+
+                if (ImGui::BeginMenu("Tape"))
+                {
+                    if (ImGui::MenuItem("Load"))
+                    {
+                        IGFD::FileDialogConfig config;
+                        config.path = ".";
+                        ImGuiFileDialog::Instance()->OpenDialog("ChooseTapeDlgKey", "Choose Tape File", ".tap,.tzx,.TAP,.TZX", config);
+                    }
+                    if (ImGui::MenuItem("Play"))
+                    {
+                        StartTape();
+                    }
+                    ImGui::EndMenu();
+                }
                 ImGui::EndMainMenuBar();
             }
 
-            // display
+            // display file dialog for ROM loading
             if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, ImVec2(400, 300)))
             {
                 // => will show a dialog
@@ -243,6 +260,27 @@ public:
                     std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
                     // TODO: Load the selected file
                     std::cout << "Selected file: " << filePathName << std::endl;
+                }
+
+                // close
+                ImGuiFileDialog::Instance()->Close();
+            }
+
+            // display file dialog for tape loading
+            if (ImGuiFileDialog::Instance()->Display("ChooseTapeDlgKey", ImGuiWindowFlags_NoCollapse, ImVec2(400, 300)))
+            {
+                // => will show a dialog
+                if (ImGuiFileDialog::Instance()->IsOk())
+                {
+                    // action if OK
+                    std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+                    std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+                    // Load the selected tape file
+                    std::cout << "Selected tape file: " << filePathName << std::endl;
+                    if (tape) {
+                        tape->loadFile(filePathName);
+                        tape->prepareBitStream();
+                    }
                 }
 
                 // close
@@ -356,6 +394,20 @@ void Emulator::change48(bool is48)
         TARGET_FREQUENCY = 3546900;               // 3.54690 Mhz
         CHECK_INTERVAL = TARGET_FREQUENCY / 1000; // Check timing every 1ms
         ula->change48(false);
+    }
+}
+
+void Emulator::StartTape()
+{
+    // Empty function as requested
+    std::cout << "StartTape() called" << std::endl;
+    
+    // In a real implementation, this would start tape playback
+    // For now, we just print a message
+    if (tape) {
+        // Set the tape to played state
+        tape->isTapePlayed = true;
+        std::cout << "Tape playback started" << std::endl;
     }
 }
 
