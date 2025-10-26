@@ -37,7 +37,7 @@ private:
     // Private helper functions
     void drawPixel(int);
     uint32_t getPixelColorFast(uint8_t x, uint8_t y);
-    bool audioState;
+    bool audioState; // ula audio input state
     uint32_t clockFlyback;
     uint32_t clockEndFrame;
     uint32_t clockBottomRight;

@@ -381,7 +381,6 @@ void Emulator::runZX()
             totalTicks += ticks;
             checkTicks += ticks;
             sound->ticks = totalTicks; // refresh sound, so it knows, how long audio does
-            tape->ticks = totalTicks;  // refresh tape
             
             for (int i = 0; i < ticks; i++) {
                 int ref = ula->oneTick();

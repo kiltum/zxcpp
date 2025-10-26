@@ -75,29 +75,17 @@ uint8_t ULA::readPort(uint16_t port)
                 // Return the state of the selected half-row
                 // 0 = key pressed, 1 = key released (inverted logic)
                 uint8_t result = keyboard[i];
-                if (!tape->isTapePlayed) // If tape not played, simple revert back output of port. Just for test "not stuck high" on DiagRom
+
+                // Set bit 6 based on audioState
+                if (audioState)
                 {
-                    // Set bit 6 based on audioState
-                    if (audioState)
-                    {
-                        result |= 0x40; // Set bit 6
-                    }
-                    else
-                    {
-                        result &= ~0x40; // Clear bit 6
-                    }
+                    result |= 0x40; // Set bit 6
                 }
-                else // Ok, tape played, so lets feed input by bit-by-bit stream
+                else
                 {
-                    if (tape->getNextBit())
-                    {
-                        result |= 0x40; // Set bit 6
-                    }
-                    else
-                    {
-                        result &= ~0x40; // Clear bit 6
-                    }
+                    result &= ~0x40; // Clear bit 6
                 }
+
                 // printf("RA1 %d\n",audioState);
                 return result;
             }
@@ -106,16 +94,6 @@ uint8_t ULA::readPort(uint16_t port)
         // If no half-row is selected, return all keys released
         uint8_t result = 0xFF;
 
-        // Set bit 6 based on audioState
-        if (audioState)
-        {
-            result |= 0x40; // Set bit 6
-        }
-        else
-        {
-            result &= ~0x40; // Clear bit 6
-        }
-        // printf("RA2 %d\n",audioState);
         return result;
     }
 
@@ -130,6 +108,7 @@ void ULA::writePort(uint16_t port, uint8_t value)
     {
         borderColor = value & 0x07;
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
+
         audioState = earBit;               // This is stub for tests. Actual sound handling in sound.cpp
     }
 }
@@ -193,6 +172,10 @@ int ULA::oneTick()
 {
     // Process one clock tick
     clock++;
+
+    if(tape->isTapePlayed) {  // if tape is playing something, set input bit
+        audioState = tape->getNextBit();
+    }
 
     if (clock <= clockFlyback)
     { // we are on flyback

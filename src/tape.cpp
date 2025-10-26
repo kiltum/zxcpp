@@ -333,7 +333,6 @@ void Tape::setTestBitStream(const std::vector<TapeImpulse>& testStream) {
     bitStream = testStream;
     currentImpulseIndex = 0;
     currentImpulseTicks = 0;
-    ticks = 0;
 }
 
 // Prepare bit stream from parsed blocks
@@ -422,7 +421,7 @@ void Tape::prepareBitStream()
                 bitStream.push_back(lowImpulse);
             }
         }
-        return;
+        
         // Generate pause between blocks
         // Pause is all 0 for tapePilotPause length
         TapeImpulse pauseImpulse;
@@ -430,8 +429,6 @@ void Tape::prepareBitStream()
         pauseImpulse.value = false;
         bitStream.push_back(pauseImpulse);
     }
-    
-    // TODO: Store the generated bit stream for later use
 }
 
 // Get next audio input state for ULA
@@ -439,11 +436,13 @@ bool Tape::getNextBit()
 {
     // If no bit stream has been generated, return false
     if (bitStream.empty()) {
+        isTapePlayed = false;
         return false;
     }
     
     // If we've processed all impulses, return false (pause state)
     if (currentImpulseIndex >= bitStream.size()) {
+        isTapePlayed = false;
         return false;
     }
     

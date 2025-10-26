@@ -87,7 +87,6 @@ public:
     // For testing purposes: set up a test bit stream
     void setTestBitStream(const std::vector<TapeImpulse>& testStream);
     
-    long long ticks;
     bool isTapePlayed;
     bool getNextBit();
 };
