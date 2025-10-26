@@ -227,6 +227,13 @@ bool Tape::loadFile(const std::string& fileName)
     return false;
 }
 
+// Load virtual tape data directly
+void Tape::loadVirtualTape(const std::vector<uint8_t>& data) {
+    std::cout << "Loading virtual tape with " << data.size() << " bytes" << std::endl;
+    tapeData = data;
+    parseTap(tapeData);
+}
+
 // Parse TAP file format
 void Tape::parseTap(const std::vector<uint8_t>& data)
 {
@@ -316,12 +323,17 @@ const TapBlock& Tape::getBlock(size_t index) const
     return tapBlocks[index];
 }
 
+// Get the bit stream for debugging
+const std::vector<TapeImpulse>& Tape::getBitStream() const {
+    return bitStream;
+}
+
 // Prepare bit stream from parsed blocks
 // This function generates a byte stream where each impulse is represented as (uint32_t ticks, bool value)
 void Tape::prepareBitStream()
 {
     // Clear any existing bit stream
-    this->bitStream.clear();
+    bitStream.clear();
     
     // Process each block and generate the corresponding impulses
     for (size_t i = 0; i < tapBlocks.size(); ++i) {
@@ -332,6 +344,7 @@ void Tape::prepareBitStream()
         
         // Generate pilot tone
         // For each impulse: value=1 for tapePilot ticks, then value=0 for tapePilot ticks
+       
         for (uint j = 0; j < pilotLength; ++j) {
             // High impulse
             TapeImpulse highImpulse;
@@ -401,7 +414,7 @@ void Tape::prepareBitStream()
                 bitStream.push_back(lowImpulse);
             }
         }
-        
+        return;
         // Generate pause between blocks
         // Pause is all 0 for tapePilotPause length
         TapeImpulse pauseImpulse;

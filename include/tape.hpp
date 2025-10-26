@@ -63,6 +63,9 @@ public:
     // Load tape file
     bool loadFile(const std::string& fileName);
     
+    // Load virtual tape data directly
+    void loadVirtualTape(const std::vector<uint8_t>& data);
+    
     // Parse TAP file format
     void parseTap(const std::vector<uint8_t>& data);
     
@@ -77,6 +80,9 @@ public:
     
     // Get a specific block
     const TapBlock& getBlock(size_t index) const;
+    
+    // Get the bit stream for debugging
+    const std::vector<TapeImpulse>& getBitStream() const;
     
     long long ticks;
     bool isTapePlayed;
