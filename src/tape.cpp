@@ -238,7 +238,7 @@ void Tape::loadVirtualTape(const std::vector<uint8_t>& data) {
 // Parse TAP file format
 void Tape::parseTap(const std::vector<uint8_t>& data)
 {
-    std::cout << "Parsing TAP file with " << data.size() << " bytes" << std::endl;
+    //std::cout << "Parsing TAP file with " << data.size() << " bytes" << std::endl;
     
     // Clear any existing blocks
     tapBlocks.clear();
@@ -299,10 +299,10 @@ void Tape::parseTap(const std::vector<uint8_t>& data)
         // Move to next block
         pos += 2 + blockLength;
         
-        std::cout << "  Parsed block: length=" << blockLength 
-                  << ", flag=0x" << std::hex << static_cast<int>(block.flag) << std::dec
-                  << ", data_size=" << block.data.size() 
-                  << ", checksum_valid=" << (block.isValid ? "yes" : "no") << std::endl;
+        // std::cout << "  Parsed block: length=" << blockLength 
+        //           << ", flag=0x" << std::hex << static_cast<int>(block.flag) << std::dec
+        //           << ", data_size=" << block.data.size() 
+        //           << ", checksum_valid=" << (block.isValid ? "yes" : "no") << std::endl;
     }
     
     std::cout << "Parsed " << tapBlocks.size() << " blocks from TAP file" << std::endl;
@@ -429,6 +429,7 @@ void Tape::prepareBitStream()
         pauseImpulse.value = false;
         bitStream.push_back(pauseImpulse);
     }
+    printf("Consumed %lu bytes for bitStream\n", bitStream.size() * sizeof(TapeImpulse));
 }
 
 // Get next audio input state for ULA
