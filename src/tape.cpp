@@ -1336,12 +1336,14 @@ bool Tape::getNextBit()
     // If no bit stream has been generated, return false
     if (bitStream.empty()) {
         isTapePlayed = false;
+        printf("TAPE STOP1\n");
         return false;
     }
     
     // If we've processed all impulses, return false (pause state)
     if (currentImpulseIndex >= bitStream.size()) {
         isTapePlayed = false;
+        printf("TAPE STOP2\n");
         return false;
     }
     
