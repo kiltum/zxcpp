@@ -13,6 +13,7 @@
 #include "kempston.hpp"
 #include "sound.hpp"
 #include "tape.hpp"
+#include "ay8912.hpp"
 
 // ImGui includes
 #include "imgui.h"

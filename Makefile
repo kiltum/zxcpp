@@ -30,6 +30,7 @@ SOURCES = $(SRCDIR)/emulator.cpp \
           $(SRCDIR)/kempston.cpp \
           $(SRCDIR)/sound.cpp \
           $(SRCDIR)/tape.cpp \
+          $(SRCDIR)/ay8912.cpp \
           $(IMGUI_SOURCES) \
           $(IMGUIDIALOG_SOURCES)
 OBJECTS = $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
