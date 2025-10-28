@@ -73,6 +73,31 @@ public:
     // Parse TZX file format
     void parseTzx(const std::vector<uint8_t>& data);
     
+    // TZX block parsers
+    size_t parseTzxStandardSpeedBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxTurboSpeedBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxPureToneBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxPulseSequenceBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxPureDataBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxDirectRecordingBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxPauseBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxGroupStartBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxGroupEndBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxJumpBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxLoopStartBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxLoopEndBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxCallSequenceBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxReturnSequenceBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxSelectBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxStop48KBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxSetLevelBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxTextDescriptionBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxMessageBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxArchiveInfoBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxHardwareTypeBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxCustomInfoBlock(const std::vector<uint8_t>& data, size_t pos);
+    size_t parseTzxGlueBlock(const std::vector<uint8_t>& data, size_t pos);
+    
     // Prepare bit stream from parsed blocks
     void prepareBitStream();
     
