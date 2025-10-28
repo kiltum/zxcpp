@@ -3,7 +3,7 @@
 #include <cstring>
 #include <algorithm>
 
-AY8912::AY8912() : audioStream(nullptr), audioDevice(0), initialized(false), selectedRegister(0), addressLatch(false)
+AY8912::AY8912() : registers{0}, selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false)
 {
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
@@ -233,22 +233,22 @@ void AY8912::writeRegister(uint8_t reg, uint8_t value)
             envelope.shape = value & 0x0F; // Only lower 4 bits
             // Initialize envelope state based on shape
             switch (envelope.shape) {
-                case 0:  // \__________
-                case 1:  // \__________
-                case 2:  // \__________
-                case 3:  // \__________
-                case 4:  // /|_________
-                case 5:  // /|_________
-                case 6:  // /|_________
-                case 7:  // /|_________
-                case 8:  // \|\|\|\|\|\
-                case 9:  // \__________
-                case 10: // \/\/\/\/\/\
-                case 11: // \__________
-                case 12: // /|/|/|/|/|/
-                case 13: // /_________
-                case 14: // /\/\/\/\/\/
-                case 15: // /_________
+                case 0:  
+                case 1:  
+                case 2:  
+                case 3:  
+                case 4:  
+                case 5:  
+                case 6: 
+                case 7:  
+                case 8:  
+                case 9:  
+                case 10: 
+                case 11: 
+                case 12: 
+                case 13: 
+                case 14: 
+                case 15: 
                     // For attack shapes, start at 0
                     if (envelope.shape == 4 || envelope.shape == 5 || envelope.shape == 6 || 
                         envelope.shape == 7 || envelope.shape == 12 || envelope.shape == 13 || 
@@ -334,7 +334,7 @@ void AY8912::updateEnvelope()
                     }
                     break;
                     
-                case 8:  // \|\|\|\|\|\
+                case 8:  /* \|\|\|\|\|\ */
                     // Repeated decay
                     if (envelope.level > 0) {
                         envelope.level--;
@@ -343,7 +343,7 @@ void AY8912::updateEnvelope()
                     }
                     break;
                     
-                case 10: // \/\/\/\/\/\
+                case 10: /* \/\/\/\/\/\ */
                     // Repeated decay-attack
                     if (envelope.attack) {
                         if (envelope.level < 15) {
@@ -360,7 +360,7 @@ void AY8912::updateEnvelope()
                     }
                     break;
                     
-                case 12: // /|/|/|/|/|/
+                case 12: /* /|/|/|/|/|/ */
                     // Repeated attack
                     if (envelope.level < 15) {
                         envelope.level++;
@@ -369,7 +369,7 @@ void AY8912::updateEnvelope()
                     }
                     break;
                     
-                case 14: // /\/\/\/\/\/
+                case 14: /* /\/\/\/\/\/ */
                     // Repeated attack-decay
                     if (envelope.attack) {
                         if (envelope.level < 15) {

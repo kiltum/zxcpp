@@ -33,7 +33,7 @@ private:
         uint8_t volume;         // 4-bit volume (0-15)
         bool enable;            // Noise enable/disable
         uint16_t counter;       // Current counter value
-        uint8_t shiftRegister;  // 17-bit shift register
+        uint32_t shiftRegister; // 17-bit shift register
         bool output;            // Current output level
     } noise;
     
@@ -50,7 +50,6 @@ private:
     } envelope;
     
     // Mixing and audio generation
-    void updateAudio();
     void generateSamples(int numSamples);
     void updateChannels();
     void updateNoise();
