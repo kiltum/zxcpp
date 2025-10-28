@@ -76,6 +76,9 @@ public:
     
     // Get current audio output level for mixing
     int16_t getOutputLevel();
+    
+    // Update audio for each CPU tick
+    void updateAudio();
 };
 
 #endif // AY8912_HPP

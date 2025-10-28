@@ -41,6 +41,7 @@ private:
     std::unique_ptr<Kempston> kempston;
     std::unique_ptr<Sound> sound;
     std::unique_ptr<Tape> tape;
+    std::unique_ptr<AY8912> ay8912;
 
     // Thread synchronization
     std::mutex screenMutex;
@@ -115,6 +116,21 @@ public:
 
         ports->RegisterWriteHandler(0xFE, [this](uint16_t port, uint8_t value)
                                     { sound->writePort(port, value); });
+
+        // Initialize AY8912 sound chip
+        ay8912 = std::make_unique<AY8912>();
+        if (!ay8912->initialize())
+        {
+            std::cerr << "Warning: Failed to initialize AY8912 sound chip" << std::endl;
+            // Continue without AY8912 sound
+        }
+
+        // Register AY8912 port handlers
+        ports->RegisterWriteHandler(0xBFFD, [this](uint16_t port, uint8_t value)
+                                    { ay8912->writePort(port, value); });
+        
+        ports->RegisterReadHandler(0xFFFD, [this](uint16_t port) -> uint8_t
+                                   { return ay8912->readPort(port); });
 
         // Create window
         window = SDL_CreateWindow("ZX Spectrum Emulator", 704, 576, SDL_WINDOW_RESIZABLE);
@@ -461,7 +477,9 @@ void Emulator::runZX()
             checkTicks += ticks;
             sound->ticks = totalTicks; // refresh sound, so it knows, how long audio does
             
+            // Update AY8912 audio for each CPU tick
             for (int i = 0; i < ticks; i++) {
+                ay8912->updateAudio();
                 int ref = ula->oneTick();
                 if (ref == 0) {
                     // Signal that screen has been updated
