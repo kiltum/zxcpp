@@ -61,6 +61,10 @@ public:
     // Run emulation in a separate thread
     void runZX();
 
+    // Public methods for command line tape loading
+    bool loadTapeFile(const std::string& filePath);
+    void startTapePlayback();
+
     ~Emulator()
     {
         cleanup();
@@ -408,6 +412,28 @@ void Emulator::StartTape()
         // Set the tape to played state
         tape->isTapePlayed = true;
         std::cout << "Tape playback started" << std::endl;
+    }
+}
+
+bool Emulator::loadTapeFile(const std::string& filePath)
+{
+    if (!tape) {
+        std::cerr << "Tape system not initialized" << std::endl;
+        return false;
+    }
+
+    std::cout << "Loading tape file: " << filePath << std::endl;
+    tape->loadFile(filePath);
+    tape->prepareBitStream();
+    std::cout << "Tape file loaded successfully" << std::endl;
+    return true;
+}
+
+void Emulator::startTapePlayback()
+{
+    if (tape) {
+        tape->isTapePlayed = true;
+        std::cout << "Tape playback started automatically" << std::endl;
     }
 }
 
@@ -811,7 +837,7 @@ void Emulator::handleKeyUp(SDL_Keycode key)
     }
 }
 
-int main(void)
+int main(int argc, char* argv[])
 {
     Emulator emulator;
 
@@ -820,6 +846,20 @@ int main(void)
         std::cerr << "Failed to initialize emulator!" << std::endl;
         return -1;
     }
+
+    // Check if a file path is provided as command line argument
+    if (argc > 1) {
+        std::string filePath = argv[1];
+        std::cout << "Loading tape file from command line: " << filePath << std::endl;
+        
+        // Load the tape file and prepare it for playback
+        if (emulator.loadTapeFile(filePath)) {
+            std::cout << "Tape file loaded successfully. Use Tape->Play menu to start playback." << std::endl;
+        } else {
+            std::cerr << "Failed to load tape file: " << filePath << std::endl;
+        }
+    }
+
     emulator.run();
     return 0;
 }
