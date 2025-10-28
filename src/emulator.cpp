@@ -479,7 +479,7 @@ void Emulator::runZX()
             
             // Update AY8912 audio for each CPU tick
             for (int i = 0; i < ticks; i++) {
-                ay8912->updateAudio();
+                //ay8912->updateAudio();
                 int ref = ula->oneTick();
                 if (ref == 0) {
                     // Signal that screen has been updated

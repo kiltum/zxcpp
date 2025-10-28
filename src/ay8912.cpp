@@ -95,15 +95,15 @@ bool AY8912::initialize()
 
 void AY8912::cleanup()
 {
-    if (audioStream) {
-        SDL_DestroyAudioStream(audioStream);
-        audioStream = nullptr;
-    }
+    // if (audioStream) {
+    //     SDL_DestroyAudioStream(audioStream);
+    //     audioStream = nullptr;
+    // }
     
-    if (audioDevice) {
-        SDL_CloseAudioDevice(audioDevice);
-        audioDevice = 0;
-    }
+    // if (audioDevice) {
+    //     SDL_CloseAudioDevice(audioDevice);
+    //     audioDevice = 0;
+    // }
     
     initialized = false;
 }
