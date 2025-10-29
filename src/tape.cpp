@@ -22,6 +22,7 @@ Tape::~Tape()
 void Tape::reset()
 {
     isTapePlayed = false;
+    isTapeTurbo = true;  // Initialize turboload mode to true
     tapeData.clear();
     tapBlocks.clear();
     bitStream.clear();

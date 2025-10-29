@@ -114,6 +114,7 @@ public:
     void setTestBitStream(const std::vector<TapeImpulse>& testStream);
     
     bool isTapePlayed;
+    bool isTapeTurbo;  // Turboload mode flag
     bool getNextBit();
 };
 

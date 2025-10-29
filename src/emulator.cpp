@@ -265,6 +265,12 @@ public:
                     {
                         StartTape();
                     }
+                    if (ImGui::MenuItem("Turboload", nullptr, tape ? tape->isTapeTurbo : false))
+                    {
+                        if (tape) {
+                            tape->isTapeTurbo = !tape->isTapeTurbo;
+                        }
+                    }
                     ImGui::EndMenu();
                 }
                 ImGui::EndMainMenuBar();
