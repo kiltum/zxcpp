@@ -107,13 +107,13 @@ void Sound::writePort(uint16_t port, uint8_t value)
             { // Volume on speaker or tape raised to up
                 generateAudio(duration, true);
                 SDL_FlushAudioStream(audioStream);
-                printf("%d 1\n",duration);
+                //printf("%d 1\n",duration);
             }
             else
             {
                 generateAudio(duration, false);
                 SDL_FlushAudioStream(audioStream);
-                printf("%d 0\n",duration);
+                //printf("%d 0\n",duration);
             }
         }
     }
@@ -132,7 +132,7 @@ void Sound::generateAudio(long long ticks, bool value)
 
     // Calculate number of samples (assuming 44100 Hz sample rate)
     int sampleRate = 44100;
-    int numSamples = static_cast<int>(duration * sampleRate) + 1; // +1 removes float calculation rounds
+    int numSamples = static_cast<int>(duration * sampleRate) +1 ;
 
     // If no samples to generate, return early
     if (numSamples <= 0)
