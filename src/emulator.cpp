@@ -548,21 +548,22 @@ void Emulator::runZX()
                 }
             }
             
-            if(shouldDisableLimiter)
-            // Speed limiter - check timing more frequently for smoother execution
-            if (checkTicks >= CHECK_INTERVAL) {
-                checkTicks = 0;
-                auto currentTime = std::chrono::high_resolution_clock::now();
-                auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime).count();
-                long long expectedTime = (totalTicks * 1000000LL) / TARGET_FREQUENCY;
-                
-                if (expectedTime > elapsedTime) {
-                    long long sleepTime = expectedTime - elapsedTime;
-                    // Limit sleep time to prevent large sleeps that could cause stuttering
-                    if (sleepTime > 1000) { // Cap at 1ms
-                        sleepTime = 1000;
+            if (shouldDisableLimiter) {
+                // Speed limiter - check timing more frequently for smoother execution
+                if (checkTicks >= CHECK_INTERVAL) {
+                    checkTicks = 0;
+                    auto currentTime = std::chrono::high_resolution_clock::now();
+                    auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime).count();
+                    long long expectedTime = (totalTicks * 1000000LL) / TARGET_FREQUENCY;
+                    
+                    if (expectedTime > elapsedTime) {
+                        long long sleepTime = expectedTime - elapsedTime;
+                        // Limit sleep time to prevent audio stuttering - smaller sleeps for smoother audio
+                        if (sleepTime > 300) { // Cap at 300 microseconds for smoother audio
+                            sleepTime = 300;
+                        }
+                        std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
                     }
-                    std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
                 }
             }
         } });
