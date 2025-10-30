@@ -49,7 +49,7 @@ private:
     
     // Screen update rate limiting
     std::chrono::high_resolution_clock::time_point lastScreenUpdate;
-    const std::chrono::milliseconds minScreenUpdateInterval{20}; // 50 FPS (1000ms / 50 = 20ms)
+    const std::chrono::milliseconds minScreenUpdateInterval{100}; // 50 FPS (1000ms / 50 = 20ms)
 
     // Keyboard handling functions
     void handleKeyDown(SDL_Keycode key);
@@ -523,6 +523,7 @@ void Emulator::runZX()
                 startTime = std::chrono::high_resolution_clock::now();
                 totalTicks = 0;
                 checkTicks = 0;
+                std::cout << "Speed limiter re-enabled after tape play" << std::endl;
             }
             
             // Update previous states
@@ -530,7 +531,24 @@ void Emulator::runZX()
             prevTapeTurbo = tape->isTapeTurbo;
             
             // Speed limit should not be disabled if tape->isTapeTurbo is false
-            if(!tape->isTapePlayed || !tape->isTapeTurbo)
+            // Check if we're disabling the speed limiter
+            bool shouldDisableLimiter = !tape->isTapePlayed || !tape->isTapeTurbo;
+            if (shouldDisableLimiter) {
+                // Add debug output when speed limiter is disabled
+                static bool lastLimiterState = true; // Initially assume limiter is enabled
+                if (!lastLimiterState != shouldDisableLimiter) { // State changed
+                    
+                    lastLimiterState = shouldDisableLimiter;
+                }
+            } else {
+                // Add debug output when speed limiter is enabled
+                static bool lastLimiterState = false; // Initially assume limiter is disabled
+                if (lastLimiterState != shouldDisableLimiter) { // State changed
+                    lastLimiterState = shouldDisableLimiter;
+                }
+            }
+            
+            if(shouldDisableLimiter)
             // Speed limiter - check timing more frequently for smoother execution
             if (checkTicks >= CHECK_INTERVAL) {
                 checkTicks = 0;
