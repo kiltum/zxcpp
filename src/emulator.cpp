@@ -416,14 +416,14 @@ void Emulator::change48(bool is48)
 {
     if (is48)
     {
-        TARGET_FREQUENCY = 3500000;               // 3.5 MHz
-        CHECK_INTERVAL = TARGET_FREQUENCY / 1000; // Check timing every 1ms
+        TARGET_FREQUENCY = 3500000;              // 3.5 MHz
+        CHECK_INTERVAL = TARGET_FREQUENCY / 10000; // Check timing every 0.1ms (more precise)
         ula->change48(true);
     }
     else
     {
-        TARGET_FREQUENCY = 3546900;               // 3.54690 Mhz
-        CHECK_INTERVAL = TARGET_FREQUENCY / 1000; // Check timing every 1ms
+        TARGET_FREQUENCY = 3546900;              // 3.54690 Mhz
+        CHECK_INTERVAL = TARGET_FREQUENCY / 10000; // Check timing every 0.1ms (more precise)
         ula->change48(false);
     }
 }
@@ -553,16 +553,27 @@ void Emulator::runZX()
                 if (checkTicks >= CHECK_INTERVAL) {
                     checkTicks = 0;
                     auto currentTime = std::chrono::high_resolution_clock::now();
-                    auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime).count();
-                    long long expectedTime = (totalTicks * 1000000LL) / TARGET_FREQUENCY;
+                    auto elapsedTime = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
+                    long long expectedTime = (totalTicks * 1000000000LL) / TARGET_FREQUENCY;
                     
                     if (expectedTime > elapsedTime) {
-                        long long sleepTime = expectedTime - elapsedTime;
-                        // Limit sleep time to prevent audio stuttering - smaller sleeps for smoother audio
-                        if (sleepTime > 300) { // Cap at 300 microseconds for smoother audio
-                            sleepTime = 300;
+                        long long sleepTime = (expectedTime - elapsedTime) / 1000; // Convert to microseconds
+                        
+                        if (sleepTime > 1000) {
+                            // For longer delays, use sleep
+                            std::this_thread::sleep_for(std::chrono::microseconds(sleepTime - 500));
+                            // Fine-tune with busy waiting
+                            while (std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                   std::chrono::high_resolution_clock::now() - startTime).count() < expectedTime) {
+                                std::this_thread::yield();
+                            }
+                        } else if (sleepTime > 0) {
+                            // For short delays, use busy waiting for precision
+                            while (std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                   std::chrono::high_resolution_clock::now() - startTime).count() < expectedTime) {
+                                std::this_thread::yield();
+                            }
                         }
-                        std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
                     }
                 }
             }
