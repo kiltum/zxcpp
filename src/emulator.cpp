@@ -46,6 +46,10 @@ private:
     // Thread synchronization
     std::mutex screenMutex;
     bool screenUpdated;
+    
+    // Screen update rate limiting
+    std::chrono::high_resolution_clock::time_point lastScreenUpdate;
+    const std::chrono::milliseconds minScreenUpdateInterval{20}; // 50 FPS (1000ms / 50 = 20ms)
 
     // Keyboard handling functions
     void handleKeyDown(SDL_Keycode key);
@@ -474,6 +478,9 @@ void Emulator::runZX()
         auto startTime = std::chrono::high_resolution_clock::now();
         long long totalTicks = 0;
         long long checkTicks = 0;
+        // Track previous tape state to detect transitions
+        bool prevTapePlayed = false;
+        bool prevTapeTurbo = false;
         //long long refreshTicks = 0;
         
         while (threadRunning.load()) {
@@ -491,11 +498,37 @@ void Emulator::runZX()
                     // Signal that screen has been updated
                     {
                         std::lock_guard<std::mutex> lock(screenMutex);
-                        screenUpdated = true;
+                        // Rate limit screen updates to 50 FPS when tape turbo is enabled
+                        if(!tape->isTapePlayed || !tape->isTapeTurbo) {
+                            // No rate limiting when turbo is disabled
+                            screenUpdated = true;
+                        } else {
+                            // Apply rate limiting when turbo is enabled
+                            auto now = std::chrono::high_resolution_clock::now();
+                            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastScreenUpdate);
+                            if (elapsed >= minScreenUpdateInterval) {
+                                screenUpdated = true;
+                                lastScreenUpdate = now;
+                            }
+                        }
                         cpu->InterruptPending = true;
                     }
                 }
             }
+            
+            // Detect transition from turbo mode to normal mode and reset timing
+            if ((prevTapePlayed != tape->isTapePlayed || prevTapeTurbo != tape->isTapeTurbo) &&
+                (!tape->isTapePlayed || !tape->isTapeTurbo)) {
+                // Reset timing when transitioning to normal mode
+                startTime = std::chrono::high_resolution_clock::now();
+                totalTicks = 0;
+                checkTicks = 0;
+            }
+            
+            // Update previous states
+            prevTapePlayed = tape->isTapePlayed;
+            prevTapeTurbo = tape->isTapeTurbo;
+            
             // Speed limit should not be disabled if tape->isTapeTurbo is false
             if(!tape->isTapePlayed || !tape->isTapeTurbo)
             // Speed limiter - check timing more frequently for smoother execution
