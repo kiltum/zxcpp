@@ -118,8 +118,8 @@ public:
             // Continue without sound
         }
 
-        ports->RegisterWriteHandler(0xFE, [this](uint16_t port, uint8_t value)
-                                    { sound->writePort(port, value); });
+        // ports->RegisterWriteHandler(0xFE, [this](uint16_t port, uint8_t value)
+        //                             { sound->writePort(port, value); });
 
         // Initialize AY8912 sound chip
         ay8912 = std::make_unique<AY8912>();
