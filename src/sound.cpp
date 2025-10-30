@@ -105,13 +105,13 @@ void Sound::writePort(uint16_t port, uint8_t value)
         {
             if (earBit)
             { // Volume on speaker or tape raised to up
-                generateAudio(duration, true);
+                //generateAudio(duration, true);
                 //SDL_FlushAudioStream(audioStream);
                 //printf("%d 1\n",duration);
             }
             else
             {
-                generateAudio(duration, false);
+                //generateAudio(duration, false);
                 //SDL_FlushAudioStream(audioStream);
                 //printf("%d 0\n",duration);
             }
