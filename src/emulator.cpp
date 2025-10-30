@@ -496,7 +496,8 @@ void Emulator::runZX()
                     }
                 }
             }
-            if(!tape->isTapePlayed) // speed limit only if user want speed
+            // Speed limit should not be disabled if tape->isTapeTurbo is false
+            if(!tape->isTapePlayed || !tape->isTapeTurbo)
             // Speed limiter - check timing more frequently for smoother execution
             if (checkTicks >= CHECK_INTERVAL) {
                 checkTicks = 0;
