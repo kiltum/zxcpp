@@ -105,19 +105,19 @@ void Sound::writePort(uint16_t port, uint8_t value)
         {
             if (earBit)
             { // Volume on speaker or tape raised to up
-                //generateAudio(duration, true);
+                generateAudio(duration, true);
                 //SDL_FlushAudioStream(audioStream);
                 //printf("%d 1\n",duration);
             }
             else
             {
-                //generateAudio(duration, false);
+                generateAudio(duration, false);
                 //SDL_FlushAudioStream(audioStream);
                 //printf("%d 0\n",duration);
             }
         }
         else {
-            printf("Skipped %d\n", duration);
+            printf("%d Skipped %d\n", ticks,duration);
         }
     }
 }
@@ -138,6 +138,7 @@ void Sound::generateAudio(long long ticks, bool value)
     // Use proper rounding instead of truncation + arbitrary offset
     int numSamples = static_cast<int>(std::round(duration * sampleRate));
 
+    //numSamples = numSamples - 10; // Lets try to pitch up tone
     // If no samples to generate, return early
     if (numSamples <= 0)
     {
@@ -152,7 +153,7 @@ void Sound::generateAudio(long long ticks, bool value)
     int16_t sampleValue = value ? 10000 : -10000; // Amplitude for up/down position
 
     // Fill buffer with samples
-    for (int i = 0; i < numSamples; ++i)
+    for (int i = 0; i < numSamples; i++)
     {
         // Stereo - same value for both channels
         buffer[i * 2] = sampleValue;     // Left channel
