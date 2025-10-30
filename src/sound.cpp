@@ -132,7 +132,7 @@ void Sound::generateAudio(long long ticks, bool value)
 
     // Calculate number of samples (assuming 44100 Hz sample rate)
     int sampleRate = 44100;
-    int numSamples = static_cast<int>(duration * sampleRate) +1 ;
+    int numSamples = static_cast<int>(duration * sampleRate) + 1;
 
     // If no samples to generate, return early
     if (numSamples <= 0)
