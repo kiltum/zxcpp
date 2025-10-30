@@ -92,20 +92,29 @@ void Sound::writePort(uint16_t port, uint8_t value)
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
 
         // prevent flooding of sound subsytem when border changes rapidly, but no sound output. Like when tape loads
-        if(micBit == lastMicBit && earBit == lastEarBit) return;
+        if (micBit == lastMicBit && earBit == lastEarBit)
+            return;
+
         lastEarBit = earBit;
         lastMicBit = micBit;
+        unsigned int duration = ticks - ticksPassed;
+        ticksPassed = ticks;
+        // printf("%lld %d %d\n", ticks - ticksPassed, earBit, micBit);
 
-        if (earBit || micBit)
-        { // Volume on speaker or tape raised to up
-            ticksPassed = ticks;
-        }
-        else
-        { // ok, we need to generate some sound
-            // printf("%lld\n", ticks - ticksPassed);
-            generateAudio(ticks - ticksPassed, true);  // Membrana of speaker set to up
-            generateAudio(ticks - ticksPassed, false); // set to down
-            SDL_FlushAudioStream(audioStream);
+        if (duration < 10000)
+        {
+            if (earBit)
+            { // Volume on speaker or tape raised to up
+                generateAudio(duration, true);
+                SDL_FlushAudioStream(audioStream);
+                printf("%d 1\n",duration);
+            }
+            else
+            {
+                generateAudio(duration, false);
+                SDL_FlushAudioStream(audioStream);
+                printf("%d 0\n",duration);
+            }
         }
     }
 }
