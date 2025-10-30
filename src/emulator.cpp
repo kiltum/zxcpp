@@ -496,7 +496,7 @@ void Emulator::runZX()
                     }
                 }
             }
-            
+            if(!tape->isTapePlayed) // speed limit only if user want speed
             // Speed limiter - check timing more frequently for smoother execution
             if (checkTicks >= CHECK_INTERVAL) {
                 checkTicks = 0;
