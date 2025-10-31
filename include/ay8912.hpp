@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <SDL3/SDL.h>
+#include <thread>
+#include <atomic>
 
 class AY8912
 {
@@ -16,6 +18,10 @@ private:
     SDL_AudioStream* audioStream;
     SDL_AudioDeviceID audioDevice;
     bool initialized;
+    
+    // Audio processing thread
+    std::thread audioThread;
+    std::atomic<bool> audioThreadRunning;
 
 public:
     AY8912();
@@ -30,6 +36,9 @@ public:
     
     // Reset the chip
     void reset();
+    
+    // Audio processing
+    void processAudio();
 };
 
 #endif // AY8912_HPP

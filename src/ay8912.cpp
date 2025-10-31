@@ -2,8 +2,10 @@
 #include <iostream>
 #include <cstring>
 #include <SDL3/SDL.h>
+#include <thread>
+#include <chrono>
 
-AY8912::AY8912() : selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false)
+AY8912::AY8912() : selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false), audioThreadRunning(false)
 {
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
@@ -60,6 +62,10 @@ bool AY8912::initialize()
     // Start audio playback
     SDL_ResumeAudioDevice(audioDevice);
 
+    // Start audio processing thread
+    audioThreadRunning = true;
+    audioThread = std::thread(&AY8912::processAudio, this);
+
     initialized = true;
     std::cout << "AY8912 sound system initialized successfully" << std::endl;
     return true;
@@ -67,15 +73,23 @@ bool AY8912::initialize()
 
 void AY8912::cleanup()
 {
-    // if (audioDevice) {
-    //     SDL_CloseAudioDevice(audioDevice);
-    //     audioDevice = 0;
-    // }
+    // Stop audio processing thread
+    if (audioThreadRunning) {
+        audioThreadRunning = false;
+        if (audioThread.joinable()) {
+            audioThread.join();
+        }
+    }
 
-    // if (audioStream) {
-    //     SDL_DestroyAudioStream(audioStream);
-    //     audioStream = nullptr;
-    // }
+    if (audioDevice) {
+        SDL_CloseAudioDevice(audioDevice);
+        audioDevice = 0;
+    }
+
+    if (audioStream) {
+        SDL_DestroyAudioStream(audioStream);
+        audioStream = nullptr;
+    }
 
     initialized = false;
 }
@@ -126,4 +140,12 @@ uint8_t AY8912::readPort(uint16_t port)
         }
     }
     return 0;
+}
+
+void AY8912::processAudio()
+{
+    while (audioThreadRunning) {
+        // Simple sleep for now - this is where audio processing will happen
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 }
