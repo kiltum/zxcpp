@@ -5,8 +5,16 @@
 #include <thread>
 #include <chrono>
 
-AY8912::AY8912() : selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false), audioThreadRunning(false)
+AY8912::AY8912()
 {
+    // Initialize all member variables
+    selectedRegister = 0;
+    addressLatch = false;
+    audioStream = nullptr;
+    audioDevice = 0;
+    initialized = false;
+    audioThreadRunning = false;
+    
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
 }
@@ -108,17 +116,19 @@ void AY8912::reset()
 
 void AY8912::writePort(uint16_t port, uint8_t value)
 {
-    if (port == 0xFFFD)
+    // Check for address/data select port (0xFFFD) - bits 15-14 must be 11, bits 1-0 must be 01
+    if ((port & 0xC001) == 0xC001)
     {
-        printf("AD %x %x\n",port,value); // Show what to write to port for debug
+        printf("AD %x %x %d\n",port,value,value); // Show what to write to port for debug
         // Write register number
         selectedRegister = value & 0x0F; // Only lower 4 bits are valid
         addressLatch = true;
     }
     
-    else if (port == 0xBFFD) 
+    // Check for register data port (0xBFFD) - bits 15-14 must be 10, bits 1-0 must be 01
+    else if ((port & 0xC001) == 0x8001) 
     {
-        printf("AR %x %x\n",port,value); // Show what to write to port for debug
+        printf("AR %x %x %d\n",port,value,value); // Show what to write to port for debug
         // Write data to selected register
         if (addressLatch && selectedRegister <= 13)
         {
@@ -130,8 +140,10 @@ void AY8912::writePort(uint16_t port, uint8_t value)
 
 uint8_t AY8912::readPort(uint16_t port)
 {
-    if (port == 0xFFFD)
+    // Check for address/data select port (0xFFFD) - bits 15-14 must be 11, bits 1-0 must be 01
+    if ((port & 0xC001) == 0xC001)
     {
+        printf("AP %x %x\n",port, registers[selectedRegister]);
         if (addressLatch && selectedRegister <= 13)
         {
             // Read from selected register
