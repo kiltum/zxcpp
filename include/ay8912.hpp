@@ -2,6 +2,7 @@
 #define AY8912_HPP
 
 #include <cstdint>
+#include <SDL3/SDL.h>
 
 class AY8912
 {
@@ -10,6 +11,11 @@ private:
     uint8_t registers[16];  // 14 registers (0-13), 14-15 unused
     uint8_t selectedRegister;
     bool addressLatch;
+    
+    // Audio streaming
+    SDL_AudioStream* audioStream;
+    SDL_AudioDeviceID audioDevice;
+    bool initialized;
 
 public:
     AY8912();

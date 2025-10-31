@@ -1,8 +1,9 @@
 #include "ay8912.hpp"
 #include <iostream>
 #include <cstring>
+#include <SDL3/SDL.h>
 
-AY8912::AY8912() : selectedRegister(0), addressLatch(false)
+AY8912::AY8912() : selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false)
 {
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
@@ -15,18 +16,73 @@ AY8912::~AY8912()
 
 bool AY8912::initialize()
 {
-    // Empty stub - does nothing
+    // Check if audio subsystem is available
+    if (!(SDL_WasInit(SDL_INIT_AUDIO) & SDL_INIT_AUDIO))
+    {
+        std::cerr << "SDL audio subsystem not initialized, skipping AY8912 sound initialization" << std::endl;
+        return false;
+    }
+
+    SDL_AudioSpec desired_spec;
+    SDL_zero(desired_spec);
+    desired_spec.format = SDL_AUDIO_S16;
+    desired_spec.freq = 44100;
+    desired_spec.channels = 2;
+
+    audioStream = SDL_CreateAudioStream(&desired_spec, &desired_spec);
+    if (!audioStream)
+    {
+        printf("Error creating AY8912 audio stream: %s\n", SDL_GetError());
+        return false;
+    }
+
+    // Create and open audio device, then bind the stream to it
+    audioDevice = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired_spec);
+    if (!audioDevice)
+    {
+        printf("Error opening AY8912 audio device: %s\n", SDL_GetError());
+        SDL_DestroyAudioStream(audioStream);
+        audioStream = nullptr;
+        return false;
+    }
+
+    // Bind the audio stream to the device
+    if (!SDL_BindAudioStream(audioDevice, audioStream))
+    {
+        printf("Error binding AY8912 audio stream: %s\n", SDL_GetError());
+        SDL_CloseAudioDevice(audioDevice);
+        SDL_DestroyAudioStream(audioStream);
+        audioStream = nullptr;
+        audioDevice = 0;
+        return false;
+    }
+
+    // Start audio playback
+    SDL_ResumeAudioDevice(audioDevice);
+
+    initialized = true;
+    std::cout << "AY8912 sound system initialized successfully" << std::endl;
     return true;
 }
 
 void AY8912::cleanup()
 {
-    // Empty stub - does nothing
+    // if (audioDevice) {
+    //     SDL_CloseAudioDevice(audioDevice);
+    //     audioDevice = 0;
+    // }
+
+    // if (audioStream) {
+    //     SDL_DestroyAudioStream(audioStream);
+    //     audioStream = nullptr;
+    // }
+
+    initialized = false;
 }
 
 void AY8912::reset()
 {
-    // Empty stub - does nothing
+    // Reset registers
     std::memset(registers, 0, sizeof(registers));
     selectedRegister = 0;
     addressLatch = false;
