@@ -185,7 +185,8 @@ void AY8912::processAudio()
             // Generate audio samples using the AY-3-8910 emulator
             for (int i = 0; i < bufferSize; i++) {
                 uint32_t sample = ayChip->getSample();
-                printf("%d ",sample);
+                // Remove debug printf that was flooding the output
+                // printf("%d ",sample);
                 int16_t left = static_cast<int16_t>((sample >> 16) & 0xFFFF);
                 int16_t right = static_cast<int16_t>(sample & 0xFFFF);
                 
@@ -197,7 +198,9 @@ void AY8912::processAudio()
             SDL_PutAudioStreamData(audioStream, audioBuffer.data(), bufferSize * 2 * sizeof(int16_t));
         }
         
-        // Sleep for a short time to avoid consuming too much CPU
-        std::this_thread::sleep_for(std::chrono::microseconds(1000)); // 1ms
+        // Sleep for appropriate time to maintain correct audio timing
+        // For 44100 Hz sample rate and 1024 samples, we need to sleep for about 23ms
+        // But we'll use a shorter sleep to ensure smooth operation
+        std::this_thread::sleep_for(std::chrono::microseconds(10000)); // 10ms
     }
 }
