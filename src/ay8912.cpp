@@ -3,7 +3,8 @@
 #include <cstring>
 #include <algorithm>
 
-AY8912::AY8912() : registers{0}, selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false)
+AY8912::AY8912() : registers{0}, selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false), 
+                   cpuCycleAccumulator(0)
 {
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
@@ -147,48 +148,27 @@ void AY8912::reset()
 
 void AY8912::writePort(uint16_t port, uint8_t value)
 {
-    printf("AY %x %x\n", port, value);
-    /* some dump for analyses
-    AY bffd 78
-AY fffd 3
-AY bffd 3
-AY fffd 2
-AY bffd bd
-AY fffd 9
-AY bffd b
-AY fffd 5
-AY bffd 2
-AY fffd 4
-AY bffd 7e
-AY fffd a
-AY bffd 7
-AY fffd 3
-AY bffd 3
-AY fffd 2
-AY bffd be
-AY fffd 9
-AY bffd a
-AY fffd 5
-AY bffd 2
-AY fffd 4
-AY bffd 7f
-AY fffd a
-AY bffd d
-    */
-    // ZX Spectrum 128 uses port BFFDh for writing to AY-3-8912
-    if ((port & 0xFFFD) == 0xBFFD)
+    // ZX Spectrum 128 uses:
+    // Port FFFDh to write the register number you want to access
+    // Port BFFDh to write the data to the register that was just selected
+    
+    // For compatibility with ZX Spectrum 128, we need to handle port mirroring
+    // Ports FFFD and BFFD are mirrored across the address space
+    // Check for register selection (FFFD) - mask to check bits 0 and 2
+    if (port == 0xfffd)  // Matches FFFD (xxxx xxxx xxx1 xxxx)
     {
+        // Write register number
+        selectedRegister = value & 0x0F; // Only lower 4 bits are valid
+        addressLatch = true;
+    }
+    // Check for data write (BFFD) - mask to check bits 0 and 2
+    else if (port == 0xbffd)  // Matches BFFD (xxxx xxxx xxx1 xx1x)
+    {
+        // Write data to selected register
         if (addressLatch)
         {
-            // Write data to selected register
             writeRegister(selectedRegister, value);
-            addressLatch = false;
-        }
-        else
-        {
-            // Latch address
-            selectedRegister = value & 0x0F; // Only lower 4 bits are valid
-            addressLatch = true;
+            addressLatch = false; // Reset latch after writing data
         }
     }
 }
@@ -196,7 +176,8 @@ AY bffd d
 uint8_t AY8912::readPort(uint16_t port)
 {
     // ZX Spectrum 128 uses port FFFDh for reading from AY-3-8912
-    if ((port & 0xFFFD) == 0xFFFD)
+    // Check for register read (FFFD) - mask to check bits 0 and 2
+    if ((port & 0x0003) == 0x0001)  // Matches FFFD (xxxx xxxx xxx1 xxxx)
     {
         if (addressLatch)
         {
@@ -505,18 +486,33 @@ int16_t AY8912::getOutputLevel()
     return output;
 }
 
-void AY8912::updateAudio()
+void AY8912::updateAudio(bool is48kMode)
 {
     if (!initialized || !audioStream)
         return;
 
-    // Update all sound generators
-    updateChannels();
-    updateNoise();
-    updateEnvelope();
+    // Accumulate CPU cycles (called once per CPU tick)
+    cpuCycleAccumulator++;
 
-    // Generate audio samples
-    generateSamples(1); // Generate one sample per call
+    // Calculate how many CPU cycles correspond to one audio sample
+    // Audio frequency: 44.1kHz
+    double cpuFrequency = is48kMode ? 3500000.0 : 3546900.0;
+    const double cyclesPerSample = cpuFrequency / 44100.0;
+    
+    // When we have accumulated enough cycles for one sample, generate it
+    if (cpuCycleAccumulator >= static_cast<long long>(cyclesPerSample))
+    {
+        // Update all sound generators
+        updateChannels();
+        updateNoise();
+        updateEnvelope();
+
+        // Generate one audio sample
+        generateSamples(1);
+        
+        // Decrement the accumulator by the number of cycles per sample
+        cpuCycleAccumulator -= static_cast<long long>(cyclesPerSample);
+    }
 }
 
 void AY8912::generateSamples(int numSamples)

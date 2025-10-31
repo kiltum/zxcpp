@@ -117,7 +117,7 @@ void Sound::writePort(uint16_t port, uint8_t value)
             }
         }
         else {
-            printf("%d Skipped %d\n", ticks,duration);
+            //printf("%lld Skipped %u\n", ticks,duration);
         }
     }
 }

@@ -492,7 +492,9 @@ void Emulator::runZX()
             
             // Update AY8912 audio for each CPU tick
             for (int i = 0; i < ticks; i++) {
-                //ay8912->updateAudio();
+                if (ay8912) {
+                    ay8912->updateAudio(memory->getIs48()); // Pass current mode (48k or 128k)
+                }
                 int ref = ula->oneTick();
                 if (ref == 0) {
                     // Signal that screen has been updated

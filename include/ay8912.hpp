@@ -18,6 +18,9 @@ private:
     SDL_AudioDeviceID audioDevice;
     bool initialized;
     
+    // Audio resampling - accumulator for CPU cycles
+    long long cpuCycleAccumulator;
+    
     // Channel state
     struct Channel {
         uint16_t period;        // 12-bit period counter
@@ -77,7 +80,7 @@ public:
     int16_t getOutputLevel();
     
     // Update audio for each CPU tick
-    void updateAudio();
+    void updateAudio(bool is48kMode = true);
 };
 
 #endif // AY8912_HPP
