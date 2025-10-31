@@ -73,7 +73,7 @@ bool AY8912::initialize()
 
 void AY8912::cleanup()
 {
-    // Stop audio processing thread
+    // Stop audio processing thread first
     if (audioThreadRunning) {
         audioThreadRunning = false;
         if (audioThread.joinable()) {
@@ -81,14 +81,18 @@ void AY8912::cleanup()
         }
     }
 
-    if (audioDevice) {
-        SDL_CloseAudioDevice(audioDevice);
-        audioDevice = 0;
-    }
+    // Only clean up SDL audio resources if they were successfully initialized
+    // and if SDL is still initialized (not shut down yet)
+    if (initialized && (SDL_WasInit(SDL_INIT_AUDIO) & SDL_INIT_AUDIO)) {
+        if (audioDevice) {
+            SDL_CloseAudioDevice(audioDevice);
+            audioDevice = 0;
+        }
 
-    if (audioStream) {
-        SDL_DestroyAudioStream(audioStream);
-        audioStream = nullptr;
+        if (audioStream) {
+            SDL_DestroyAudioStream(audioStream);
+            audioStream = nullptr;
+        }
     }
 
     initialized = false;
