@@ -1,7 +1,7 @@
 CXX = g++
 LIBZIP_CFLAGS := $(shell pkg-config --cflags libzip 2>/dev/null)
 LIBZIP_LIBS := $(shell pkg-config --libs libzip 2>/dev/null)
-CXXFLAGS = -std=c++20 -O3 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog $(LIBZIP_CFLAGS)
+CXXFLAGS = -std=c++20 -O3 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog -Ilib/vgm_decoder/include $(LIBZIP_CFLAGS)
 SRCDIR = src
 OBJDIR = obj
 IMGUI_DIR = lib/imgui
@@ -15,6 +15,11 @@ IMGUI_SOURCES = $(IMGUI_DIR)/imgui.cpp \
 
 IMGUIDIALOG_DIR = lib/imguifiledialog
 IMGUIDIALOG_SOURCES = $(IMGUIDIALOG_DIR)/ImGuiFileDialog.cpp
+
+# VGM Decoder AY-3-8910 sources
+VGM_DECODER_DIR = lib/vgm_decoder
+VGM_DECODER_SOURCES = $(VGM_DECODER_DIR)/src/chips/ay-3-8910.cpp
+
 SOURCES = $(SRCDIR)/emulator.cpp \
           $(SRCDIR)/memory.cpp \
           $(SRCDIR)/port.cpp \
@@ -32,11 +37,15 @@ SOURCES = $(SRCDIR)/emulator.cpp \
           $(SRCDIR)/tape.cpp \
           $(SRCDIR)/ay8912.cpp \
           $(IMGUI_SOURCES) \
-          $(IMGUIDIALOG_SOURCES)
+          $(IMGUIDIALOG_SOURCES) \
+          $(VGM_DECODER_SOURCES)
+
 OBJECTS = $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 OBJECTS := $(OBJECTS:$(IMGUI_DIR)/%.cpp=$(OBJDIR)/%.o)
 OBJECTS := $(OBJECTS:$(IMGUI_DIR)/backends/%.cpp=$(OBJDIR)/%.o)
 OBJECTS := $(OBJECTS:$(IMGUIDIALOG_DIR)/%.cpp=$(OBJDIR)/%.o)
+OBJECTS := $(OBJECTS:$(VGM_DECODER_DIR)/%.cpp=$(OBJDIR)/%.o)
+
 TARGET = emulator
 
 # SDL3 flags
@@ -49,15 +58,23 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(OBJECTS) -g -fsanitize=address -o $@ $(SDL_LIBS) $(LIBZIP_LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(IMGUI_DIR)/%.cpp | $(OBJDIR)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(IMGUI_DIR)/backends/%.cpp | $(OBJDIR)/backends
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(IMGUIDIALOG_DIR)/%.cpp | $(OBJDIR)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: $(VGM_DECODER_DIR)/%.cpp | $(OBJDIR)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(SDL_CFLAGS) -c $< -o $@
 
 $(OBJDIR)/backends:

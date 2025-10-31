@@ -6,6 +6,9 @@
 #include <thread>
 #include <atomic>
 
+// Forward declaration of AY38910 class
+class AY38910;
+
 class AY8912
 {
 private:
@@ -22,6 +25,9 @@ private:
     // Audio processing thread
     std::thread audioThread;
     std::atomic<bool> audioThreadRunning;
+    
+    // AY-3-8910 emulator instance
+    AY38910* ayChip;
 
 public:
     AY8912();

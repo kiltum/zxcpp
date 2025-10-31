@@ -1,27 +1,37 @@
 #include "ay8912.hpp"
+#include "chips/ay-3-8910.h"
 #include <iostream>
 #include <cstring>
 #include <SDL3/SDL.h>
 #include <thread>
 #include <chrono>
+#include <vector>
 
-AY8912::AY8912()
+AY8912::AY8912() : 
+    selectedRegister(0),
+    addressLatch(false),
+    audioStream(nullptr),
+    audioDevice(0),
+    initialized(false),
+    audioThreadRunning(false)
 {
-    // Initialize all member variables
-    selectedRegister = 0;
-    addressLatch = false;
-    audioStream = nullptr;
-    audioDevice = 0;
-    initialized = false;
-    audioThreadRunning = false;
-    
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
+    
+    // Initialize the vgm_decoder AY-3-8910 emulator
+    ayChip = new AY38910(CHIP_TYPE_AY8910, 0);
+    ayChip->setFrequency(1773400); // ZX Spectrum clock frequency
+    ayChip->setSampleFrequency(44100); // Audio sample frequency
+    ayChip->reset();
 }
 
 AY8912::~AY8912()
 {
     cleanup();
+    if (ayChip) {
+        delete ayChip;
+        ayChip = nullptr;
+    }
 }
 
 bool AY8912::initialize()
@@ -112,6 +122,11 @@ void AY8912::reset()
     std::memset(registers, 0, sizeof(registers));
     selectedRegister = 0;
     addressLatch = false;
+    
+    // Reset the AY-3-8910 chip
+    if (ayChip) {
+        ayChip->reset();
+    }
 }
 
 void AY8912::writePort(uint16_t port, uint8_t value)
@@ -119,7 +134,6 @@ void AY8912::writePort(uint16_t port, uint8_t value)
     // Check for address/data select port (0xFFFD) - bits 15-14 must be 11, bits 1-0 must be 01
     if ((port & 0xC001) == 0xC001)
     {
-        printf("AD %x %x %d\n",port,value,value); // Show what to write to port for debug
         // Write register number
         selectedRegister = value & 0x0F; // Only lower 4 bits are valid
         addressLatch = true;
@@ -128,12 +142,16 @@ void AY8912::writePort(uint16_t port, uint8_t value)
     // Check for register data port (0xBFFD) - bits 15-14 must be 10, bits 1-0 must be 01
     else if ((port & 0xC001) == 0x8001) 
     {
-        printf("AR %x %x %d\n",port,value,value); // Show what to write to port for debug
         // Write data to selected register
         if (addressLatch && selectedRegister <= 13)
         {
             registers[selectedRegister] = value;
             addressLatch = false; // Reset latch after writing data
+            
+            // Pass the register write to the AY-3-8910 emulator
+            if (ayChip) {
+                ayChip->write(selectedRegister, value);
+            }
         }
     }
 }
@@ -143,7 +161,6 @@ uint8_t AY8912::readPort(uint16_t port)
     // Check for address/data select port (0xFFFD) - bits 15-14 must be 11, bits 1-0 must be 01
     if ((port & 0xC001) == 0xC001)
     {
-        printf("AP %x %x\n",port, registers[selectedRegister]);
         if (addressLatch && selectedRegister <= 13)
         {
             // Read from selected register
@@ -160,8 +177,26 @@ uint8_t AY8912::readPort(uint16_t port)
 
 void AY8912::processAudio()
 {
+    const int bufferSize = 1024; // Process 1024 samples at a time
+    std::vector<int16_t> audioBuffer(bufferSize * 2); // Stereo samples
+    
     while (audioThreadRunning) {
-        // Simple sleep for now - this is where audio processing will happen
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        if (initialized && audioStream && ayChip) {
+            // Generate audio samples using the AY-3-8910 emulator
+            for (int i = 0; i < bufferSize; i++) {
+                uint32_t sample = ayChip->getSample();
+                int16_t left = static_cast<int16_t>((sample >> 16) & 0xFFFF);
+                int16_t right = static_cast<int16_t>(sample & 0xFFFF);
+                
+                audioBuffer[i * 2] = left;     // Left channel
+                audioBuffer[i * 2 + 1] = right; // Right channel
+            }
+            
+            // Put audio data into the stream
+            SDL_PutAudioStreamData(audioStream, audioBuffer.data(), bufferSize * 2 * sizeof(int16_t));
+        }
+        
+        // Sleep for a short time to avoid consuming too much CPU
+        std::this_thread::sleep_for(std::chrono::microseconds(1000)); // 1ms
     }
 }
