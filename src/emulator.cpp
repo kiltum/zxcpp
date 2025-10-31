@@ -374,6 +374,7 @@ public:
 
     void cleanup()
     {
+        sound->cleanup();
         // Stop the thread if it's running
         if (threadRunning.load())
         {
