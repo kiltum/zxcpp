@@ -2,40 +2,43 @@
 #include <iostream>
 #include <cstring>
 #include <algorithm>
+#include <chrono>
+#include <thread>
 
-AY8912::AY8912() : registers{0}, selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false), 
-                   cpuCycleAccumulator(0)
+AY8912::AY8912() : selectedRegister(0), addressLatch(false), audioStream(nullptr), audioDevice(0), initialized(false),
+                   audioThreadRunning(false)
 {
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
+    std::memset(audioRegisters, 0, sizeof(audioRegisters));
 
-    // Initialize channels
+    // Initialize audio channels
     for (int i = 0; i < 3; i++)
     {
-        channels[i].period = 0;
-        channels[i].volume = 0;
-        channels[i].enable = true;
-        channels[i].counter = 0;
-        channels[i].output = false;
+        audioChannels[i].period = 0;
+        audioChannels[i].volume = 0;
+        audioChannels[i].enable = true;
+        audioChannels[i].counter = 0;
+        audioChannels[i].output = false;
     }
 
     // Initialize noise channel
-    noise.period = 0;
-    noise.volume = 0;
-    noise.enable = true;
-    noise.counter = 0;
-    noise.shiftRegister = 0x1FFFF; // 17-bit shift register
-    noise.output = false;
+    audioNoise.period = 0;
+    audioNoise.volume = 0;
+    audioNoise.enable = true;
+    audioNoise.counter = 0;
+    audioNoise.shiftRegister = 0x1FFFF; // 17-bit shift register
+    audioNoise.output = false;
 
     // Initialize envelope
-    envelope.period = 0;
-    envelope.shape = 0;
-    envelope.counter = 0;
-    envelope.level = 0;
-    envelope.hold = false;
-    envelope.alternate = false;
-    envelope.attack = false;
-    envelope.output = false;
+    audioEnvelope.period = 0;
+    audioEnvelope.shape = 0;
+    audioEnvelope.counter = 0;
+    audioEnvelope.level = 0;
+    audioEnvelope.hold = false;
+    audioEnvelope.alternate = false;
+    audioEnvelope.attack = false;
+    audioEnvelope.output = false;
 }
 
 AY8912::~AY8912()
@@ -91,59 +94,79 @@ bool AY8912::initialize()
 
     initialized = true;
     reset();
+    
+    // Start audio thread
+    audioThreadRunning = true;
+    audioThread = std::thread(&AY8912::audioThreadFunction, this);
+    
     std::cout << "AY-3-8912 sound chip initialized successfully" << std::endl;
     return true;
 }
 
 void AY8912::cleanup()
 {
-    // if (audioStream) {
-    //     SDL_DestroyAudioStream(audioStream);
-    //     audioStream = nullptr;
-    // }
+    // Stop audio thread
+    if (audioThreadRunning)
+    {
+        audioThreadRunning = false;
+        if (audioThread.joinable())
+        {
+            audioThread.join();
+        }
+    }
 
-    // if (audioDevice) {
-    //     SDL_CloseAudioDevice(audioDevice);
-    //     audioDevice = 0;
-    // }
+    if (audioStream)
+    {
+        SDL_DestroyAudioStream(audioStream);
+        audioStream = nullptr;
+    }
+
+    if (audioDevice)
+    {
+        SDL_CloseAudioDevice(audioDevice);
+        audioDevice = 0;
+    }
 
     initialized = false;
 }
 
 void AY8912::reset()
 {
+    std::lock_guard<std::mutex> lock(registerMutex);
+    
     // Reset all registers to 0
     std::memset(registers, 0, sizeof(registers));
+    std::memset(audioRegisters, 0, sizeof(audioRegisters));
     selectedRegister = 0;
     addressLatch = false;
 
     // Reset channels
     for (int i = 0; i < 3; i++)
     {
-        channels[i].period = 0;
-        channels[i].volume = 0;
-        channels[i].enable = true;
-        channels[i].counter = 0;
-        channels[i].output = false;
+        audioChannels[i].period = 0;
+        audioChannels[i].volume = 0;
+        audioChannels[i].enable = true;
+        audioChannels[i].counter = 0;
+        audioChannels[i].output = false;
     }
 
     // Reset noise
-    noise.period = 0;
-    noise.volume = 0;
-    noise.enable = true;
-    noise.counter = 0;
-    noise.shiftRegister = 0x1FFFF;
-    noise.output = false;
+    audioNoise.period = 0;
+    audioNoise.volume = 0;
+    audioNoise.enable = true;
+    audioNoise.counter = 0;
+    audioNoise.shiftRegister = 0x1FFFF;
+    audioNoise.output = false;
 
     // Reset envelope
-    envelope.period = 0;
-    envelope.shape = 0;
-    envelope.counter = 0;
-    envelope.level = 0;
-    envelope.hold = false;
-    envelope.alternate = false;
-    envelope.attack = false;
-    envelope.output = false;
+    audioEnvelope.period = 0;
+    audioEnvelope.shape = 0;
+    audioEnvelope.counter = 0;
+    audioEnvelope.level = 0;
+    audioEnvelope.hold = false;
+    audioEnvelope.alternate = false;
+    audioEnvelope.attack = false;
+    audioEnvelope.output = false;
 }
 
 void AY8912::writePort(uint16_t port, uint8_t value)
@@ -155,14 +178,14 @@ void AY8912::writePort(uint16_t port, uint8_t value)
     // For compatibility with ZX Spectrum 128, we need to handle port mirroring
     // Ports FFFD and BFFD are mirrored across the address space
     // Check for register selection (FFFD) - mask to check bits 0 and 2
-    if (port == 0xfffd)  // Matches FFFD (xxxx xxxx xxx1 xxxx)
+    if ((port & 0x0003) == 0x0001)  // Matches FFFD (xxxx xxxx xxx1 xxxx)
     {
         // Write register number
         selectedRegister = value & 0x0F; // Only lower 4 bits are valid
         addressLatch = true;
     }
     // Check for data write (BFFD) - mask to check bits 0 and 2
-    else if (port == 0xbffd)  // Matches BFFD (xxxx xxxx xxx1 xx1x)
+    else if ((port & 0x0003) == 0x0003)  // Matches BFFD (xxxx xxxx xxx1 xx1x)
     {
         // Write data to selected register
         if (addressLatch)
@@ -198,30 +221,34 @@ void AY8912::writeRegister(uint8_t reg, uint8_t value)
     if (reg > 13)
         return; // Only registers 0-13 are valid
 
-    registers[reg] = value;
+    {
+        std::lock_guard<std::mutex> lock(registerMutex);
+        registers[reg] = value;
+    }
 
+    // Update audio thread's copy of registers and state
     switch (reg)
     {
     case 0: // Channel A period (low 8 bits)
-        channels[0].period = (channels[0].period & 0xF00) | value;
+        audioChannels[0].period = (audioChannels[0].period & 0xF00) | value;
         break;
     case 1: // Channel A period (high 4 bits)
-        channels[0].period = (channels[0].period & 0xFF) | ((value & 0x0F) << 8);
+        audioChannels[0].period = (audioChannels[0].period & 0xFF) | ((value & 0x0F) << 8);
         break;
     case 2: // Channel B period (low 8 bits)
-        channels[1].period = (channels[1].period & 0xF00) | value;
+        audioChannels[1].period = (audioChannels[1].period & 0xF00) | value;
         break;
     case 3: // Channel B period (high 4 bits)
-        channels[1].period = (channels[1].period & 0xFF) | ((value & 0x0F) << 8);
+        audioChannels[1].period = (audioChannels[1].period & 0xFF) | ((value & 0x0F) << 8);
         break;
     case 4: // Channel C period (low 8 bits)
-        channels[2].period = (channels[2].period & 0xF00) | value;
+        audioChannels[2].period = (audioChannels[2].period & 0xF00) | value;
         break;
     case 5: // Channel C period (high 4 bits)
-        channels[2].period = (channels[2].period & 0xFF) | ((value & 0x0F) << 8);
+        audioChannels[2].period = (audioChannels[2].period & 0xFF) | ((value & 0x0F) << 8);
         break;
     case 6:                          // Noise period
-        noise.period = value & 0x1F; // Only lower 5 bits
+        audioNoise.period = value & 0x1F; // Only lower 5 bits
         break;
     case 7: // Mixer
         // Bit 0: Channel A enable (0 = enable, 1 = disable)
@@ -230,30 +257,30 @@ void AY8912::writeRegister(uint8_t reg, uint8_t value)
         // Bit 3: Noise enable A (0 = enable, 1 = disable)
         // Bit 4: Noise enable B (0 = enable, 1 = disable)
         // Bit 5: Noise enable C (0 = enable, 1 = disable)
-        channels[0].enable = !(value & 0x01);
-        channels[1].enable = !(value & 0x02);
-        channels[2].enable = !(value & 0x04);
+        audioChannels[0].enable = !(value & 0x01);
+        audioChannels[1].enable = !(value & 0x02);
+        audioChannels[2].enable = !(value & 0x04);
         // Noise enable bits are handled in updateNoise()
         break;
     case 8:                                // Channel A volume
-        channels[0].volume = value & 0x0F; // Only lower 4 bits
+        audioChannels[0].volume = value & 0x0F; // Only lower 4 bits
         break;
     case 9:                                // Channel B volume
-        channels[1].volume = value & 0x0F; // Only lower 4 bits
+        audioChannels[1].volume = value & 0x0F; // Only lower 4 bits
         break;
     case 10:                               // Channel C volume
-        channels[2].volume = value & 0x0F; // Only lower 4 bits
+        audioChannels[2].volume = value & 0x0F; // Only lower 4 bits
         break;
     case 11: // Envelope period (low 8 bits)
-        envelope.period = (envelope.period & 0xF00) | value;
+        audioEnvelope.period = (audioEnvelope.period & 0xF00) | value;
         break;
     case 12: // Envelope period (high 8 bits)
-        envelope.period = (envelope.period & 0xFF) | ((value & 0xFF) << 8);
+        audioEnvelope.period = (audioEnvelope.period & 0xFF) | ((value & 0xFF) << 8);
         break;
     case 13:                           // Envelope shape
-        envelope.shape = value & 0x0F; // Only lower 4 bits
+        audioEnvelope.shape = value & 0x0F; // Only lower 4 bits
         // Initialize envelope state based on shape
-        switch (envelope.shape)
+        switch (audioEnvelope.shape)
         {
         case 0:
         case 1:
@@ -272,18 +299,18 @@ void AY8912::writeRegister(uint8_t reg, uint8_t value)
         case 14:
         case 15:
             // For attack shapes, start at 0
-            if (envelope.shape == 4 || envelope.shape == 5 || envelope.shape == 6 ||
-                envelope.shape == 7 || envelope.shape == 12 || envelope.shape == 13 ||
-                envelope.shape == 14 || envelope.shape == 15)
+            if (audioEnvelope.shape == 4 || audioEnvelope.shape == 5 || audioEnvelope.shape == 6 ||
+                audioEnvelope.shape == 7 || audioEnvelope.shape == 12 || audioEnvelope.shape == 13 ||
+                audioEnvelope.shape == 14 || audioEnvelope.shape == 15)
             {
-                envelope.level = 0;
-                envelope.attack = true;
+                audioEnvelope.level = 0;
+                audioEnvelope.attack = true;
             }
             else
             {
                 // For decay shapes, start at 15
-                envelope.level = 15;
-                envelope.attack = false;
+                audioEnvelope.level = 15;
+                audioEnvelope.attack = false;
             }
             break;
         }
@@ -295,187 +322,61 @@ uint8_t AY8912::readRegister(uint8_t reg)
 {
     if (reg > 13)
         return 0;
+    
+    std::lock_guard<std::mutex> lock(registerMutex);
     return registers[reg];
 }
 
-void AY8912::updateChannels()
+void AY8912::audioThreadFunction()
 {
-    for (int i = 0; i < 3; i++)
+    while (audioThreadRunning)
     {
-        if (channels[i].period > 0)
+        // Generate one sample
+        int16_t sample = generateSample();
+        
+        // Create stereo sample
+        int16_t stereoSample[2] = {sample, sample};
+        
+        // Put audio data into the stream
+        if (audioStream && SDL_PutAudioStreamData(audioStream, stereoSample, 2 * sizeof(int16_t)))
         {
-            channels[i].counter++;
-            if (channels[i].counter >= channels[i].period)
-            {
-                channels[i].counter = 0;
-                channels[i].output = !channels[i].output;
-            }
+            // Successfully added data to stream
         }
+        
+        // Sleep to maintain 44.1kHz sample rate
+        // Sleep for approximately 1/44100 seconds = ~22.67 microseconds
+        std::this_thread::sleep_for(std::chrono::microseconds(22));
     }
 }
 
-void AY8912::updateNoise()
+int16_t AY8912::generateSample()
 {
-    if (noise.period > 0)
-    {
-        noise.counter++;
-        if (noise.counter >= noise.period)
-        {
-            noise.counter = 0;
-
-            // Generate new noise bit
-            uint8_t newBit = ((noise.shiftRegister >> 16) & 1) ^ ((noise.shiftRegister >> 14) & 1);
-            noise.shiftRegister = ((noise.shiftRegister << 1) | newBit) & 0x1FFFF;
-
-            noise.output = (noise.shiftRegister & 1) != 0;
-        }
-    }
-}
-
-void AY8912::updateEnvelope()
-{
-    if (envelope.period > 0)
-    {
-        envelope.counter++;
-        if (envelope.counter >= envelope.period)
-        {
-            envelope.counter = 0;
-
-            // Implement all 16 envelope shapes according to AY-3-8912 documentation
-            switch (envelope.shape)
-            {
-            case 0:  // \__________
-            case 1:  // \__________
-            case 2:  // \__________
-            case 3:  // \__________
-            case 9:  // \__________
-            case 11: // \__________
-                // Single decay then off
-                if (envelope.level > 0)
-                {
-                    envelope.level--;
-                }
-                break;
-
-            case 4:  // /|_________
-            case 5:  // /|_________
-            case 6:  // /|_________
-            case 7:  // /|_________
-            case 13: // /_________
-            case 15: // /_________
-                // Single attack then off
-                if (envelope.level < 15)
-                {
-                    envelope.level++;
-                }
-                break;
-
-            case 8: /* \|\|\|\|\|\ */
-                // Repeated decay
-                if (envelope.level > 0)
-                {
-                    envelope.level--;
-                }
-                else
-                {
-                    envelope.level = 15; // Restart at maximum
-                }
-                break;
-
-            case 10: /* \/\/\/\/\/\ */
-                // Repeated decay-attack
-                if (envelope.attack)
-                {
-                    if (envelope.level < 15)
-                    {
-                        envelope.level++;
-                    }
-                    else
-                    {
-                        envelope.attack = false; // Switch to decay
-                    }
-                }
-                else
-                {
-                    if (envelope.level > 0)
-                    {
-                        envelope.level--;
-                    }
-                    else
-                    {
-                        envelope.attack = true; // Switch to attack
-                    }
-                }
-                break;
-
-            case 12: /* /|/|/|/|/|/ */
-                // Repeated attack
-                if (envelope.level < 15)
-                {
-                    envelope.level++;
-                }
-                else
-                {
-                    envelope.level = 0; // Restart at minimum
-                }
-                break;
-
-            case 14: /* /\/\/\/\/\/ */
-                // Repeated attack-decay
-                if (envelope.attack)
-                {
-                    if (envelope.level < 15)
-                    {
-                        envelope.level++;
-                    }
-                    else
-                    {
-                        envelope.attack = false; // Switch to decay
-                    }
-                }
-                else
-                {
-                    if (envelope.level > 0)
-                    {
-                        envelope.level--;
-                    }
-                    else
-                    {
-                        envelope.attack = true; // Switch to attack
-                    }
-                }
-                break;
-            }
-        }
-    }
-}
-
-int16_t AY8912::getOutputLevel()
-{
-    if (!initialized)
-        return 0;
+    // Update all sound generators
+    updateAudioChannels();
+    updateAudioNoise();
+    updateAudioEnvelope();
 
     int16_t output = 0;
 
     // Mix the three channels
     for (int i = 0; i < 3; i++)
     {
-        if (channels[i].enable && channels[i].output)
+        if (audioChannels[i].enable && audioChannels[i].output)
         {
             // Check if envelope is enabled for this channel (bit 4 set in volume register)
-            bool useEnvelope = (registers[8 + i] & 0x10) != 0;
-            int volume = useEnvelope ? envelope.level : channels[i].volume;
+            bool useEnvelope = (audioRegisters[8 + i] & 0x10) != 0;
+            int volume = useEnvelope ? audioEnvelope.level : audioChannels[i].volume;
             int16_t channelLevel = (volume * 1000) / 15; // Scale to reasonable level
             output += channelLevel;
         }
     }
 
     // Add noise if enabled
-    if (noise.enable && noise.output)
+    if (audioNoise.enable && audioNoise.output)
     {
         // Check if envelope is enabled for noise (bit 4 set in volume register)
-        bool useEnvelope = (registers[8 + 2] & 0x10) != 0; // Use channel C volume register for noise
-        int volume = useEnvelope ? envelope.level : noise.volume;
+        bool useEnvelope = (audioRegisters[8 + 2] & 0x10) != 0; // Use channel C volume register for noise
+        int volume = useEnvelope ? audioEnvelope.level : audioNoise.volume;
         int16_t noiseLevel = (volume * 500) / 15; // Lower level for noise
         output += noiseLevel;
     }
@@ -486,55 +387,154 @@ int16_t AY8912::getOutputLevel()
     return output;
 }
 
-void AY8912::updateAudio(bool is48kMode)
+void AY8912::updateAudioChannels()
 {
-    if (!initialized || !audioStream)
-        return;
-
-    // Accumulate CPU cycles (called once per CPU tick)
-    cpuCycleAccumulator++;
-
-    // Calculate how many CPU cycles correspond to one audio sample
-    // Audio frequency: 44.1kHz
-    double cpuFrequency = is48kMode ? 3500000.0 : 3546900.0;
-    const double cyclesPerSample = cpuFrequency / 44100.0;
-    
-    // When we have accumulated enough cycles for one sample, generate it
-    if (cpuCycleAccumulator >= static_cast<long long>(cyclesPerSample))
+    for (int i = 0; i < 3; i++)
     {
-        // Update all sound generators
-        updateChannels();
-        updateNoise();
-        updateEnvelope();
-
-        // Generate one audio sample
-        generateSamples(1);
-        
-        // Decrement the accumulator by the number of cycles per sample
-        cpuCycleAccumulator -= static_cast<long long>(cyclesPerSample);
+        if (audioChannels[i].period > 0)
+        {
+            audioChannels[i].counter++;
+            if (audioChannels[i].counter >= audioChannels[i].period)
+            {
+                audioChannels[i].counter = 0;
+                audioChannels[i].output = !audioChannels[i].output;
+            }
+        }
     }
 }
 
-void AY8912::generateSamples(int numSamples)
+void AY8912::updateAudioNoise()
 {
-    if (!initialized || !audioStream)
-        return;
-
-    // Create buffer for samples (16-bit stereo)
-    std::vector<int16_t> buffer(numSamples * 2);
-
-    for (int i = 0; i < numSamples; i++)
+    if (audioNoise.period > 0)
     {
-        int16_t sample = getOutputLevel();
+        audioNoise.counter++;
+        if (audioNoise.counter >= audioNoise.period)
+        {
+            audioNoise.counter = 0;
 
-        // Stereo - same value for both channels
-        buffer[i * 2] = sample;     // Left channel
-        buffer[i * 2 + 1] = sample; // Right channel
+            // Generate new noise bit
+            uint8_t newBit = ((audioNoise.shiftRegister >> 16) & 1) ^ ((audioNoise.shiftRegister >> 14) & 1);
+            audioNoise.shiftRegister = ((audioNoise.shiftRegister << 1) | newBit) & 0x1FFFF;
+
+            audioNoise.output = (audioNoise.shiftRegister & 1) != 0;
+        }
     }
+}
 
-    // Put audio data into the stream
-    if (!SDL_PutAudioStreamData(audioStream, buffer.data(), numSamples * 2 * sizeof(int16_t)))
+void AY8912::updateAudioEnvelope()
+{
+    if (audioEnvelope.period > 0)
     {
-        printf("AY-3-8912 audio put failed: %s\n", SDL_GetError());
+        audioEnvelope.counter++;
+        if (audioEnvelope.counter >= audioEnvelope.period)
+        {
+            audioEnvelope.counter = 0;
+
+            // Implement all 16 envelope shapes according to AY-3-8912 documentation
+            switch (audioEnvelope.shape)
+            {
+            case 0:  // \__________
+            case 1:  // \__________
+            case 2:  // \__________
+            case 3:  // \__________
+            case 9:  // \__________
+            case 11: // \__________
+                // Single decay then off
+                if (audioEnvelope.level > 0)
+                {
+                    audioEnvelope.level--;
+                }
+                break;
+
+            case 4:  // /|_________
+            case 5:  // /|_________
+            case 6:  // /|_________
+            case 7:  // /|_________
+            case 13: // /_________
+            case 15: // /_________
+                // Single attack then off
+                if (audioEnvelope.level < 15)
+                {
+                    audioEnvelope.level++;
+                }
+                break;
+
+            case 8: /* \|\|\|\|\|\ */
+                // Repeated decay
+                if (audioEnvelope.level > 0)
+                {
+                    audioEnvelope.level--;
+                }
+                else
+                {
+                    audioEnvelope.level = 15; // Restart at maximum
+                }
+                break;
+
+            case 10: /* \/\/\/\/\/\ */
+                // Repeated decay-attack
+                if (audioEnvelope.attack)
+                {
+                    if (audioEnvelope.level < 15)
+                    {
+                        audioEnvelope.level++;
+                    }
+                    else
+                    {
+                        audioEnvelope.attack = false; // Switch to decay
+                    }
+                }
+                else
+                {
+                    if (audioEnvelope.level > 0)
+                    {
+                        audioEnvelope.level--;
+                    }
+                    else
+                    {
+                        audioEnvelope.attack = true; // Switch to attack
+                    }
+                }
+                break;
+
+            case 12: /* /|/|/|/|/|/ */
+                // Repeated attack
+                if (audioEnvelope.level < 15)
+                {
+                    audioEnvelope.level++;
+                }
+                else
+                {
+                    audioEnvelope.level = 0; // Restart at minimum
+                }
+                break;
+
+            case 14: /* /\/\/\/\/\/ */
+                // Repeated attack-decay
+                if (audioEnvelope.attack)
+                {
+                    if (audioEnvelope.level < 15)
+                    {
+                        audioEnvelope.level++;
+                    }
+                    else
+                    {
+                        audioEnvelope.attack = false; // Switch to decay
+                    }
+                }
+                else
+                {
+                    if (audioEnvelope.level > 0)
+                    {
+                        audioEnvelope.level--;
+                    }
+                    else
+                    {
+                        audioEnvelope.attack = true; // Switch to attack
+                    }
+                }
+                break;
+            }
+        }
     }
 }

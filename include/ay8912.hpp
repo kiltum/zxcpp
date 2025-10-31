@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <memory>
 #include <SDL3/SDL.h>
+#include <thread>
+#include <atomic>
+#include <mutex>
 
 class AY8912
 {
@@ -18,45 +21,53 @@ private:
     SDL_AudioDeviceID audioDevice;
     bool initialized;
     
-    // Audio resampling - accumulator for CPU cycles
-    long long cpuCycleAccumulator;
+    // Audio thread
+    std::thread audioThread;
+    std::atomic<bool> audioThreadRunning;
     
-    // Channel state
-    struct Channel {
-        uint16_t period;        // 12-bit period counter
-        uint8_t volume;         // 4-bit volume (0-15)
-        bool enable;            // Channel enable/disable
-        uint16_t counter;       // Current counter value
-        bool output;            // Current output level
-    } channels[3];
+    // Synchronization for register access
+    mutable std::mutex registerMutex;
     
-    // Noise channel
-    struct NoiseChannel {
-        uint16_t period;        // 5-bit period counter
-        uint8_t volume;         // 4-bit volume (0-15)
-        bool enable;            // Noise enable/disable
-        uint16_t counter;       // Current counter value
-        uint32_t shiftRegister; // 17-bit shift register
-        bool output;            // Current output level
-    } noise;
+    // Copy of registers for audio thread
+    uint8_t audioRegisters[16];
     
-    // Envelope generator
-    struct Envelope {
-        uint16_t period;        // 16-bit period counter
-        uint8_t shape;          // Envelope shape (4 bits)
-        uint16_t counter;       // Current counter value
-        uint8_t level;          // Current envelope level (0-15)
-        bool hold;              // Hold state
-        bool alternate;         // Alternate state
-        bool attack;            // Attack phase
-        bool output;            // Current output level
-    } envelope;
+    // Channel state for audio thread
+    struct AudioChannel {
+        uint16_t period;
+        uint8_t volume;
+        bool enable;
+        uint16_t counter;
+        bool output;
+    } audioChannels[3];
     
-    // Mixing and audio generation
-    void generateSamples(int numSamples);
-    void updateChannels();
-    void updateNoise();
-    void updateEnvelope();
+    // Noise channel for audio thread
+    struct AudioNoiseChannel {
+        uint16_t period;
+        uint8_t volume;
+        bool enable;
+        uint16_t counter;
+        uint32_t shiftRegister;
+        bool output;
+    } audioNoise;
+    
+    // Envelope generator for audio thread
+    struct AudioEnvelope {
+        uint16_t period;
+        uint8_t shape;
+        uint16_t counter;
+        uint8_t level;
+        bool hold;
+        bool alternate;
+        bool attack;
+        bool output;
+    } audioEnvelope;
+    
+    // Audio generation functions
+    void audioThreadFunction();
+    int16_t generateSample();
+    void updateAudioChannels();
+    void updateAudioNoise();
+    void updateAudioEnvelope();
     
     // Register handling
     void writeRegister(uint8_t reg, uint8_t value);
@@ -75,12 +86,6 @@ public:
     
     // Reset the chip
     void reset();
-    
-    // Get current audio output level for mixing
-    int16_t getOutputLevel();
-    
-    // Update audio for each CPU tick
-    void updateAudio(bool is48kMode = true);
 };
 
 #endif // AY8912_HPP

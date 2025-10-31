@@ -101,7 +101,7 @@ void Sound::writePort(uint16_t port, uint8_t value)
         ticksPassed = ticks;
         // printf("%lld %d %d\n", ticks - ticksPassed, earBit, micBit);
 
-        if (duration < 1000000)
+        if (duration < 1000000) // 3 500 000 per sec , 1000000 is ~0.3 sec. 
         {
             if (earBit)
             { // Volume on speaker or tape raised to up
