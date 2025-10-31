@@ -130,10 +130,10 @@ public:
         }
 
         // Register AY8912 port handlers
-        ports->RegisterWriteHandler(0xBFFD, [this](uint16_t port, uint8_t value)
+        ports->RegisterWriteHandler(0xFD, [this](uint16_t port, uint8_t value)
                                     { ay8912->writePort(port, value); });
         
-        ports->RegisterReadHandler(0xFFFD, [this](uint16_t port) -> uint8_t
+        ports->RegisterReadHandler(0xFD, [this](uint16_t port) -> uint8_t
                                    { return ay8912->readPort(port); });
 
         // Create window
@@ -467,10 +467,10 @@ void Emulator::startTapePlayback()
 void Emulator::runZX()
 {
     threadRunning = true;
-    memory->Read48();
-    //memory->Read128();
+    //memory->Read48();
+    memory->Read128();
     //memory->ReadDiag2();
-    memory->change48(true);
+    memory->change48(false);
     cpu->isNMOS = false;
 
     emulationThread = std::thread([this]()

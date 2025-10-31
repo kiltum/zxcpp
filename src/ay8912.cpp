@@ -7,16 +7,17 @@ AY8912::AY8912() : registers{0}, selectedRegister(0), addressLatch(false), audio
 {
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
-    
+
     // Initialize channels
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++)
+    {
         channels[i].period = 0;
         channels[i].volume = 0;
         channels[i].enable = true;
         channels[i].counter = 0;
         channels[i].output = false;
     }
-    
+
     // Initialize noise channel
     noise.period = 0;
     noise.volume = 0;
@@ -24,7 +25,7 @@ AY8912::AY8912() : registers{0}, selectedRegister(0), addressLatch(false), audio
     noise.counter = 0;
     noise.shiftRegister = 0x1FFFF; // 17-bit shift register
     noise.output = false;
-    
+
     // Initialize envelope
     envelope.period = 0;
     envelope.shape = 0;
@@ -99,12 +100,12 @@ void AY8912::cleanup()
     //     SDL_DestroyAudioStream(audioStream);
     //     audioStream = nullptr;
     // }
-    
+
     // if (audioDevice) {
     //     SDL_CloseAudioDevice(audioDevice);
     //     audioDevice = 0;
     // }
-    
+
     initialized = false;
 }
 
@@ -114,16 +115,17 @@ void AY8912::reset()
     std::memset(registers, 0, sizeof(registers));
     selectedRegister = 0;
     addressLatch = false;
-    
+
     // Reset channels
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++)
+    {
         channels[i].period = 0;
         channels[i].volume = 0;
         channels[i].enable = true;
         channels[i].counter = 0;
         channels[i].output = false;
     }
-    
+
     // Reset noise
     noise.period = 0;
     noise.volume = 0;
@@ -131,7 +133,7 @@ void AY8912::reset()
     noise.counter = 0;
     noise.shiftRegister = 0x1FFFF;
     noise.output = false;
-    
+
     // Reset envelope
     envelope.period = 0;
     envelope.shape = 0;
@@ -145,13 +147,45 @@ void AY8912::reset()
 
 void AY8912::writePort(uint16_t port, uint8_t value)
 {
+    printf("AY %x %x\n", port, value);
+    /* some dump for analyses
+    AY bffd 78
+AY fffd 3
+AY bffd 3
+AY fffd 2
+AY bffd bd
+AY fffd 9
+AY bffd b
+AY fffd 5
+AY bffd 2
+AY fffd 4
+AY bffd 7e
+AY fffd a
+AY bffd 7
+AY fffd 3
+AY bffd 3
+AY fffd 2
+AY bffd be
+AY fffd 9
+AY bffd a
+AY fffd 5
+AY bffd 2
+AY fffd 4
+AY bffd 7f
+AY fffd a
+AY bffd d
+    */
     // ZX Spectrum 128 uses port BFFDh for writing to AY-3-8912
-    if ((port & 0xFFFD) == 0xBFFD) {
-        if (addressLatch) {
+    if ((port & 0xFFFD) == 0xBFFD)
+    {
+        if (addressLatch)
+        {
             // Write data to selected register
             writeRegister(selectedRegister, value);
             addressLatch = false;
-        } else {
+        }
+        else
+        {
             // Latch address
             selectedRegister = value & 0x0F; // Only lower 4 bits are valid
             addressLatch = true;
@@ -162,11 +196,15 @@ void AY8912::writePort(uint16_t port, uint8_t value)
 uint8_t AY8912::readPort(uint16_t port)
 {
     // ZX Spectrum 128 uses port FFFDh for reading from AY-3-8912
-    if ((port & 0xFFFD) == 0xFFFD) {
-        if (addressLatch) {
+    if ((port & 0xFFFD) == 0xFFFD)
+    {
+        if (addressLatch)
+        {
             // Read from selected register
             return readRegister(selectedRegister);
-        } else {
+        }
+        else
+        {
             // Return 0 if no address is latched
             return 0;
         }
@@ -176,108 +214,118 @@ uint8_t AY8912::readPort(uint16_t port)
 
 void AY8912::writeRegister(uint8_t reg, uint8_t value)
 {
-    if (reg > 13) return; // Only registers 0-13 are valid
-    
+    if (reg > 13)
+        return; // Only registers 0-13 are valid
+
     registers[reg] = value;
-    
-    switch (reg) {
-        case 0: // Channel A period (low 8 bits)
-            channels[0].period = (channels[0].period & 0xF00) | value;
-            break;
-        case 1: // Channel A period (high 4 bits)
-            channels[0].period = (channels[0].period & 0xFF) | ((value & 0x0F) << 8);
-            break;
-        case 2: // Channel B period (low 8 bits)
-            channels[1].period = (channels[1].period & 0xF00) | value;
-            break;
-        case 3: // Channel B period (high 4 bits)
-            channels[1].period = (channels[1].period & 0xFF) | ((value & 0x0F) << 8);
-            break;
-        case 4: // Channel C period (low 8 bits)
-            channels[2].period = (channels[2].period & 0xF00) | value;
-            break;
-        case 5: // Channel C period (high 4 bits)
-            channels[2].period = (channels[2].period & 0xFF) | ((value & 0x0F) << 8);
-            break;
-        case 6: // Noise period
-            noise.period = value & 0x1F; // Only lower 5 bits
-            break;
-        case 7: // Mixer
-            // Bit 0: Channel A enable (0 = enable, 1 = disable)
-            // Bit 1: Channel B enable (0 = enable, 1 = disable)
-            // Bit 2: Channel C enable (0 = enable, 1 = disable)
-            // Bit 3: Noise enable A (0 = enable, 1 = disable)
-            // Bit 4: Noise enable B (0 = enable, 1 = disable)
-            // Bit 5: Noise enable C (0 = enable, 1 = disable)
-            channels[0].enable = !(value & 0x01);
-            channels[1].enable = !(value & 0x02);
-            channels[2].enable = !(value & 0x04);
-            // Noise enable bits are handled in updateNoise()
-            break;
-        case 8: // Channel A volume
-            channels[0].volume = value & 0x0F; // Only lower 4 bits
-            break;
-        case 9: // Channel B volume
-            channels[1].volume = value & 0x0F; // Only lower 4 bits
-            break;
-        case 10: // Channel C volume
-            channels[2].volume = value & 0x0F; // Only lower 4 bits
-            break;
-        case 11: // Envelope period (low 8 bits)
-            envelope.period = (envelope.period & 0xF00) | value;
-            break;
-        case 12: // Envelope period (high 8 bits)
-            envelope.period = (envelope.period & 0xFF) | ((value & 0xFF) << 8);
-            break;
-        case 13: // Envelope shape
-            envelope.shape = value & 0x0F; // Only lower 4 bits
-            // Initialize envelope state based on shape
-            switch (envelope.shape) {
-                case 0:  
-                case 1:  
-                case 2:  
-                case 3:  
-                case 4:  
-                case 5:  
-                case 6: 
-                case 7:  
-                case 8:  
-                case 9:  
-                case 10: 
-                case 11: 
-                case 12: 
-                case 13: 
-                case 14: 
-                case 15: 
-                    // For attack shapes, start at 0
-                    if (envelope.shape == 4 || envelope.shape == 5 || envelope.shape == 6 || 
-                        envelope.shape == 7 || envelope.shape == 12 || envelope.shape == 13 || 
-                        envelope.shape == 14 || envelope.shape == 15) {
-                        envelope.level = 0;
-                        envelope.attack = true;
-                    } else {
-                        // For decay shapes, start at 15
-                        envelope.level = 15;
-                        envelope.attack = false;
-                    }
-                    break;
+
+    switch (reg)
+    {
+    case 0: // Channel A period (low 8 bits)
+        channels[0].period = (channels[0].period & 0xF00) | value;
+        break;
+    case 1: // Channel A period (high 4 bits)
+        channels[0].period = (channels[0].period & 0xFF) | ((value & 0x0F) << 8);
+        break;
+    case 2: // Channel B period (low 8 bits)
+        channels[1].period = (channels[1].period & 0xF00) | value;
+        break;
+    case 3: // Channel B period (high 4 bits)
+        channels[1].period = (channels[1].period & 0xFF) | ((value & 0x0F) << 8);
+        break;
+    case 4: // Channel C period (low 8 bits)
+        channels[2].period = (channels[2].period & 0xF00) | value;
+        break;
+    case 5: // Channel C period (high 4 bits)
+        channels[2].period = (channels[2].period & 0xFF) | ((value & 0x0F) << 8);
+        break;
+    case 6:                          // Noise period
+        noise.period = value & 0x1F; // Only lower 5 bits
+        break;
+    case 7: // Mixer
+        // Bit 0: Channel A enable (0 = enable, 1 = disable)
+        // Bit 1: Channel B enable (0 = enable, 1 = disable)
+        // Bit 2: Channel C enable (0 = enable, 1 = disable)
+        // Bit 3: Noise enable A (0 = enable, 1 = disable)
+        // Bit 4: Noise enable B (0 = enable, 1 = disable)
+        // Bit 5: Noise enable C (0 = enable, 1 = disable)
+        channels[0].enable = !(value & 0x01);
+        channels[1].enable = !(value & 0x02);
+        channels[2].enable = !(value & 0x04);
+        // Noise enable bits are handled in updateNoise()
+        break;
+    case 8:                                // Channel A volume
+        channels[0].volume = value & 0x0F; // Only lower 4 bits
+        break;
+    case 9:                                // Channel B volume
+        channels[1].volume = value & 0x0F; // Only lower 4 bits
+        break;
+    case 10:                               // Channel C volume
+        channels[2].volume = value & 0x0F; // Only lower 4 bits
+        break;
+    case 11: // Envelope period (low 8 bits)
+        envelope.period = (envelope.period & 0xF00) | value;
+        break;
+    case 12: // Envelope period (high 8 bits)
+        envelope.period = (envelope.period & 0xFF) | ((value & 0xFF) << 8);
+        break;
+    case 13:                           // Envelope shape
+        envelope.shape = value & 0x0F; // Only lower 4 bits
+        // Initialize envelope state based on shape
+        switch (envelope.shape)
+        {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+            // For attack shapes, start at 0
+            if (envelope.shape == 4 || envelope.shape == 5 || envelope.shape == 6 ||
+                envelope.shape == 7 || envelope.shape == 12 || envelope.shape == 13 ||
+                envelope.shape == 14 || envelope.shape == 15)
+            {
+                envelope.level = 0;
+                envelope.attack = true;
+            }
+            else
+            {
+                // For decay shapes, start at 15
+                envelope.level = 15;
+                envelope.attack = false;
             }
             break;
+        }
+        break;
     }
 }
 
 uint8_t AY8912::readRegister(uint8_t reg)
 {
-    if (reg > 13) return 0;
+    if (reg > 13)
+        return 0;
     return registers[reg];
 }
 
 void AY8912::updateChannels()
 {
-    for (int i = 0; i < 3; i++) {
-        if (channels[i].period > 0) {
+    for (int i = 0; i < 3; i++)
+    {
+        if (channels[i].period > 0)
+        {
             channels[i].counter++;
-            if (channels[i].counter >= channels[i].period) {
+            if (channels[i].counter >= channels[i].period)
+            {
                 channels[i].counter = 0;
                 channels[i].output = !channels[i].output;
             }
@@ -287,15 +335,17 @@ void AY8912::updateChannels()
 
 void AY8912::updateNoise()
 {
-    if (noise.period > 0) {
+    if (noise.period > 0)
+    {
         noise.counter++;
-        if (noise.counter >= noise.period) {
+        if (noise.counter >= noise.period)
+        {
             noise.counter = 0;
-            
+
             // Generate new noise bit
             uint8_t newBit = ((noise.shiftRegister >> 16) & 1) ^ ((noise.shiftRegister >> 14) & 1);
             noise.shiftRegister = ((noise.shiftRegister << 1) | newBit) & 0x1FFFF;
-            
+
             noise.output = (noise.shiftRegister & 1) != 0;
         }
     }
@@ -303,88 +353,117 @@ void AY8912::updateNoise()
 
 void AY8912::updateEnvelope()
 {
-    if (envelope.period > 0) {
+    if (envelope.period > 0)
+    {
         envelope.counter++;
-        if (envelope.counter >= envelope.period) {
+        if (envelope.counter >= envelope.period)
+        {
             envelope.counter = 0;
-            
+
             // Implement all 16 envelope shapes according to AY-3-8912 documentation
-            switch (envelope.shape) {
-                case 0:  // \__________
-                case 1:  // \__________
-                case 2:  // \__________
-                case 3:  // \__________
-                case 9:  // \__________
-                case 11: // \__________
-                    // Single decay then off
-                    if (envelope.level > 0) {
-                        envelope.level--;
-                    }
-                    break;
-                    
-                case 4:  // /|_________
-                case 5:  // /|_________
-                case 6:  // /|_________
-                case 7:  // /|_________
-                case 13: // /_________
-                case 15: // /_________
-                    // Single attack then off
-                    if (envelope.level < 15) {
+            switch (envelope.shape)
+            {
+            case 0:  // \__________
+            case 1:  // \__________
+            case 2:  // \__________
+            case 3:  // \__________
+            case 9:  // \__________
+            case 11: // \__________
+                // Single decay then off
+                if (envelope.level > 0)
+                {
+                    envelope.level--;
+                }
+                break;
+
+            case 4:  // /|_________
+            case 5:  // /|_________
+            case 6:  // /|_________
+            case 7:  // /|_________
+            case 13: // /_________
+            case 15: // /_________
+                // Single attack then off
+                if (envelope.level < 15)
+                {
+                    envelope.level++;
+                }
+                break;
+
+            case 8: /* \|\|\|\|\|\ */
+                // Repeated decay
+                if (envelope.level > 0)
+                {
+                    envelope.level--;
+                }
+                else
+                {
+                    envelope.level = 15; // Restart at maximum
+                }
+                break;
+
+            case 10: /* \/\/\/\/\/\ */
+                // Repeated decay-attack
+                if (envelope.attack)
+                {
+                    if (envelope.level < 15)
+                    {
                         envelope.level++;
                     }
-                    break;
-                    
-                case 8:  /* \|\|\|\|\|\ */
-                    // Repeated decay
-                    if (envelope.level > 0) {
+                    else
+                    {
+                        envelope.attack = false; // Switch to decay
+                    }
+                }
+                else
+                {
+                    if (envelope.level > 0)
+                    {
                         envelope.level--;
-                    } else {
-                        envelope.level = 15; // Restart at maximum
                     }
-                    break;
-                    
-                case 10: /* \/\/\/\/\/\ */
-                    // Repeated decay-attack
-                    if (envelope.attack) {
-                        if (envelope.level < 15) {
-                            envelope.level++;
-                        } else {
-                            envelope.attack = false; // Switch to decay
-                        }
-                    } else {
-                        if (envelope.level > 0) {
-                            envelope.level--;
-                        } else {
-                            envelope.attack = true; // Switch to attack
-                        }
+                    else
+                    {
+                        envelope.attack = true; // Switch to attack
                     }
-                    break;
-                    
-                case 12: /* /|/|/|/|/|/ */
-                    // Repeated attack
-                    if (envelope.level < 15) {
+                }
+                break;
+
+            case 12: /* /|/|/|/|/|/ */
+                // Repeated attack
+                if (envelope.level < 15)
+                {
+                    envelope.level++;
+                }
+                else
+                {
+                    envelope.level = 0; // Restart at minimum
+                }
+                break;
+
+            case 14: /* /\/\/\/\/\/ */
+                // Repeated attack-decay
+                if (envelope.attack)
+                {
+                    if (envelope.level < 15)
+                    {
                         envelope.level++;
-                    } else {
-                        envelope.level = 0; // Restart at minimum
                     }
-                    break;
-                    
-                case 14: /* /\/\/\/\/\/ */
-                    // Repeated attack-decay
-                    if (envelope.attack) {
-                        if (envelope.level < 15) {
-                            envelope.level++;
-                        } else {
-                            envelope.attack = false; // Switch to decay
-                        }
-                    } else {
-                        if (envelope.level > 0) {
-                            envelope.level--;
-                        } else {
-                            envelope.attack = true; // Switch to attack
-                        }
+                    else
+                    {
+                        envelope.attack = false; // Switch to decay
                     }
-                    break;
+                }
+                else
+                {
+                    if (envelope.level > 0)
+                    {
+                        envelope.level--;
+                    }
+                    else
+                    {
+                        envelope.attack = true; // Switch to attack
+                    }
+                }
+                break;
             }
         }
     }
@@ -392,13 +471,16 @@ void AY8912::updateEnvelope()
 
 int16_t AY8912::getOutputLevel()
 {
-    if (!initialized) return 0;
-    
+    if (!initialized)
+        return 0;
+
     int16_t output = 0;
-    
+
     // Mix the three channels
-    for (int i = 0; i < 3; i++) {
-        if (channels[i].enable && channels[i].output) {
+    for (int i = 0; i < 3; i++)
+    {
+        if (channels[i].enable && channels[i].output)
+        {
             // Check if envelope is enabled for this channel (bit 4 set in volume register)
             bool useEnvelope = (registers[8 + i] & 0x10) != 0;
             int volume = useEnvelope ? envelope.level : channels[i].volume;
@@ -406,50 +488,54 @@ int16_t AY8912::getOutputLevel()
             output += channelLevel;
         }
     }
-    
+
     // Add noise if enabled
-    if (noise.enable && noise.output) {
+    if (noise.enable && noise.output)
+    {
         // Check if envelope is enabled for noise (bit 4 set in volume register)
         bool useEnvelope = (registers[8 + 2] & 0x10) != 0; // Use channel C volume register for noise
         int volume = useEnvelope ? envelope.level : noise.volume;
         int16_t noiseLevel = (volume * 500) / 15; // Lower level for noise
         output += noiseLevel;
     }
-    
+
     // Clamp to 16-bit range
     output = std::max<int16_t>(-32768, std::min<int16_t>(32767, output));
-    
+
     return output;
 }
 
 void AY8912::updateAudio()
 {
-    if (!initialized || !audioStream) return;
-    
+    if (!initialized || !audioStream)
+        return;
+
     // Update all sound generators
     updateChannels();
     updateNoise();
     updateEnvelope();
-    
+
     // Generate audio samples
     generateSamples(1); // Generate one sample per call
 }
 
 void AY8912::generateSamples(int numSamples)
 {
-    if (!initialized || !audioStream) return;
-    
+    if (!initialized || !audioStream)
+        return;
+
     // Create buffer for samples (16-bit stereo)
     std::vector<int16_t> buffer(numSamples * 2);
-    
-    for (int i = 0; i < numSamples; i++) {
+
+    for (int i = 0; i < numSamples; i++)
+    {
         int16_t sample = getOutputLevel();
-        
+
         // Stereo - same value for both channels
         buffer[i * 2] = sample;     // Left channel
         buffer[i * 2 + 1] = sample; // Right channel
     }
-    
+
     // Put audio data into the stream
     if (!SDL_PutAudioStreamData(audioStream, buffer.data(), numSamples * 2 * sizeof(int16_t)))
     {
