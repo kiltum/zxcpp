@@ -22,7 +22,7 @@ AY8912::AY8912() :
     ayChip = new AY38910(CHIP_TYPE_AY8910, 0);
     ayChip->setFrequency(1773400); // ZX Spectrum clock frequency
     ayChip->setSampleFrequency(44100); // Audio sample frequency
-    ayChip->reset();
+    ayChip->setVolume(100);
 }
 
 AY8912::~AY8912()
@@ -185,6 +185,7 @@ void AY8912::processAudio()
             // Generate audio samples using the AY-3-8910 emulator
             for (int i = 0; i < bufferSize; i++) {
                 uint32_t sample = ayChip->getSample();
+                printf("%d ",sample);
                 int16_t left = static_cast<int16_t>((sample >> 16) & 0xFFFF);
                 int16_t right = static_cast<int16_t>(sample & 0xFFFF);
                 
