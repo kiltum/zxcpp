@@ -23,6 +23,7 @@ AY8912::AY8912() :
     ayChip->setFrequency(1773400); // ZX Spectrum clock frequency
     ayChip->setSampleFrequency(44100); // Audio sample frequency
     ayChip->setVolume(100);
+    ayChip->reset();
 }
 
 AY8912::~AY8912()
@@ -45,7 +46,7 @@ bool AY8912::initialize()
 
     SDL_AudioSpec desired_spec;
     SDL_zero(desired_spec);
-    desired_spec.format = SDL_AUDIO_S16;
+    desired_spec.format = SDL_AUDIO_S16; //      AUDIO_U16SYS;
     desired_spec.freq = 44100;
     desired_spec.channels = 2;
 
@@ -185,11 +186,11 @@ void AY8912::processAudio()
             // Generate audio samples using the AY-3-8910 emulator
             for (int i = 0; i < bufferSize; i++) {
                 uint32_t sample = ayChip->getSample();
-                // Remove debug printf that was flooding the output
-                // printf("%d ",sample);
-                int16_t left = static_cast<int16_t>((sample >> 16) & 0xFFFF);
-                int16_t right = static_cast<int16_t>(sample & 0xFFFF);
                 
+                // Convert unsigned 16-bit to signed 16-bit
+                int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 32768);
+                int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768);
+                printf("%d\n",left);
                 audioBuffer[i * 2] = left;     // Left channel
                 audioBuffer[i * 2 + 1] = right; // Right channel
             }
