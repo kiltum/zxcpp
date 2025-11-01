@@ -46,7 +46,7 @@ private:
     // Thread synchronization
     std::mutex screenMutex;
     bool screenUpdated;
-    
+
     // Screen update rate limiting
     std::chrono::high_resolution_clock::time_point lastScreenUpdate;
     const std::chrono::milliseconds minScreenUpdateInterval{100}; // Screen frame rate during fast tape load 10 FPS (1000ms / 10 = 100ms)
@@ -68,7 +68,7 @@ public:
     void runZX();
 
     // Public methods for command line tape loading
-    bool loadTapeFile(const std::string& filePath);
+    bool loadTapeFile(const std::string &filePath);
     void startTapePlayback();
 
     ~Emulator()
@@ -85,7 +85,6 @@ public:
         cpu = std::make_unique<Z80>(memory.get(), ports.get());
         ula = std::make_unique<ULA>(memory.get(), tape.get());
         kempston = std::make_unique<Kempston>();
-        
 
         // Register ULA with port system
         ports->RegisterReadHandler(0xFE, [this](uint16_t port) -> uint8_t
@@ -97,10 +96,10 @@ public:
         // Register Kempston joystick with port system
         ports->RegisterReadHandler(0x1F, [this](uint16_t port) -> uint8_t
                                    { return kempston->readPort(port); });
-        
+
         // Register Memory interface
         ports->RegisterWriteHandler(0xFD, [this](uint16_t port, uint8_t value)
-                                   { return memory->writePort(port, value); });
+                                    { return memory->writePort(port, value); });
 
         // Initialize SDL with both video and audio
         if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
@@ -132,7 +131,7 @@ public:
         // Register AY8912 port handlers
         ports->RegisterWriteHandler(0xFD, [this](uint16_t port, uint8_t value)
                                     { ay8912->writePort(port, value); });
-        
+
         ports->RegisterReadHandler(0xFD, [this](uint16_t port) -> uint8_t
                                    { return ay8912->readPort(port); });
 
@@ -258,7 +257,7 @@ public:
                     }
                     ImGui::EndMenu();
                 }
-                
+
                 if (ImGui::BeginMenu("Tape"))
                 {
                     if (ImGui::MenuItem("Load"))
@@ -273,7 +272,8 @@ public:
                     }
                     if (ImGui::MenuItem("Turboload", nullptr, tape ? tape->isTapeTurbo : false))
                     {
-                        if (tape) {
+                        if (tape)
+                        {
                             tape->isTapeTurbo = !tape->isTapeTurbo;
                         }
                     }
@@ -310,7 +310,8 @@ public:
                     std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
                     // Load the selected tape file
                     std::cout << "Selected tape file: " << filePathName << std::endl;
-                    if (tape) {
+                    if (tape)
+                    {
                         tape->loadFile(filePathName);
                         tape->prepareBitStream();
                     }
@@ -419,13 +420,13 @@ void Emulator::change48(bool is48)
 {
     if (is48)
     {
-        TARGET_FREQUENCY = 3500000;              // 3.5 MHz
+        TARGET_FREQUENCY = 3500000;                // 3.5 MHz
         CHECK_INTERVAL = TARGET_FREQUENCY / 10000; // Check timing every 0.1ms (more precise)
         ula->change48(true);
     }
     else
     {
-        TARGET_FREQUENCY = 3546900;              // 3.54690 Mhz
+        TARGET_FREQUENCY = 3546900;                // 3.54690 Mhz
         CHECK_INTERVAL = TARGET_FREQUENCY / 10000; // Check timing every 0.1ms (more precise)
         ula->change48(false);
     }
@@ -435,19 +436,19 @@ void Emulator::StartTape()
 {
     // Empty function as requested
     std::cout << "StartTape() called" << std::endl;
-    
-    // In a real implementation, this would start tape playback
-    // For now, we just print a message
-    if (tape) {
+
+    if (tape)
+    {
         // Set the tape to played state
         tape->isTapePlayed = true;
         std::cout << "Tape playback started" << std::endl;
     }
 }
 
-bool Emulator::loadTapeFile(const std::string& filePath)
+bool Emulator::loadTapeFile(const std::string &filePath)
 {
-    if (!tape) {
+    if (!tape)
+    {
         std::cerr << "Tape system not initialized" << std::endl;
         return false;
     }
@@ -461,7 +462,8 @@ bool Emulator::loadTapeFile(const std::string& filePath)
 
 void Emulator::startTapePlayback()
 {
-    if (tape) {
+    if (tape)
+    {
         tape->isTapePlayed = true;
         std::cout << "Tape playback started automatically" << std::endl;
     }
@@ -470,9 +472,9 @@ void Emulator::startTapePlayback()
 void Emulator::runZX()
 {
     threadRunning = true;
-    //memory->Read48();
+    // memory->Read48();
     memory->Read128();
-    //memory->ReadDiag2();
+    // memory->ReadDiag2();
     memory->change48(false);
     cpu->isNMOS = false;
 
@@ -484,7 +486,6 @@ void Emulator::runZX()
         // Track previous tape state to detect transitions
         bool prevTapePlayed = false;
         bool prevTapeTurbo = false;
-        //long long refreshTicks = 0;
         
         while (threadRunning.load()) {
             int ticks = cpu->ExecuteOneInstruction();
@@ -928,7 +929,7 @@ void Emulator::handleKeyUp(SDL_Keycode key)
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     Emulator emulator;
 
@@ -939,14 +940,18 @@ int main(int argc, char* argv[])
     }
 
     // Check if a file path is provided as command line argument
-    if (argc > 1) {
+    if (argc > 1)
+    {
         std::string filePath = argv[1];
         std::cout << "Loading tape file from command line: " << filePath << std::endl;
-        
+
         // Load the tape file and prepare it for playback
-        if (emulator.loadTapeFile(filePath)) {
+        if (emulator.loadTapeFile(filePath))
+        {
             std::cout << "Tape file loaded successfully. Use Tape->Play menu to start playback." << std::endl;
-        } else {
+        }
+        else
+        {
             std::cerr << "Failed to load tape file: " << filePath << std::endl;
         }
     }
