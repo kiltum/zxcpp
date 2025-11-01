@@ -84,7 +84,7 @@ bool AY8912::initialize()
 
     // Start audio processing thread
     audioThreadRunning = true;
-    audioThread = std::thread(&AY8912::processAudioTone, this);
+    audioThread = std::thread(&AY8912::processAudio, this);
 
     initialized = true;
     std::cout << "AY8912 sound system initialized successfully" << std::endl;
@@ -189,8 +189,8 @@ void AY8912::processAudio()
                 uint32_t sample = ayChip->getSample();
                 
                 // Convert unsigned 16-bit to signed 16-bit
-                int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 32768);
-                int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768);
+                int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 32768)/2;
+                int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768) /2;
                 printf("%d\n",left);
                 audioBuffer[i * 2] = left;     // Left channel
                 audioBuffer[i * 2 + 1] = right; // Right channel
@@ -213,7 +213,7 @@ void AY8912::processAudioTone()
     std::vector<int16_t> audioBuffer(bufferSize * 2); // Stereo samples
     
     // For a 100Hz tone at 44100Hz sample rate
-    const float frequency = 100.0f; // 100Hz tone
+    const float frequency = 1000.0f; // 1000Hz tone
     const float sampleRate = 44100.0f;
     const float amplitude = 0.3f * 32767.0f; // 30% volume to prevent clipping
     
