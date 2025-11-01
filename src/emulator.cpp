@@ -602,7 +602,7 @@ void Emulator::handleKeyDown(SDL_Keycode key)
         case SDLK_RIGHT:
             kempston->setRight(true);
             break;
-        case SDLK_LCTRL:
+        case SDLK_LALT:
             kempston->setFire(true);
             break;
         }
@@ -780,7 +780,7 @@ void Emulator::handleKeyUp(SDL_Keycode key)
         case SDLK_RIGHT:
             kempston->setRight(false);
             break;
-        case SDLK_LCTRL:
+        case SDLK_LALT:
             kempston->setFire(false);
             break;
         }
