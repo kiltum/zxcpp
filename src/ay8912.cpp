@@ -87,6 +87,17 @@ bool AY8912::initialize()
     audioThread = std::thread(&AY8912::processAudio, this);
 
     initialized = true;
+    
+    // Test configuration: Set up a simple tone for testing
+    // Configure channel A for a 1000Hz tone
+    // Period = Clock / (16 * Frequency) = 1773400 / (16 * 1000) = 110.8375 ≈ 111
+    if (ayChip) {
+        ayChip->write(0, 111 & 0xFF);        // FTR_A - fine tune register A (low byte)
+        ayChip->write(1, (111 >> 8) & 0x0F); // CTR_A - coarse tune register A (high nibble)
+        ayChip->write(7, 0xFE);              // Mixer - enable tone for channel A (bit 0 = 0), disable noise (bits 3-5 = 1)
+        ayChip->write(8, 0x0F);              // Amplitude A - set maximum volume for channel A
+    }
+    
     std::cout << "AY8912 sound system initialized successfully" << std::endl;
     return true;
 }
@@ -189,9 +200,9 @@ void AY8912::processAudio()
                 uint32_t sample = ayChip->getSample();
                 
                 // Convert unsigned 16-bit to signed 16-bit
-                int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 32768)/2;
-                int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768) /2;
-                printf("%d\n",left);
+                int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 32768);
+                int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768);
+                //printf("%d\n",left);
                 audioBuffer[i * 2] = left;     // Left channel
                 audioBuffer[i * 2 + 1] = right; // Right channel
             }
