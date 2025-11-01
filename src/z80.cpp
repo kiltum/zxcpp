@@ -87,7 +87,7 @@ int Z80::ExecuteOneInstruction()
     }
 }
 
-void Z80::NMI() 
+void Z80::NMI()
 {
     IFF2 = IFF1;
     IFF1 = false;

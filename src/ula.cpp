@@ -109,7 +109,7 @@ void ULA::writePort(uint16_t port, uint8_t value)
         borderColor = value & 0x07;
         bool earBit = (value & 0x10) != 0; // EAR is bit 4 (0x10) - active high
 
-        audioState = earBit;               // This is stub for tests. Actual sound handling in sound.cpp
+        audioState = earBit; // This is stub for tests. Actual sound handling in sound.cpp
     }
 }
 
@@ -173,7 +173,8 @@ int ULA::oneTick()
     // Process one clock tick
     clock++;
 
-    if(tape->isTapePlayed) {  // if tape is playing something, set input bit
+    if (tape->isTapePlayed)
+    { // if tape is playing something, set input bit
         audioState = tape->getNextBit();
     }
 

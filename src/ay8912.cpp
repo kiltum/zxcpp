@@ -8,20 +8,19 @@
 #include <vector>
 #include <cmath>
 
-AY8912::AY8912() : 
-    selectedRegister(0),
-    addressLatch(false),
-    audioStream(nullptr),
-    audioDevice(0),
-    initialized(false),
-    audioThreadRunning(false)
+AY8912::AY8912() : selectedRegister(0),
+                   addressLatch(false),
+                   audioStream(nullptr),
+                   audioDevice(0),
+                   initialized(false),
+                   audioThreadRunning(false)
 {
     // Initialize registers
     std::memset(registers, 0, sizeof(registers));
-    
+
     // Initialize the vgm_decoder AY-3-8910 emulator
     ayChip = new AY38910(CHIP_TYPE_AY8910, 0);
-    ayChip->setFrequency(1773400); // ZX Spectrum clock frequency
+    ayChip->setFrequency(1773400);     // ZX Spectrum clock frequency
     ayChip->setSampleFrequency(44100); // Audio sample frequency
     ayChip->setVolume(100);
     ayChip->reset();
@@ -30,7 +29,8 @@ AY8912::AY8912() :
 AY8912::~AY8912()
 {
     cleanup();
-    if (ayChip) {
+    if (ayChip)
+    {
         delete ayChip;
         ayChip = nullptr;
     }
@@ -87,7 +87,7 @@ bool AY8912::initialize()
     audioThread = std::thread(&AY8912::processAudio, this);
 
     initialized = true;
-    
+
     // Test configuration: Set up a simple tone for testing
     // Configure channel A for a 1000Hz tone
     // Period = Clock / (16 * Frequency) = 1773400 / (16 * 1000) = 110.8375 ≈ 111
@@ -97,7 +97,7 @@ bool AY8912::initialize()
     //     ayChip->write(7, 0xFE);              // Mixer - enable tone for channel A (bit 0 = 0), disable noise (bits 3-5 = 1)
     //     ayChip->write(8, 0x0F);              // Amplitude A - set maximum volume for channel A
     // }
-    
+
     std::cout << "AY8912 sound system initialized successfully" << std::endl;
     return true;
 }
@@ -105,22 +105,27 @@ bool AY8912::initialize()
 void AY8912::cleanup()
 {
     // Stop audio processing thread first
-    if (audioThreadRunning) {
+    if (audioThreadRunning)
+    {
         audioThreadRunning = false;
-        if (audioThread.joinable()) {
+        if (audioThread.joinable())
+        {
             audioThread.join();
         }
     }
 
     // Only clean up SDL audio resources if they were successfully initialized
     // and if SDL is still initialized (not shut down yet)
-    if (initialized && (SDL_WasInit(SDL_INIT_AUDIO) & SDL_INIT_AUDIO)) {
-        if (audioDevice) {
+    if (initialized && (SDL_WasInit(SDL_INIT_AUDIO) & SDL_INIT_AUDIO))
+    {
+        if (audioDevice)
+        {
             SDL_CloseAudioDevice(audioDevice);
             audioDevice = 0;
         }
 
-        if (audioStream) {
+        if (audioStream)
+        {
             SDL_DestroyAudioStream(audioStream);
             audioStream = nullptr;
         }
@@ -135,9 +140,10 @@ void AY8912::reset()
     std::memset(registers, 0, sizeof(registers));
     selectedRegister = 0;
     addressLatch = false;
-    
+
     // Reset the AY-3-8910 chip
-    if (ayChip) {
+    if (ayChip)
+    {
         ayChip->reset();
     }
 }
@@ -151,18 +157,19 @@ void AY8912::writePort(uint16_t port, uint8_t value)
         selectedRegister = value & 0x0F; // Only lower 4 bits are valid
         addressLatch = true;
     }
-    
+
     // Check for register data port (0xBFFD) - bits 15-14 must be 10, bits 1-0 must be 01
-    else if ((port & 0xC001) == 0x8001) 
+    else if ((port & 0xC001) == 0x8001)
     {
         // Write data to selected register
         if (addressLatch && selectedRegister <= 13)
         {
             registers[selectedRegister] = value;
             addressLatch = false; // Reset latch after writing data
-            
+
             // Pass the register write to the AY-3-8910 emulator
-            if (ayChip) {
+            if (ayChip)
+            {
                 ayChip->write(selectedRegister, value);
             }
         }
@@ -190,30 +197,34 @@ uint8_t AY8912::readPort(uint16_t port)
 
 void AY8912::processAudio()
 {
-    const int bufferSize = 1024; // Process 1024 samples at a time
+    const int bufferSize = 1024;                      // Process 1024 samples at a time
     std::vector<int16_t> audioBuffer(bufferSize * 2); // Stereo samples
-    
-    while (audioThreadRunning) {
-        if (initialized && audioStream && ayChip) {
+
+    while (audioThreadRunning)
+    {
+        if (initialized && audioStream && ayChip)
+        {
             // Generate audio samples using the AY-3-8910 emulator
-            bool silentAudio=true;
-            for (int i = 0; i < bufferSize; i++) {
+            bool silentAudio = true;
+            for (int i = 0; i < bufferSize; i++)
+            {
                 uint32_t sample = ayChip->getSample();
-                
+
                 // Convert unsigned 16-bit to signed 16-bit
                 int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 32768);
                 int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768);
-                audioBuffer[i * 2] = left;     // Left channel
-                audioBuffer[i * 2 + 1] = right; // Right channel
-                if(left > -32768 || right > -32768) silentAudio=false;
+                audioBuffer[i * 2] = left;           // Left channel
+                audioBuffer[i * 2 + 1] = right;      // Right channel
+                if (left > -32768 || right > -32768) // we should not overflow audio by silence samples
+                    silentAudio = false;
             }
-            
+
             // Put audio data into the stream
-            if(!silentAudio) SDL_PutAudioStreamData(audioStream, audioBuffer.data(), bufferSize * 2 * sizeof(int16_t));
+            if (!silentAudio)
+                SDL_PutAudioStreamData(audioStream, audioBuffer.data(), bufferSize * 2 * sizeof(int16_t));
         }
-        
-        
+
         // For 44100 Hz sample rate and 1024 samples, we need to sleep for about 23ms
-        std::this_thread::sleep_for(std::chrono::microseconds(19000)); 
+        std::this_thread::sleep_for(std::chrono::microseconds(19000));
     }
 }

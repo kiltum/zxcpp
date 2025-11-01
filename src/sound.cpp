@@ -70,13 +70,15 @@ bool Sound::initialize()
 void Sound::cleanup()
 {
     // // Close the audio device first, which should automatically unbind any streams
-    if (audioDevice) {
+    if (audioDevice)
+    {
         SDL_CloseAudioDevice(audioDevice);
         audioDevice = 0;
     }
 
     // Then destroy the audio stream
-    if (audioStream) {
+    if (audioStream)
+    {
         SDL_DestroyAudioStream(audioStream);
         audioStream = nullptr;
     }
@@ -101,23 +103,24 @@ void Sound::writePort(uint16_t port, uint8_t value)
         ticksPassed = ticks;
         // printf("%lld %d %d\n", ticks - ticksPassed, earBit, micBit);
 
-        if (duration < 1000000) // 3 500 000 per sec , 1000000 is ~0.3 sec. 
+        if (duration < 1000000) // 3 500 000 per sec , 1000000 is ~0.3 sec.
         {
             if (earBit)
             { // Volume on speaker or tape raised to up
                 generateAudio(duration, true);
-                //SDL_FlushAudioStream(audioStream);
-                //printf("%d 1\n",duration);
+                // SDL_FlushAudioStream(audioStream);
+                // printf("%d 1\n",duration);
             }
             else
             {
                 generateAudio(duration, false);
-                //SDL_FlushAudioStream(audioStream);
-                //printf("%d 0\n",duration);
+                // SDL_FlushAudioStream(audioStream);
+                // printf("%d 0\n",duration);
             }
         }
-        else {
-            //printf("%lld Skipped %u\n", ticks,duration);
+        else
+        {
+            // printf("%lld Skipped %u\n", ticks,duration);
         }
     }
 }
@@ -138,8 +141,8 @@ void Sound::generateAudio(long long ticks, bool value)
     // Use proper rounding instead of truncation + arbitrary offset
     int numSamples = static_cast<int>(std::round(duration * sampleRate));
 
-    //numSamples = numSamples - 10; // Lets try to pitch up tone
-    // If no samples to generate, return early
+    // numSamples = numSamples - 10; // Lets try to pitch up tone
+    //  If no samples to generate, return early
     if (numSamples <= 0)
     {
         return;

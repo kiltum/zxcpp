@@ -43,11 +43,10 @@ private:
     uint32_t clockBottomRight;
     uint32_t clockPerLine;
 
-
 public:
     // ULA internal clock state
     uint32_t clock;
-    
+
     // Constructor
     ULA(Memory *mem, Tape *tap);
 

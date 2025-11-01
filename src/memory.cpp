@@ -41,7 +41,7 @@ void Memory::writePort(uint16_t port, uint8_t value)
             ULAShadow = (value & 0x08) ? true : false;
             bankMapping[0] = (value & 0x10) ? 1 : 0;
             is48 = (value & 0x20) ? true : false; // disable future using of this port
-            //printf("%x -> %x bank %d shadow %d rom %d\n", port, value, bankMapping[3], ULAShadow, bankMapping[0]);
+            // printf("%x -> %x bank %d shadow %d rom %d\n", port, value, bankMapping[3], ULAShadow, bankMapping[0]);
         }
     }
 }
@@ -132,7 +132,6 @@ void Memory::Read128(void)
     bankMapping[0] = 0;
     canWriteRom = false;
 }
-
 
 void Memory::ReadDiag(void)
 {

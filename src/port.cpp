@@ -37,7 +37,9 @@ void Port::Write(uint16_t port, uint8_t value)
         {
             handler(port, value);
         }
-    } else printf("Handler for writing %x to %x port not found\n",value, port);
+    }
+    else
+        printf("Handler for writing %x to %x port not found\n", value, port);
 }
 
 uint8_t Port::Read(uint16_t port)
