@@ -45,7 +45,6 @@ public:
     
     // Audio processing
     void processAudio();
-    void processAudioTone();
 };
 
 #endif // AY8912_HPP
