@@ -216,7 +216,7 @@ void AY8912::processAudio()
         // Sleep for appropriate time to maintain correct audio timing
         // For 44100 Hz sample rate and 1024 samples, we need to sleep for about 23ms
         // But we'll use a shorter sleep to ensure smooth operation
-        std::this_thread::sleep_for(std::chrono::microseconds(10000)); // 10ms
+        std::this_thread::sleep_for(std::chrono::microseconds(18000)); // 10ms
     }
 }
 
