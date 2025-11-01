@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include <vector>
+#include <cmath>
 
 AY8912::AY8912() : 
     selectedRegister(0),
@@ -46,7 +47,7 @@ bool AY8912::initialize()
 
     SDL_AudioSpec desired_spec;
     SDL_zero(desired_spec);
-    desired_spec.format = SDL_AUDIO_S16; //      AUDIO_U16SYS;
+    desired_spec.format = SDL_AUDIO_S16;
     desired_spec.freq = 44100;
     desired_spec.channels = 2;
 
@@ -83,7 +84,7 @@ bool AY8912::initialize()
 
     // Start audio processing thread
     audioThreadRunning = true;
-    audioThread = std::thread(&AY8912::processAudio, this);
+    audioThread = std::thread(&AY8912::processAudioTone, this);
 
     initialized = true;
     std::cout << "AY8912 sound system initialized successfully" << std::endl;
@@ -202,6 +203,44 @@ void AY8912::processAudio()
         // Sleep for appropriate time to maintain correct audio timing
         // For 44100 Hz sample rate and 1024 samples, we need to sleep for about 23ms
         // But we'll use a shorter sleep to ensure smooth operation
+        std::this_thread::sleep_for(std::chrono::microseconds(10000)); // 10ms
+    }
+}
+
+void AY8912::processAudioTone()
+{
+    const int bufferSize = 1024; // Process 1024 samples at a time
+    std::vector<int16_t> audioBuffer(bufferSize * 2); // Stereo samples
+    
+    // For a 100Hz tone at 44100Hz sample rate
+    const float frequency = 100.0f; // 100Hz tone
+    const float sampleRate = 44100.0f;
+    const float amplitude = 0.3f * 32767.0f; // 30% volume to prevent clipping
+    
+    static float phase = 0.0f;
+    const float phaseIncrement = 2.0f * M_PI * frequency / sampleRate;
+    
+    while (audioThreadRunning) {
+        if (initialized && audioStream) {
+            // Generate simple sine wave tone
+            for (int i = 0; i < bufferSize; i++) {
+                int16_t sample = static_cast<int16_t>(amplitude * sin(phase));
+                phase += phaseIncrement;
+                
+                // Keep phase in reasonable range
+                if (phase > 2.0f * M_PI) {
+                    phase -= 2.0f * M_PI;
+                }
+                
+                audioBuffer[i * 2] = sample;     // Left channel
+                audioBuffer[i * 2 + 1] = sample; // Right channel (same as left for mono)
+            }
+            
+            // Put audio data into the stream
+            SDL_PutAudioStreamData(audioStream, audioBuffer.data(), bufferSize * 2 * sizeof(int16_t));
+        }
+        
+        // Sleep for appropriate time to maintain correct audio timing
         std::this_thread::sleep_for(std::chrono::microseconds(10000)); // 10ms
     }
 }
