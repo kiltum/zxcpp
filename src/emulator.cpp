@@ -49,7 +49,7 @@ private:
     
     // Screen update rate limiting
     std::chrono::high_resolution_clock::time_point lastScreenUpdate;
-    const std::chrono::milliseconds minScreenUpdateInterval{100}; // 50 FPS (1000ms / 50 = 20ms)
+    const std::chrono::milliseconds minScreenUpdateInterval{100}; // Screen frame rate during fast tape load 10 FPS (1000ms / 10 = 100ms)
 
     // Keyboard handling functions
     void handleKeyDown(SDL_Keycode key);
