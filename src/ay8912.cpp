@@ -196,6 +196,7 @@ void AY8912::processAudio()
     while (audioThreadRunning) {
         if (initialized && audioStream && ayChip) {
             // Generate audio samples using the AY-3-8910 emulator
+            bool silentAudio=true;
             for (int i = 0; i < bufferSize; i++) {
                 uint32_t sample = ayChip->getSample();
                 
@@ -204,10 +205,11 @@ void AY8912::processAudio()
                 int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768);
                 audioBuffer[i * 2] = left;     // Left channel
                 audioBuffer[i * 2 + 1] = right; // Right channel
+                if(left > -32768 || right > -32768) silentAudio=false;
             }
             
             // Put audio data into the stream
-            SDL_PutAudioStreamData(audioStream, audioBuffer.data(), bufferSize * 2 * sizeof(int16_t));
+            if(!silentAudio) SDL_PutAudioStreamData(audioStream, audioBuffer.data(), bufferSize * 2 * sizeof(int16_t));
         }
         
         // Sleep for appropriate time to maintain correct audio timing
