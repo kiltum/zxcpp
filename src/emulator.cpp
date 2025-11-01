@@ -198,6 +198,8 @@ public:
 
                 if (e.type == SDL_EVENT_QUIT)
                 {
+                    ay8912->cleanup();
+                    sound->cleanup();
                     std::cout << "Quit event received" << std::endl;
                     quit = true;
                 }

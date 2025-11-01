@@ -70,16 +70,16 @@ bool Sound::initialize()
 void Sound::cleanup()
 {
     // // Close the audio device first, which should automatically unbind any streams
-    // if (audioDevice) {
-    //     SDL_CloseAudioDevice(audioDevice);
-    //     audioDevice = 0;
-    // }
+    if (audioDevice) {
+        SDL_CloseAudioDevice(audioDevice);
+        audioDevice = 0;
+    }
 
-    // // Then destroy the audio stream
-    // if (audioStream) {
-    //     SDL_DestroyAudioStream(audioStream);
-    //     audioStream = nullptr;
-    // }
+    // Then destroy the audio stream
+    if (audioStream) {
+        SDL_DestroyAudioStream(audioStream);
+        audioStream = nullptr;
+    }
 
     initialized = false;
 }
