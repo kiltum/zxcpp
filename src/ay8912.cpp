@@ -200,9 +200,11 @@ void AY8912::processAudio()
                 uint32_t sample = ayChip->getSample();
                 
                 // Convert unsigned 16-bit to signed 16-bit
-                int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 32768);
-                int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768);
-                //printf("%d\n",left);
+                //int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 32768);
+                //int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 32768);
+                int16_t left = static_cast<int16_t>(((sample >> 16) & 0xFFFF) - 16384);
+                int16_t right = static_cast<int16_t>((sample & 0xFFFF) - 16384);
+                //printf("%d %d\n",left,right);
                 audioBuffer[i * 2] = left;     // Left channel
                 audioBuffer[i * 2 + 1] = right; // Right channel
             }

@@ -64,3 +64,12 @@ AP fffd 0
 1240549873 49f149f1
 1240549873 49f149f1
 
+add generator. i hear!
+
+-32768 -32768
+-32768 -32768
+-2242 -2242
+-2242 -2242
+
+Ok, ay8910 works. but no sound in game!
+
