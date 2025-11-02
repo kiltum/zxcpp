@@ -1,7 +1,10 @@
 CXX = g++
 LIBZIP_CFLAGS := $(shell pkg-config --cflags libzip 2>/dev/null)
 LIBZIP_LIBS := $(shell pkg-config --libs libzip 2>/dev/null)
-CXXFLAGS = -std=c++20 -O3 -g -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog -Ilib/vgm_decoder/include $(LIBZIP_CFLAGS)
+# LLVM_PROFILE_FILE="emu.profraw" ./emulator tests/testdata/Exolon.tzx.zip 
+# llvm-profdata merge -output=emu.profdata emu.profraw
+# llvm-cov show ./emulator -instr-profile=emu.profdata -format=html > emu.html
+CXXFLAGS = -std=c++20 -O3 -march=native -mtune=native -g -fprofile-instr-generate -fcoverage-mapping -fsanitize=address -Wall -Wextra -Iinclude -Ilib/imgui -Ilib/imgui/backends -Ilib/imguifiledialog -Ilib/vgm_decoder/include $(LIBZIP_CFLAGS)
 SRCDIR = src
 OBJDIR = obj
 IMGUI_DIR = lib/imgui
@@ -55,7 +58,7 @@ SDL_LIBS := $(shell pkg-config --libs sdl3 2>/dev/null || echo "-L/opt/homebrew/
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CXX) $(OBJECTS) -g -fsanitize=address -o $@ $(SDL_LIBS) $(LIBZIP_LIBS)
+	$(CXX) $(OBJECTS) -g -fprofile-instr-generate -fcoverage-mapping -fsanitize=address -o $@ $(SDL_LIBS) $(LIBZIP_LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 	@mkdir -p $(dir $@)
