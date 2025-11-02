@@ -2,7 +2,6 @@
 #define Z80_HPP
 
 #include <cstdint>
-#include <bit>
 #include "memory.hpp"
 #include "port.hpp"
 
@@ -136,6 +135,7 @@ public:
 private:
     // Flag update functions
     void UpdateSZFlags(uint8_t result);
+    void UpdatePVFlags(uint8_t result);
     void UpdateSZXYPVFlags(uint8_t result);
     void UpdateFlags3and5FromValue(uint8_t value);
     void UpdateFlags3and5FromAddress(uint16_t address);
@@ -143,42 +143,16 @@ private:
     void UpdateXYFlags(uint8_t result);
 
     // Flag manipulation functions
-    // bool GetFlag(uint8_t flag);
-    __attribute__((always_inline)) inline bool GetFlag(uint8_t flag) const noexcept
-    {
-        return (F & flag) != 0;
-    }
-
-    __attribute__((always_inline)) inline void SetFlag(uint8_t flag, bool state) noexcept
-    {
-        uint8_t mask = static_cast<uint8_t>(-static_cast<int8_t>(state));
-        F = (F & ~flag) | (mask & flag);
-    }
-
+    bool GetFlag(uint8_t flag);
+    void SetFlag(uint8_t flag, bool state);
     void ClearFlag(uint8_t flag);
     void ClearAllFlags();
 
     // Helper functions
     uint8_t ReadImmediateByte();
-    // uint16_t ReadImmediateWord();
-    __attribute__((always_inline)) inline uint16_t ReadImmediateWord() noexcept
-    {
-        const uint8_t *p = memory->memory + PC; // single address calc
-        uint16_t word;
-        std::memcpy(&word, p, sizeof(word)); // becomes a single load
-        PC += 2;                             // one add
-        return word;                         // little‑endian order is correct
-    }
+    uint16_t ReadImmediateWord();
     int8_t ReadDisplacement();
-    // uint8_t ReadOpcode();
-    __attribute__((always_inline)) inline uint8_t ReadOpcode() noexcept
-    {
-        const uint8_t *p = memory->memory + PC;                // one address calc
-        uint8_t opcode = *p;                                   // single byte load
-        PC += 1;                                               // merged with the load
-        R = static_cast<uint8_t>((R + 1) & 0x7F) | (R & 0x80); // one add + mask
-        return opcode;
-    }
+    uint8_t ReadOpcode();
     void Push(uint16_t value);
     uint16_t Pop();
 
@@ -190,11 +164,7 @@ private:
     void rrca();
     void rra();
     void daa();
-    //bool parity(uint8_t val);
-    __attribute__((always_inline))
-    static inline bool parity(uint8_t v) noexcept {
-    return !(POPCOUNT(v) & 1);
-    }
+    bool parity(uint8_t val);
     void cpl();
     void scf();
     void ccf();

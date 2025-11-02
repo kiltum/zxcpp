@@ -8,7 +8,7 @@ int Z80::ExecuteFDCBOpcode()
     uint8_t opcode = ReadOpcode();
     R--; // Decrement R because ReadOpcode() increments it
     uint16_t addr = uint16_t(int32_t(IY) + int32_t(displacement));
-    uint8_t value = memory->memory[addr];
+    uint8_t value = memory->ReadByte(addr);
     MEMPTR = addr;
 
     // Handle rotate and shift instructions (0x00-0x3F)
@@ -83,7 +83,7 @@ int Z80::executeRotateShiftIndexedIY(uint8_t opcode, uint16_t addr, uint8_t valu
     }
 
     // Store result in memory
-    memory->memory[addr] = result;
+    memory->WriteByte(addr, result);
 
     // Store result in register if needed (except for (HL) case)
     if (reg != 6)
@@ -124,7 +124,7 @@ int Z80::executeResetBitIndexedIY(uint8_t opcode, uint16_t addr, uint8_t value)
     uint8_t reg = opcode & 0x07;
 
     uint8_t result = res(bitNum, value);
-    memory->memory[addr] = result;
+    memory->WriteByte(addr, result);
 
     // Store result in register if needed (except for (HL) case)
     if (reg != 6)
@@ -165,7 +165,7 @@ int Z80::executeSetBitIndexedIY(uint8_t opcode, uint16_t addr, uint8_t value)
     uint8_t reg = opcode & 0x07;
 
     uint8_t result = set(bitNum, value);
-    memory->memory[addr] = result;
+    memory->WriteByte(addr, result);
 
     // Store result in register if needed (except for (HL) case)
     if (reg != 6)

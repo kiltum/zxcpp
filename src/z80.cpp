@@ -284,8 +284,8 @@ void Z80::Push(uint16_t value)
 uint16_t Z80::Pop()
 {
     // Read low byte first, then high byte (little-endian)
-    uint8_t lo = memory->memory[SP];
-    uint8_t hi = memory->memory[SP + 1];
+    uint8_t lo = memory->ReadByte(SP);
+    uint8_t hi = memory->ReadByte(SP + 1);
     SP += 2;
     return (uint16_t(hi) << 8) | uint16_t(lo);
 }

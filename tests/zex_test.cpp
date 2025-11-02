@@ -76,9 +76,9 @@ public:
         // and setting the PC to that address.
 
         // Pop return address from stack
-        uint8_t lowByte = memory->memory[cpu->SP];
+        uint8_t lowByte = memory->ReadByte(cpu->SP);
         cpu->SP++;
-        uint8_t highByte = memory->memory[cpu->SP];
+        uint8_t highByte = memory->ReadByte(cpu->SP);
         cpu->SP++;
         uint16_t returnAddress = ((uint16_t)highByte << 8) | (uint16_t)lowByte;
 
@@ -204,9 +204,9 @@ void TestZEXALL()
             // and setting the PC to that address.
 
             // Pop return address from stack
-            uint8_t lowByte = memory->memory[cpu->SP];
+            uint8_t lowByte = memory->ReadByte(cpu->SP);
             cpu->SP++;
-            uint8_t highByte = memory->memory[cpu->SP];
+            uint8_t highByte = memory->ReadByte(cpu->SP);
             cpu->SP++;
             uint16_t returnAddress = ((uint16_t)highByte << 8) | (uint16_t)lowByte;
 

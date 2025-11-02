@@ -11,6 +11,7 @@ private:
     bool is48;              // machine version
     uint8_t bankMapping[4]; // Which bank mapped now
     bool ULAShadow;
+
 public:
     // Constructor
     Memory();

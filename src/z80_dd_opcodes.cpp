@@ -354,7 +354,7 @@ int Z80::executeIncDecIndexed(bool isInc)
 {
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    uint8_t value = memory->memory[addr];
+    uint8_t value = memory->ReadByte(addr);
     uint8_t result;
     if (isInc)
     {
@@ -364,7 +364,7 @@ int Z80::executeIncDecIndexed(bool isInc)
     {
         result = dec8(value);
     }
-    memory->memory[addr] = result;
+    memory->WriteByte(addr, result);
     MEMPTR = addr;
     return 23;
 }
@@ -374,7 +374,7 @@ int Z80::executeLoadFromIndexed(uint8_t reg)
 {
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    uint8_t value = memory->memory[addr];
+    uint8_t value = memory->ReadByte(addr);
 
     switch (reg)
     {
@@ -410,7 +410,7 @@ int Z80::executeStoreToIndexed(uint8_t value)
 {
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    memory->memory[addr] = value;
+    memory->WriteByte(addr, value);
     MEMPTR = addr;
     return 19;
 }
@@ -420,7 +420,7 @@ int Z80::executeALUIndexed(uint8_t opType)
 {
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-    uint8_t value = memory->memory[addr];
+    uint8_t value = memory->ReadByte(addr);
 
     switch (opType)
     {

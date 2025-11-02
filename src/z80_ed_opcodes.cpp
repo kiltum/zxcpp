@@ -414,7 +414,7 @@ void Z80::rrd()
     // HL bits 3-0 go to A bits 3-0
     A = ah | (hl & 0x0F);
     uint8_t newHL = ((hl & 0xF0) >> 4) | (al << 4);
-    memory->memory[HL] = newHL;
+    memory->WriteByte(HL, newHL);
 
     UpdateSZXYPVFlags(A);
     ClearFlag(FLAG_H);
@@ -437,7 +437,7 @@ void Z80::rld()
     // HL bits 7-4 go to A bits 3-0
     A = ah | (hl >> 4);
     uint8_t newHL = ((hl & 0x0F) << 4) | al;
-    memory->memory[HL] = newHL;
+    memory->WriteByte(HL, newHL);
 
     UpdateSZXYPVFlags(A);
     ClearFlag(FLAG_H);
@@ -590,7 +590,7 @@ void Z80::cpi()
 void Z80::ini()
 {
     uint8_t value = port->Read(uint16_t(C) | (uint16_t(B) << 8));
-    memory->memory[HL] = value;
+    memory->WriteByte(HL, value);
     HL++;
     uint16_t origbc = BC;
     B--;
@@ -684,7 +684,7 @@ void Z80::cpd()
 void Z80::ind()
 {
     uint8_t val = port->Read(BC);
-    memory->memory[HL] = val;
+    memory->WriteByte(HL, val);
     HL--;
     MEMPTR = BC - 1;
     B--;

@@ -22,7 +22,7 @@ int Z80::ExecuteCBOpcode()
         if (reg == 6)
         {
             uint16_t addr = HL;
-            uint8_t value = memory->memory[addr];
+            uint8_t value = memory->ReadByte(addr);
 
             switch (opType)
             {
@@ -349,9 +349,9 @@ int Z80::ExecuteCBOpcode()
         if (reg == 6)
         {
             uint16_t addr = HL;
-            uint8_t value = memory->memory[addr];
+            uint8_t value = memory->ReadByte(addr);
             uint8_t result = res(bitNum, value);
-            memory->memory[addr] = result;
+            memory->WriteByte(addr, result);
             return 15;
         }
         else
@@ -395,9 +395,9 @@ int Z80::ExecuteCBOpcode()
         if (reg == 6)
         {
             uint16_t addr = HL;
-            uint8_t value = memory->memory[addr];
+            uint8_t value = memory->ReadByte(addr);
             uint8_t result = set(bitNum, value);
-            memory->memory[addr] = result;
+            memory->WriteByte(addr, result);
             return 15;
         }
         else
