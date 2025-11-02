@@ -1,0 +1,5 @@
+*.o
+emulator
+*_test
+imgui.ini
+file

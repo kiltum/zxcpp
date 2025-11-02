@@ -2,39 +2,42 @@
 #include "memory.hpp"
 
 // Implementation of DD prefixed Z80 opcodes (IX instructions)
-int Z80::ExecuteDDOpcode() {
+int Z80::ExecuteDDOpcode()
+{
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
     // R should not be incremented twice (already incremented in ExecuteOneInstruction for DD prefix)
-    //R = (R & 0x80) | ((R - 1) & 0x7F);
+    // R = (R & 0x80) | ((R - 1) & 0x7F);
     R++;
-    switch (opcode) {
+    switch (opcode)
+    {
     // Load instructions
     case 0x09: // ADD IX, BC
-        {
-            uint16_t oldIX = IX;
-            uint16_t result = add16IX(IX, BC);
-            MEMPTR = oldIX + 1;
-            IX = result;
-        }
+    {
+        uint16_t oldIX = IX;
+        uint16_t result = add16IX(IX, BC);
+        MEMPTR = oldIX + 1;
+        IX = result;
+    }
         return 15;
     case 0x19: // ADD IX, DE
-        {
-            uint16_t oldIX = IX;
-            uint16_t result = add16IX(IX, DE);
-            MEMPTR = oldIX + 1;
-            IX = result;
-        }
+    {
+        uint16_t oldIX = IX;
+        uint16_t result = add16IX(IX, DE);
+        MEMPTR = oldIX + 1;
+        IX = result;
+    }
         return 15;
     case 0x21: // LD IX, nn
         IX = ReadImmediateWord();
         return 14;
     case 0x22: // LD (nn), IX
-        {
-            uint16_t addr = ReadImmediateWord();
-            memory->WriteWord(addr, IX);
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        memory->WriteByte(addr, uint8_t(IX & 0xFF));
+        memory->WriteByte(addr + 1, uint8_t((IX >> 8) & 0xFF));
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x23: // INC IX
         IX++;
@@ -49,19 +52,19 @@ int Z80::ExecuteDDOpcode() {
         SetIXH(ReadImmediateByte());
         return 11;
     case 0x29: // ADD IX, IX
-        {
-            uint16_t oldIX = IX;
-            uint16_t result = add16IX(IX, IX);
-            MEMPTR = oldIX + 1;
-            IX = result;
-        }
+    {
+        uint16_t oldIX = IX;
+        uint16_t result = add16IX(IX, IX);
+        MEMPTR = oldIX + 1;
+        IX = result;
+    }
         return 15;
     case 0x2A: // LD IX, (nn)
-        {
-            uint16_t addr = ReadImmediateWord();
-            IX = memory->ReadWord(addr);
-            MEMPTR = addr + 1;
-        }
+    {
+        uint16_t addr = ReadImmediateWord();
+        IX = (uint16_t(memory->ReadByte(addr + 1)) << 8) | uint16_t(memory->ReadByte(addr));
+        MEMPTR = addr + 1;
+    }
         return 20;
     case 0x2B: // DEC IX
         IX--;
@@ -80,21 +83,21 @@ int Z80::ExecuteDDOpcode() {
     case 0x35: // DEC (IX+d)
         return executeIncDecIndexed(false);
     case 0x36: // LD (IX+d), n
-        {
-            int8_t displacement = ReadDisplacement();
-            uint8_t value = ReadImmediateByte();
-            uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
-            memory->memory[addr] = value;
-            MEMPTR = addr;
-        }
+    {
+        int8_t displacement = ReadDisplacement();
+        uint8_t value = ReadImmediateByte();
+        uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
+        memory->WriteByte(addr, value);
+        MEMPTR = addr;
+    }
         return 19;
     case 0x39: // ADD IX, SP
-        {
-            uint16_t oldIX = IX;
-            uint16_t result = add16IX(IX, SP);
-            MEMPTR = oldIX + 1;
-            IX = result;
-        }
+    {
+        uint16_t oldIX = IX;
+        uint16_t result = add16IX(IX, SP);
+        MEMPTR = oldIX + 1;
+        IX = result;
+    }
         return 15;
     case 0x40: // LD B,B
         return 8;
@@ -272,12 +275,13 @@ int Z80::ExecuteDDOpcode() {
         IX = Pop();
         return 14;
     case 0xE3: // EX (SP), IX
-        {
-            uint16_t temp = memory->ReadWord(SP);
-            memory->WriteWord(SP, IX);
-            IX = temp;
-            MEMPTR = temp;
-        }
+    {
+        uint16_t temp = (uint16_t(memory->ReadByte(SP + 1)) << 8) | uint16_t(memory->ReadByte(SP));
+        memory->WriteByte(SP, uint8_t(IX & 0xFF));
+        memory->WriteByte(SP + 1, uint8_t((IX >> 8) & 0xFF));
+        IX = temp;
+        MEMPTR = temp;
+    }
         return 23;
     case 0xE5: // PUSH IX
         Push(IX);
@@ -305,12 +309,13 @@ int Z80::ExecuteDDOpcode() {
     default:
         PC--;
         return ExecuteOpcode();
-        //panic(fmt.Sprintf("DD unexpected code %x", opcode))
+        // panic(fmt.Sprintf("DD unexpected code %x", opcode))
     }
 }
 
 // add16IX adds two 16-bit values for IX register and updates flags
-uint16_t Z80::add16IX(uint16_t a, uint16_t b) {
+uint16_t Z80::add16IX(uint16_t a, uint16_t b)
+{
     uint32_t result = (uint32_t)a + (uint32_t)b;
     SetFlag(FLAG_C, result > 0xFFFF);
     SetFlag(FLAG_H, (a & 0x0FFF) + (b & 0x0FFF) > 0x0FFF);
@@ -321,34 +326,42 @@ uint16_t Z80::add16IX(uint16_t a, uint16_t b) {
 }
 
 // Get IXH (high byte of IX)
-uint8_t Z80::GetIXH() {
+uint8_t Z80::GetIXH()
+{
     return uint8_t(IX >> 8);
 }
 
 // Get IXL (low byte of IX)
-uint8_t Z80::GetIXL() {
+uint8_t Z80::GetIXL()
+{
     return uint8_t(IX & 0xFF);
 }
 
 // Set IXH (high byte of IX)
-void Z80::SetIXH(uint8_t value) {
+void Z80::SetIXH(uint8_t value)
+{
     IX = (IX & 0x00FF) | (uint16_t(value) << 8);
 }
 
 // Set IXL (low byte of IX)
-void Z80::SetIXL(uint8_t value) {
+void Z80::SetIXL(uint8_t value)
+{
     IX = (IX & 0xFF00) | uint16_t(value);
 }
 
 // executeIncDecIndexed handles INC/DEC (IX+d) instructions
-int Z80::executeIncDecIndexed(bool isInc) {
+int Z80::executeIncDecIndexed(bool isInc)
+{
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
     uint8_t value = memory->memory[addr];
     uint8_t result;
-    if (isInc) {
+    if (isInc)
+    {
         result = inc8(value);
-    } else {
+    }
+    else
+    {
         result = dec8(value);
     }
     memory->memory[addr] = result;
@@ -357,12 +370,14 @@ int Z80::executeIncDecIndexed(bool isInc) {
 }
 
 // executeLoadFromIndexed handles LD r, (IX+d) instructions
-int Z80::executeLoadFromIndexed(uint8_t reg) {
+int Z80::executeLoadFromIndexed(uint8_t reg)
+{
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
     uint8_t value = memory->memory[addr];
 
-    switch (reg) {
+    switch (reg)
+    {
     case 0:
         B = value;
         break;
@@ -391,7 +406,8 @@ int Z80::executeLoadFromIndexed(uint8_t reg) {
 }
 
 // executeStoreToIndexed handles LD (IX+d), r instructions
-int Z80::executeStoreToIndexed(uint8_t value) {
+int Z80::executeStoreToIndexed(uint8_t value)
+{
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
     memory->memory[addr] = value;
@@ -400,12 +416,14 @@ int Z80::executeStoreToIndexed(uint8_t value) {
 }
 
 // executeALUIndexed handles ALU operations with (IX+d) operand
-int Z80::executeALUIndexed(uint8_t opType) {
+int Z80::executeALUIndexed(uint8_t opType)
+{
     int8_t displacement = ReadDisplacement();
     uint16_t addr = uint16_t(int32_t(IX) + int32_t(displacement));
     uint8_t value = memory->memory[addr];
 
-    switch (opType) {
+    switch (opType)
+    {
     case 0: // ADD
         add8(value);
         break;

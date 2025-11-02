@@ -2,7 +2,8 @@
 #include "memory.hpp"
 
 // Implementation of DD CB prefixed Z80 opcodes (IX with displacement and CB operations)
-int Z80::executeDDCBOpcode() {
+int Z80::executeDDCBOpcode()
+{
     // For DD CB prefixed instructions, R should be incremented by 2 total
     // We've already incremented R once for the DD prefix and once for the CB prefix
     // So we need to adjust by -1 to get the correct total increment of 2
@@ -20,7 +21,8 @@ int Z80::executeDDCBOpcode() {
     uint8_t value = memory->memory[addr];
 
     // Handle rotate and shift instructions (0x00-0x3F)
-    if (opcode <= 0x3F) {
+    if (opcode <= 0x3F)
+    {
         // Determine operation type from opcode bits 3-5
         uint8_t opType = (opcode >> 3) & 0x07;
         // Determine register from opcode bits 0-2
@@ -28,7 +30,8 @@ int Z80::executeDDCBOpcode() {
 
         // Perform the operation
         uint8_t result;
-        switch (opType) {
+        switch (opType)
+        {
         case 0: // RLC
             result = rlc(value);
             break;
@@ -62,8 +65,10 @@ int Z80::executeDDCBOpcode() {
         memory->memory[addr] = result;
 
         // Store result in register if needed (except for (HL) case)
-        if (reg != 6) { // reg 6 is (HL) - no register store needed
-            switch (reg) {
+        if (reg != 6)
+        { // reg 6 is (HL) - no register store needed
+            switch (reg)
+            {
             case 0:
                 B = result;
                 break;
@@ -93,7 +98,8 @@ int Z80::executeDDCBOpcode() {
     }
 
     // Handle bit test instructions (0x40-0x7F)
-    if (opcode >= 0x40 && opcode <= 0x7F) {
+    if (opcode >= 0x40 && opcode <= 0x7F)
+    {
         uint8_t bitNum = (opcode >> 3) & 0x07;
         bitMem(bitNum, value, uint8_t(addr >> 8));
         MEMPTR = addr;
@@ -101,7 +107,8 @@ int Z80::executeDDCBOpcode() {
     }
 
     // Handle reset bit instructions (0x80-0xBF)
-    if (opcode >= 0x80 && opcode <= 0xBF) {
+    if (opcode >= 0x80 && opcode <= 0xBF)
+    {
         uint8_t bitNum = (opcode >> 3) & 0x07;
         uint8_t reg = opcode & 0x07;
 
@@ -109,8 +116,10 @@ int Z80::executeDDCBOpcode() {
         memory->memory[addr] = result;
 
         // Store result in register if needed (except for (HL) case)
-        if (reg != 6) { // reg 6 is (HL) - no register store needed
-            switch (reg) {
+        if (reg != 6)
+        { // reg 6 is (HL) - no register store needed
+            switch (reg)
+            {
             case 0:
                 B = result;
                 break;
@@ -140,7 +149,8 @@ int Z80::executeDDCBOpcode() {
     }
 
     // Handle set bit instructions (0xC0-0xFF)
-    if (opcode >= 0xC0) {
+    if (opcode >= 0xC0)
+    {
         uint8_t bitNum = (opcode >> 3) & 0x07;
         uint8_t reg = opcode & 0x07;
 
@@ -148,8 +158,10 @@ int Z80::executeDDCBOpcode() {
         memory->memory[addr] = result;
 
         // Store result in register if needed (except for (HL) case)
-        if (reg != 6) { // reg 6 is (HL) - no register store needed
-            switch (reg) {
+        if (reg != 6)
+        { // reg 6 is (HL) - no register store needed
+            switch (reg)
+            {
             case 0:
                 B = result;
                 break;

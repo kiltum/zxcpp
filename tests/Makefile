@@ -4,13 +4,13 @@
 all: run_test
 
 # Compile and run the test
-run_test: zex_test
-#	./fuse_test --failfast
-#	rm -f fuse_test
-	LLVM_PROFILE_FILE="zex.profraw" time ./zex_test
-	llvm-profdata merge -output=zex.profdata zex.profraw
-	llvm-cov show ./zex_test -instr-profile=zex.profdata -format=html > zex.html
+run_test: fuse_test zex_test tape_test
+	./fuse_test --failfast
+	rm -f fuse_test
+	time ./zex_test
 	rm -f zex_test
+	./tape_test
+	rm -f tape_test
 
 
 # Compile the fuse test
@@ -19,19 +19,25 @@ fuse_test: fuse_test.cpp ../src/z80.cpp ../src/memory.cpp ../src/port.cpp ../src
 
 # Compile the ZEX test -g -fprofile-instr-generate -fcoverage-mapping -std=c++20 
 zex_test: zex_test.cpp ../src/z80.cpp ../src/memory.cpp ../src/port.cpp ../src/z80_opcodes.cpp ../src/z80_dd_opcodes.cpp  ../src/z80_ddcb_opcodes.cpp ../src/z80_fd_opcodes.cpp ../src/z80_cb_opcodes.cpp ../src/z80_ed_opcodes.cpp ../src/z80_fdcb_opcodes.cpp
-	g++ -std=c++20 -O3 -march=native -mtune=native \
-        -flto=thin -fno-exceptions -fno-rtti \
-        -fno-stack-protector -ffast-math -fno-math-errno \
-        -g -fprofile-instr-generate -fcoverage-mapping -fno-omit-frame-pointer -o zex_test zex_test.cpp ../src/z80.cpp ../src/memory.cpp ../src/port.cpp ../src/z80_opcodes.cpp ../src/z80_dd_opcodes.cpp ../src/z80_ddcb_opcodes.cpp ../src/z80_fd_opcodes.cpp ../src/z80_cb_opcodes.cpp ../src/z80_ed_opcodes.cpp ../src/z80_fdcb_opcodes.cpp -I../include
+	g++ -std=c++11 -O3 -march=native -o zex_test zex_test.cpp ../src/z80.cpp ../src/memory.cpp ../src/port.cpp ../src/z80_opcodes.cpp ../src/z80_dd_opcodes.cpp ../src/z80_ddcb_opcodes.cpp ../src/z80_fd_opcodes.cpp ../src/z80_cb_opcodes.cpp ../src/z80_ed_opcodes.cpp ../src/z80_fdcb_opcodes.cpp -I../include
+
+# Compile the tape test
+tape_test: tape_test.cpp ../src/tape.cpp
+	g++ -std=c++11 -o tape_test tape_test.cpp ../src/tape.cpp -I../include -I/opt/homebrew/Cellar/libzip/1.11.4/include $(shell pkg-config --libs libzip 2>/dev/null)
 
 # Run ZEXALL test
 run_zexall: zex_test
 	./zex_test
 	rm -f zex_test
 
+# Run tape tests
+run_tape: tape_test
+	./tape_test
+	rm -f tape_test
+
 
 # Clean up any executables
 clean:
-	rm -f fuse_test zex_test
+	rm -f fuse_test zex_test tape_test
 
-.PHONY: all run_test clean run_zexall
+.PHONY: all run_test clean run_zexall run_tape

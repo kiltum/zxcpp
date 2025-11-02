@@ -2,80 +2,88 @@
 #include "memory.hpp"
 
 // Implementation of CB prefixed Z80 opcodes (bit manipulation instructions)
-int Z80::ExecuteCBOpcode() {
+int Z80::ExecuteCBOpcode()
+{
     // Read the opcode from memory at the current program counter
     uint8_t opcode = ReadOpcode();
     // R should not be incremented twice (already incremented in ExecuteOneInstruction for CB prefix)
-    ///R = (R & 0x80) | ((R - 1) & 0x7F);
+    /// R = (R & 0x80) | ((R - 1) & 0x7F);
     R++;
-    
+
     // Handle rotate and shift instructions (0x00-0x3F)
-    if (opcode <= 0x3F) {
+    if (opcode <= 0x3F)
+    {
         // Determine operation type from opcode bits 3-5
         uint8_t opType = (opcode >> 3) & 0x07;
         // Determine register from opcode bits 0-2
         uint8_t reg = opcode & 0x07;
 
         // Handle (HL) special case
-        if (reg == 6) {
+        if (reg == 6)
+        {
             uint16_t addr = HL;
             uint8_t value = memory->memory[addr];
 
-            switch (opType) {
+            switch (opType)
+            {
             case 0: // RLC
-                {
-                    uint8_t result = rlc(value);
-                    memory->memory[addr] = result;
-                }
+            {
+                uint8_t result = rlc(value);
+                memory->WriteByte(addr, result);
+            }
                 return 15;
             case 1: // RRC
-                {
-                    uint8_t result = rrc(value);
-                    memory->memory[addr] = result;
-                }
+            {
+                uint8_t result = rrc(value);
+                memory->WriteByte(addr, result);
+            }
                 return 15;
             case 2: // RL
-                {
-                    uint8_t result = rl(value);
-                    memory->memory[addr] = result;
-                }
+            {
+                uint8_t result = rl(value);
+                memory->WriteByte(addr, result);
+            }
                 return 15;
             case 3: // RR
-                {
-                    uint8_t result = rr(value);
-                    memory->memory[addr] = result;
-                }
+            {
+                uint8_t result = rr(value);
+                memory->WriteByte(addr, result);
+            }
                 return 15;
             case 4: // SLA
-                {
-                    uint8_t result = sla(value);
-                    memory->memory[addr] = result;
-                }
+            {
+                uint8_t result = sla(value);
+                memory->WriteByte(addr, result);
+            }
                 return 15;
             case 5: // SRA
-                {
-                    uint8_t result = sra(value);
-                    memory->memory[addr] = result;
-                }
+            {
+                uint8_t result = sra(value);
+                memory->WriteByte(addr, result);
+            }
                 return 15;
             case 6: // SLL (Undocumented)
-                {
-                    uint8_t result = sll(value);
-                    memory->memory[addr] = result;
-                }
+            {
+                uint8_t result = sll(value);
+                memory->WriteByte(addr, result);
+            }
                 return 15;
             case 7: // SRL
-                {
-                    uint8_t result = srl(value);
-                    memory->memory[addr] = result;
-                }
+            {
+                uint8_t result = srl(value);
+                memory->WriteByte(addr, result);
+            }
                 return 15;
             }
-        } else {
+        }
+        else
+        {
             // Handle regular registers
-            switch (opType) {
+            switch (opType)
+            {
             case 0: // RLC
-                switch (reg) {
+                switch (reg)
+                {
                 case 0:
                     B = rlc(B);
                     break;
@@ -100,7 +108,8 @@ int Z80::ExecuteCBOpcode() {
                 }
                 return 8;
             case 1: // RRC
-                switch (reg) {
+                switch (reg)
+                {
                 case 0:
                     B = rrc(B);
                     break;
@@ -125,7 +134,8 @@ int Z80::ExecuteCBOpcode() {
                 }
                 return 8;
             case 2: // RL
-                switch (reg) {
+                switch (reg)
+                {
                 case 0:
                     B = rl(B);
                     break;
@@ -150,7 +160,8 @@ int Z80::ExecuteCBOpcode() {
                 }
                 return 8;
             case 3: // RR
-                switch (reg) {
+                switch (reg)
+                {
                 case 0:
                     B = rr(B);
                     break;
@@ -175,7 +186,8 @@ int Z80::ExecuteCBOpcode() {
                 }
                 return 8;
             case 4: // SLA
-                switch (reg) {
+                switch (reg)
+                {
                 case 0:
                     B = sla(B);
                     break;
@@ -200,7 +212,8 @@ int Z80::ExecuteCBOpcode() {
                 }
                 return 8;
             case 5: // SRA
-                switch (reg) {
+                switch (reg)
+                {
                 case 0:
                     B = sra(B);
                     break;
@@ -225,7 +238,8 @@ int Z80::ExecuteCBOpcode() {
                 }
                 return 8;
             case 6: // SLL (Undocumented)
-                switch (reg) {
+                switch (reg)
+                {
                 case 0:
                     B = sll(B);
                     break;
@@ -250,7 +264,8 @@ int Z80::ExecuteCBOpcode() {
                 }
                 return 8;
             case 7: // SRL
-                switch (reg) {
+                switch (reg)
+                {
                 case 0:
                     B = srl(B);
                     break;
@@ -279,19 +294,24 @@ int Z80::ExecuteCBOpcode() {
     }
 
     // Handle bit test instructions (0x40-0x7F)
-    if (opcode >= 0x40 && opcode <= 0x7F) {
+    if (opcode >= 0x40 && opcode <= 0x7F)
+    {
         uint8_t bitNum = (opcode >> 3) & 0x07;
         uint8_t reg = opcode & 0x07;
 
         // Handle (HL) special case
-        if (reg == 6) {
-            uint8_t value = memory->memory[HL];
+        if (reg == 6)
+        {
+            uint8_t value = memory->ReadByte(HL);
             bitMem(bitNum, value, uint8_t(MEMPTR >> 8));
             return 12;
-        } else {
+        }
+        else
+        {
             // Handle regular registers
             uint8_t regValue;
-            switch (reg) {
+            switch (reg)
+            {
             case 0:
                 regValue = B;
                 break;
@@ -320,20 +340,25 @@ int Z80::ExecuteCBOpcode() {
     }
 
     // Handle reset bit instructions (0x80-0xBF)
-    if (opcode >= 0x80 && opcode <= 0xBF) {
+    if (opcode >= 0x80 && opcode <= 0xBF)
+    {
         uint8_t bitNum = (opcode >> 3) & 0x07;
         uint8_t reg = opcode & 0x07;
 
         // Handle (HL) special case
-        if (reg == 6) {
+        if (reg == 6)
+        {
             uint16_t addr = HL;
             uint8_t value = memory->memory[addr];
             uint8_t result = res(bitNum, value);
             memory->memory[addr] = result;
             return 15;
-        } else {
+        }
+        else
+        {
             // Handle regular registers
-            switch (reg) {
+            switch (reg)
+            {
             case 0:
                 B = res(bitNum, B);
                 break;
@@ -361,20 +386,25 @@ int Z80::ExecuteCBOpcode() {
     }
 
     // Handle set bit instructions (0xC0-0xFF)
-    if (opcode >= 0xC0) {
+    if (opcode >= 0xC0)
+    {
         uint8_t bitNum = (opcode >> 3) & 0x07;
         uint8_t reg = opcode & 0x07;
 
         // Handle (HL) special case
-        if (reg == 6) {
+        if (reg == 6)
+        {
             uint16_t addr = HL;
             uint8_t value = memory->memory[addr];
             uint8_t result = set(bitNum, value);
             memory->memory[addr] = result;
             return 15;
-        } else {
+        }
+        else
+        {
             // Handle regular registers
-            switch (reg) {
+            switch (reg)
+            {
             case 0:
                 B = set(bitNum, B);
                 break;
@@ -406,7 +436,8 @@ int Z80::ExecuteCBOpcode() {
 }
 
 // rlc rotates a byte left circular
-uint8_t Z80::rlc(uint8_t value) {
+uint8_t Z80::rlc(uint8_t value)
+{
     uint8_t result = (value << 1) | (value >> 7);
     SetFlag(FLAG_C, (value & 0x80) != 0);
     ClearFlag(FLAG_H);
@@ -416,7 +447,8 @@ uint8_t Z80::rlc(uint8_t value) {
 }
 
 // rrc rotates a byte right circular
-uint8_t Z80::rrc(uint8_t value) {
+uint8_t Z80::rrc(uint8_t value)
+{
     uint8_t result = (value >> 1) | (value << 7);
     SetFlag(FLAG_C, (value & 0x01) != 0);
     ClearFlag(FLAG_H);
@@ -426,10 +458,12 @@ uint8_t Z80::rrc(uint8_t value) {
 }
 
 // rl rotates a byte left through carry
-uint8_t Z80::rl(uint8_t value) {
+uint8_t Z80::rl(uint8_t value)
+{
     bool oldCarry = GetFlag(FLAG_C);
     uint8_t result = (value << 1);
-    if (oldCarry) {
+    if (oldCarry)
+    {
         result |= 0x01;
     }
     SetFlag(FLAG_C, (value & 0x80) != 0);
@@ -440,10 +474,12 @@ uint8_t Z80::rl(uint8_t value) {
 }
 
 // rr rotates a byte right through carry
-uint8_t Z80::rr(uint8_t value) {
+uint8_t Z80::rr(uint8_t value)
+{
     bool oldCarry = GetFlag(FLAG_C);
     uint8_t result = (value >> 1);
-    if (oldCarry) {
+    if (oldCarry)
+    {
         result |= 0x80;
     }
     SetFlag(FLAG_C, (value & 0x01) != 0);
@@ -454,7 +490,8 @@ uint8_t Z80::rr(uint8_t value) {
 }
 
 // sla shifts a byte left arithmetic
-uint8_t Z80::sla(uint8_t value) {
+uint8_t Z80::sla(uint8_t value)
+{
     uint8_t result = value << 1;
     SetFlag(FLAG_C, (value & 0x80) != 0);
     ClearFlag(FLAG_H);
@@ -464,7 +501,8 @@ uint8_t Z80::sla(uint8_t value) {
 }
 
 // sra shifts a byte right arithmetic
-uint8_t Z80::sra(uint8_t value) {
+uint8_t Z80::sra(uint8_t value)
+{
     uint8_t result = (value >> 1) | (value & 0x80);
     SetFlag(FLAG_C, (value & 0x01) != 0);
     ClearFlag(FLAG_H);
@@ -474,7 +512,8 @@ uint8_t Z80::sra(uint8_t value) {
 }
 
 // sll shifts a byte left logical (Undocumented)
-uint8_t Z80::sll(uint8_t value) {
+uint8_t Z80::sll(uint8_t value)
+{
     uint8_t result = (value << 1) | 0x01;
     SetFlag(FLAG_C, (value & 0x80) != 0);
     ClearFlag(FLAG_H);
@@ -484,7 +523,8 @@ uint8_t Z80::sll(uint8_t value) {
 }
 
 // srl shifts a byte right logical
-uint8_t Z80::srl(uint8_t value) {
+uint8_t Z80::srl(uint8_t value)
+{
     uint8_t result = value >> 1;
     SetFlag(FLAG_C, (value & 0x01) != 0);
     ClearFlag(FLAG_H);
@@ -494,7 +534,8 @@ uint8_t Z80::srl(uint8_t value) {
 }
 
 // bit tests a bit in a byte
-void Z80::bit(uint8_t bitNum, uint8_t value) {
+void Z80::bit(uint8_t bitNum, uint8_t value)
+{
     uint8_t mask = uint8_t(1 << bitNum);
     uint8_t result = value & mask;
     SetFlag(FLAG_Z, result == 0);
@@ -502,22 +543,29 @@ void Z80::bit(uint8_t bitNum, uint8_t value) {
     SetFlag(FLAG_X, (value & (1 << 3)) != 0);
     SetFlag(FLAG_H, true);
     ClearFlag(FLAG_N);
-    if (result == 0) {
+    if (result == 0)
+    {
         SetFlag(FLAG_PV, true);
         ClearFlag(FLAG_S);
-    } else {
+    }
+    else
+    {
         ClearFlag(FLAG_PV);
         // For BIT 7, S flag is set to the value of bit 7
-        if (bitNum == 7) {
+        if (bitNum == 7)
+        {
             SetFlag(FLAG_S, (value & 0x80) != 0);
-        } else {
+        }
+        else
+        {
             ClearFlag(FLAG_S);
         }
     }
 }
 
 // bitMem tests a bit in a byte for memory references
-void Z80::bitMem(uint8_t bitNum, uint8_t value, uint8_t addrHi) {
+void Z80::bitMem(uint8_t bitNum, uint8_t value, uint8_t addrHi)
+{
     uint8_t mask = uint8_t(1 << bitNum);
     uint8_t result = value & mask;
     SetFlag(FLAG_Z, result == 0);
@@ -525,28 +573,36 @@ void Z80::bitMem(uint8_t bitNum, uint8_t value, uint8_t addrHi) {
     SetFlag(FLAG_X, (addrHi & (1 << 3)) != 0);
     SetFlag(FLAG_H, true);
     ClearFlag(FLAG_N);
-    if (result == 0) {
+    if (result == 0)
+    {
         SetFlag(FLAG_PV, true);
         ClearFlag(FLAG_S);
-    } else {
+    }
+    else
+    {
         ClearFlag(FLAG_PV);
         // For BIT 7, S flag is set to the value of bit 7
-        if (bitNum == 7) {
+        if (bitNum == 7)
+        {
             SetFlag(FLAG_S, (value & 0x80) != 0);
-        } else {
+        }
+        else
+        {
             ClearFlag(FLAG_S);
         }
     }
 }
 
 // res resets a bit in a byte
-uint8_t Z80::res(uint8_t bitNum, uint8_t value) {
+uint8_t Z80::res(uint8_t bitNum, uint8_t value)
+{
     uint8_t mask = uint8_t(~(1 << bitNum));
     return value & mask;
 }
 
 // set sets a bit in a byte
-uint8_t Z80::set(uint8_t bitNum, uint8_t value) {
+uint8_t Z80::set(uint8_t bitNum, uint8_t value)
+{
     uint8_t mask = uint8_t(1 << bitNum);
     return value | mask;
 }

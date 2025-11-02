@@ -16,17 +16,6 @@
 #define FLAG_N 0x02  // Add/Subtract Flag (N) - bit 1
 #define FLAG_C 0x01  // Carry Flag (C) - bit 0
 
-#if defined(__GNUC__) || defined(__clang__)   // GCC/Clang built‑ins
-    // Example: use a builtin that only GCC/Clang provide
-    #define POPCOUNT(x) __builtin_popcount(x)
-#else
-    // Portable fallback
-    #include <bit>
-    #define POPCOUNT(x) std::popcount(x)
-#endif
-// ---------------------------------------------------------------
-
-
 class Z80
 {
 public:
@@ -141,6 +130,8 @@ public:
 
     // Handle interrupt processing
     int HandleInterrupt();
+    bool isNMOS;    // cpu type NMOS (true, default) or Zilog/SGS (false)
+    void NMI(void); // Non Maskable Interrupt
 
 private:
     // Flag update functions
@@ -165,6 +156,7 @@ private:
     }
 
     void ClearFlag(uint8_t flag);
+    void ClearAllFlags();
 
     // Helper functions
     uint8_t ReadImmediateByte();
