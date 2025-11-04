@@ -3,4 +3,4 @@ emulator
 *_test
 imgui.ini
 file
-emu.profraw
+*.profraw

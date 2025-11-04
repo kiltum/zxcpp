@@ -7,6 +7,7 @@
 #include "diagrom2.h"
 #include "1280.h"
 #include "1281.h"
+#include "trdos.h"
 
 Memory::Memory()
 {
@@ -25,6 +26,16 @@ Memory::Memory()
     bankMapping[2] = 2; // bank 2 always mapped to 0x8000-0xbfff
     bankMapping[3] = 0; // bank 0 mapped 0xc000-0xffff
     ULAShadow = false;  // ULA reading from bank 5 (false) or bank 7 (true)
+    isTrDos = false;    // No trdos at start
+    // load trdos to bank 3
+    canWriteRom = true;
+    bankMapping[0] = 2;
+    for (unsigned int i = 0; i < trdos_rom_len; i++)
+    {
+        WriteByte(i, trdos_rom[i]);
+    }
+    canWriteRom = false;
+    bankMapping[0] = 0;
 }
 
 void Memory::writePort(uint16_t port, uint8_t value)
@@ -50,7 +61,14 @@ uint8_t Memory::ReadByte(uint16_t address)
 {
     if (address <= 0x3fff) // ROM 0 or ROM 1
     {
-        return rom[bankMapping[0]][address];
+        if (!isTrDos) // if no trdos, return usual rom
+        {
+            return rom[bankMapping[0]][address];
+        }
+        else
+        {
+            return rom[2][address];
+        }
     }
     if (address >= 0x4000 && address < 0x8000)
     {
@@ -109,6 +127,7 @@ void Memory::change48(bool is48s)
 void Memory::Read48(void)
 {
     canWriteRom = true;
+    bankMapping[0] = 0;
     for (unsigned int i = 0; i < __48_rom_len; i++)
     {
         WriteByte(i, __48_rom[i]);
@@ -153,4 +172,13 @@ void Memory::ReadDiag2(void)
         WriteByte(i, DiagROMv_173[i]);
     }
     canWriteRom = false;
+}
+
+void Memory::enableTrDos(bool is)
+{
+    isTrDos = is;
+}
+
+bool Memory::checkTrDos(void){
+    return isTrDos;
 }

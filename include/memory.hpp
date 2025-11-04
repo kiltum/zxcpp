@@ -7,10 +7,11 @@ class Memory
 {
 private:
     uint8_t bank[8][16384]; // banks of memory
-    uint8_t rom[2][16384];  // banks of ROMs
+    uint8_t rom[3][16384];  // banks of ROMs. 0 - zxspectrum 48 or 1st rom of 128. 1 - second rom of 128. 2 - trdos rom
     bool is48;              // machine version
     uint8_t bankMapping[4]; // Which bank mapped now
-    bool ULAShadow;
+    bool ULAShadow;         // is ULA read from shadow rom?
+    uint8_t isTrDos;           // is TR DOS rom enabled?
 
 public:
     // Constructor
@@ -37,6 +38,8 @@ public:
     void writePort(uint16_t port, uint8_t value); // handler for 7ffd
     bool getIs48() const { return is48; }         // Getter for is48 flag
     bool canWriteRom;                             // Can we overwrite ROM, as in Baltika version? Its public, because test need it
+    void enableTrDos(bool is);                    // enable trdos rom or not
+    bool checkTrDos(void);
 };
 
 #endif // MEMORY_HPP
