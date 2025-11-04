@@ -552,9 +552,9 @@ void Emulator::runZX()
 
     // Initialize memory with 128K ROM (default mode)
     // The ZX Spectrum 128K had more memory and additional features compared to the 48K model
-    // memory->Read128();       // Load 128K ROM
-    memory->Read48();
-    memory->change48(true); // Set memory mode to 128K
+    memory->Read128();       // Load 128K ROM
+    //memory->Read48();
+    memory->change48(false); // Set memory mode to 128K
 
     // Set CPU to CMOS mode (more accurate for later Spectrums)
     // The Z80 CPU in later Spectrum models was a CMOS variant
@@ -581,10 +581,12 @@ void Emulator::runZX()
                                           // TR-DOS enable/disable block
                                           if(cpu->PC >= 0x3d00 && cpu->PC <= 0x3dff && memory->checkTrDos() == false) {
                                             memory->enableTrDos(true);
+                                            printf("TRDOS enable\n");
                                           }
                                           if(cpu->PC > 0x3fff && memory->checkTrDos() == true)
                                           {
                                             memory->enableTrDos(false);
+                                            printf("TRDOS disable\n");
                                           }
 
                                           // Update our cycle counters

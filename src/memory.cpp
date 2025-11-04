@@ -27,7 +27,7 @@ Memory::Memory()
     bankMapping[3] = 0; // bank 0 mapped 0xc000-0xffff
     ULAShadow = false;  // ULA reading from bank 5 (false) or bank 7 (true)
     isTrDos = false;    // No trdos at start
-    // load trdos to bank 3
+    // load trdos to ROM bank 3
     canWriteRom = true;
     bankMapping[0] = 2;
     for (unsigned int i = 0; i < trdos_rom_len; i++)
@@ -61,13 +61,13 @@ uint8_t Memory::ReadByte(uint16_t address)
 {
     if (address <= 0x3fff) // ROM 0 or ROM 1
     {
-        if (!isTrDos) // if no trdos, return usual rom
+        if (isTrDos && bankMapping[0] == 1) // if no trdos, return usual rom
         {
-            return rom[bankMapping[0]][address];
+            return rom[2][address];
         }
         else
         {
-            return rom[2][address];
+            return rom[bankMapping[0]][address];
         }
     }
     if (address >= 0x4000 && address < 0x8000)
@@ -179,6 +179,7 @@ void Memory::enableTrDos(bool is)
     isTrDos = is;
 }
 
-bool Memory::checkTrDos(void){
+bool Memory::checkTrDos(void)
+{
     return isTrDos;
 }
