@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsWindow</class>
+ <widget class="QDialog" name="SettingsWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>520</width>
+    <height>422</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>30</y>
+     <width>433</width>
+     <height>355</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="setAll48">
+        <property name="toolTip">
+         <string>Set all settings from original 48 version</string>
+        </property>
+        <property name="text">
+         <string>ZX Spectrum 48</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="setAll128">
+        <property name="toolTip">
+         <string>Set all settings from original 128 version</string>
+        </property>
+        <property name="text">
+         <string>ZX Spectrum 128</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="sizeConstraint">
+       <enum>QLayout::SizeConstraint::SetMaximumSize</enum>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="turboTape">
+        <property name="toolTip">
+         <string>Enable tape turbo loading</string>
+        </property>
+        <property name="text">
+         <string>Turbo Tape</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="windowCrop">
+        <property name="toolTip">
+         <string>Crop full borders</string>
+        </property>
+        <property name="text">
+         <string>Window Crop</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>CPU</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="cpuSpeed">
+        <property name="toolTip">
+         <string>Z80 clock</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>3,5 MHz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3,5469 MHz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7 MHz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>14 MHz</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>28 MHz</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>RAM</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="ramAmount">
+        <property name="toolTip">
+         <string>Amount of RAM</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>48</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>128</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>48 ROM</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="rom48">
+        <property name="toolTip">
+         <string>What ROM will be used in 48k</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>128 ROM 0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="rom1280">
+        <property name="toolTip">
+         <string>What will be userd as 128 ROM 0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>128 ROM 1</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="rom1281">
+        <property name="toolTip">
+         <string>What will be users as 128 ROM 1</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <widget class="QCheckBox" name="bdiEnable">
+        <property name="toolTip">
+         <string>Enable Beta Disk Interface</string>
+        </property>
+        <property name="text">
+         <string>BDI</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="bdiRom">
+        <property name="toolTip">
+         <string>What version will be used</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Joystick</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="joystickSchema">
+        <property name="toolTip">
+         <string>Schema for keys</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Cursor Keys + Alt/Option</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Cursor Keys + Tab</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ASDW + Mouse Click</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Own..</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="joystickType">
+        <property name="toolTip">
+         <string>Joystick type</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Kempston</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Sinclair / Interface 2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Cursor</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_8">
+      <item>
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>L</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QKeySequenceEdit" name="joystickLeft">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="maximumSequenceLength">
+         <longLong>1</longLong>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>R</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QKeySequenceEdit" name="joystickRight">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="maximumSequenceLength">
+         <longLong>1</longLong>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>U</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QKeySequenceEdit" name="joystickUp">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="maximumSequenceLength">
+         <longLong>1</longLong>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>D</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QKeySequenceEdit" name="joystickDown">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="maximumSequenceLength">
+         <longLong>1</longLong>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>F</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QKeySequenceEdit" name="joystickFire">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="maximumSequenceLength">
+         <longLong>1</longLong>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QDialogButtonBox" name="buttonBox">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <property name="standardButtons">
+       <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>setAll48</tabstop>
+  <tabstop>setAll128</tabstop>
+  <tabstop>turboTape</tabstop>
+  <tabstop>windowCrop</tabstop>
+  <tabstop>cpuSpeed</tabstop>
+  <tabstop>ramAmount</tabstop>
+  <tabstop>rom48</tabstop>
+  <tabstop>rom1280</tabstop>
+  <tabstop>rom1281</tabstop>
+  <tabstop>bdiEnable</tabstop>
+  <tabstop>bdiRom</tabstop>
+  <tabstop>joystickSchema</tabstop>
+  <tabstop>joystickType</tabstop>
+  <tabstop>joystickLeft</tabstop>
+  <tabstop>joystickRight</tabstop>
+  <tabstop>joystickUp</tabstop>
+  <tabstop>joystickDown</tabstop>
+  <tabstop>joystickFire</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>SettingsWindow</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>79</x>
+     <y>353</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>SettingsWindow</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>147</x>
+     <y>353</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

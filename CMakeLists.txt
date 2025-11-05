@@ -1,23 +1,41 @@
-cmake_minimum_required(VERSION 4.0)
-project(zxcpp)
+cmake_minimum_required(VERSION 3.19)
+project(zxcpp LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets LinguistTools)
 
-set(CMAKE_PREFIX_PATH "/Users/kiltum/qt610")
+qt_standard_project_setup()
 
-find_package(Qt6 COMPONENTS
-        Core
-        Gui
-        Widgets
-        REQUIRED)
+qt_add_executable(zxcpp
+    WIN32 MACOSX_BUNDLE
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+    settingswindow.h settingswindow.cpp settingswindow.ui
+)
 
-add_executable(zxcpp main.cpp)
+qt_add_translations(
+    TARGETS zxcpp
+    TS_FILES zxcpp_ru_RU.ts
+)
+
 target_link_libraries(zxcpp
+    PRIVATE
         Qt::Core
-        Qt::Gui
         Qt::Widgets
 )
 
+include(GNUInstallDirs)
+
+install(TARGETS zxcpp
+    BUNDLE  DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+qt_generate_deploy_app_script(
+    TARGET zxcpp
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})
