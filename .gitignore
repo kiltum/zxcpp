@@ -4,3 +4,4 @@ emulator
 imgui.ini
 file
 *.profraw
+.idea
