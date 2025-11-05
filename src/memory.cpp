@@ -8,6 +8,7 @@
 #include "1280.h"
 #include "1281.h"
 #include "trdos.h"
+#include "trdos604.h"
 
 Memory::Memory()
 {
@@ -30,9 +31,9 @@ Memory::Memory()
     // load trdos to ROM bank 3
     canWriteRom = true;
     bankMapping[0] = 2;
-    for (unsigned int i = 0; i < trdos_rom_len; i++)
+    for (unsigned int i = 0; i < trdos604_rom_len; i++)
     {
-        WriteByte(i, trdos_rom[i]);
+        WriteByte(i, trdos604_rom[i]);
     }
     canWriteRom = false;
     bankMapping[0] = 0;

@@ -52,7 +52,7 @@ uint8_t Port::Read(uint16_t port)
         // Call the registered handler for the masked port and return its result
         return maskedIt->second(port);
     }
-
+    printf("Handler for reading %x port not found\n", port);
     // Return 0 if no handler is registered for this port
     return uint8_t(port >> 8); // this is for FUSE test and Floating bus test
 }

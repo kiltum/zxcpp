@@ -581,12 +581,12 @@ void Emulator::runZX()
                                           // TR-DOS enable/disable block
                                           if(cpu->PC >= 0x3d00 && cpu->PC <= 0x3dff && memory->checkTrDos() == false) {
                                             memory->enableTrDos(true);
-                                            printf("TRDOS enable\n");
+                                            //printf("TRDOS enable\n");
                                           }
                                           if(cpu->PC > 0x3fff && memory->checkTrDos() == true)
                                           {
                                             memory->enableTrDos(false);
-                                            printf("TRDOS disable\n");
+                                            //printf("TRDOS disable\n");
                                           }
 
                                           // Update our cycle counters
