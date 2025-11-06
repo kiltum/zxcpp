@@ -5,3 +5,5 @@ imgui.ini
 file
 *.profraw
 .idea
+.qtcreator
+build

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>520</width>
-    <height>422</height>
+    <width>513</width>
+    <height>388</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,10 @@
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>30</y>
+     <x>39</x>
+     <y>31</y>
      <width>433</width>
-     <height>355</height>
+     <height>313</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -49,12 +49,6 @@
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="sizeConstraint">
-       <enum>QLayout::SizeConstraint::SetMaximumSize</enum>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
       <item>
        <widget class="QCheckBox" name="turboTape">
         <property name="toolTip">
@@ -147,16 +141,30 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>48 ROM</string>
+         <string>ROM 0</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="rom48">
+       <widget class="QComboBox" name="rom0">
         <property name="toolTip">
-         <string>What ROM will be used in 48k</string>
+         <string>What will be userd as ROM 0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>ROM 1</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="rom1">
+        <property name="toolTip">
+         <string>What will be users as ROM 1</string>
         </property>
        </widget>
       </item>
@@ -164,38 +172,6 @@
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item>
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>128 ROM 0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="rom1280">
-        <property name="toolTip">
-         <string>What will be userd as 128 ROM 0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>128 ROM 1</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="rom1281">
-        <property name="toolTip">
-         <string>What will be users as 128 ROM 1</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_6">
       <item>
        <widget class="QCheckBox" name="bdiEnable">
         <property name="toolTip">
@@ -213,10 +189,20 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="enableAy">
+        <property name="toolTip">
+         <string>Will AY sound be available</string>
+        </property>
+        <property name="text">
+         <string>AY8913</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
       <item>
        <widget class="QLabel" name="label_6">
         <property name="text">
@@ -276,7 +262,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
       <item>
        <widget class="QLabel" name="label_7">
         <property name="text">
@@ -294,7 +280,7 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>100</width>
+          <width>30</width>
           <height>16777215</height>
          </size>
         </property>
@@ -317,7 +303,7 @@
        <widget class="QKeySequenceEdit" name="joystickRight">
         <property name="maximumSize">
          <size>
-          <width>100</width>
+          <width>30</width>
           <height>16777215</height>
          </size>
         </property>
@@ -340,7 +326,7 @@
        <widget class="QKeySequenceEdit" name="joystickUp">
         <property name="maximumSize">
          <size>
-          <width>100</width>
+          <width>30</width>
           <height>16777215</height>
          </size>
         </property>
@@ -363,7 +349,7 @@
        <widget class="QKeySequenceEdit" name="joystickDown">
         <property name="maximumSize">
          <size>
-          <width>100</width>
+          <width>30</width>
           <height>16777215</height>
          </size>
         </property>
@@ -386,7 +372,7 @@
        <widget class="QKeySequenceEdit" name="joystickFire">
         <property name="maximumSize">
          <size>
-          <width>100</width>
+          <width>30</width>
           <height>16777215</height>
          </size>
         </property>
@@ -420,9 +406,8 @@
   <tabstop>windowCrop</tabstop>
   <tabstop>cpuSpeed</tabstop>
   <tabstop>ramAmount</tabstop>
-  <tabstop>rom48</tabstop>
-  <tabstop>rom1280</tabstop>
-  <tabstop>rom1281</tabstop>
+  <tabstop>rom0</tabstop>
+  <tabstop>rom1</tabstop>
   <tabstop>bdiEnable</tabstop>
   <tabstop>bdiRom</tabstop>
   <tabstop>joystickSchema</tabstop>
