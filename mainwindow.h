@@ -17,6 +17,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    SettingsWindow *sw;
 
 private slots:
     void on_actionSettings_triggered();
@@ -25,6 +26,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    SettingsWindow *sw;
+
 };
 #endif // MAINWINDOW_H

@@ -13,390 +13,585 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QCheckBox" name="enableAy">
    <property name="geometry">
     <rect>
-     <x>39</x>
-     <y>31</y>
-     <width>433</width>
-     <height>313</height>
+     <x>195</x>
+     <y>195</y>
+     <width>71</width>
+     <height>20</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="setAll48">
-        <property name="toolTip">
-         <string>Set all settings from original 48 version</string>
-        </property>
-        <property name="text">
-         <string>ZX Spectrum 48</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="setAll128">
-        <property name="toolTip">
-         <string>Set all settings from original 128 version</string>
-        </property>
-        <property name="text">
-         <string>ZX Spectrum 128</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QCheckBox" name="turboTape">
-        <property name="toolTip">
-         <string>Enable tape turbo loading</string>
-        </property>
-        <property name="text">
-         <string>Turbo Tape</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="windowCrop">
-        <property name="toolTip">
-         <string>Crop full borders</string>
-        </property>
-        <property name="text">
-         <string>Window Crop</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>CPU</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="cpuSpeed">
-        <property name="toolTip">
-         <string>Z80 clock</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>3,5 MHz</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>3,5469 MHz</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>7 MHz</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>14 MHz</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>28 MHz</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>RAM</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="ramAmount">
-        <property name="toolTip">
-         <string>Amount of RAM</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>48</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>128</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>ROM 0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="rom0">
-        <property name="toolTip">
-         <string>What will be userd as ROM 0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>ROM 1</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="rom1">
-        <property name="toolTip">
-         <string>What will be users as ROM 1</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item>
-       <widget class="QCheckBox" name="bdiEnable">
-        <property name="toolTip">
-         <string>Enable Beta Disk Interface</string>
-        </property>
-        <property name="text">
-         <string>BDI</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="bdiRom">
-        <property name="toolTip">
-         <string>What version will be used</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="enableAy">
-        <property name="toolTip">
-         <string>Will AY sound be available</string>
-        </property>
-        <property name="text">
-         <string>AY8913</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_6">
-      <item>
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Joystick</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="joystickSchema">
-        <property name="toolTip">
-         <string>Schema for keys</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>Cursor Keys + Alt/Option</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Cursor Keys + Tab</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>ASDW + Mouse Click</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Own..</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="joystickType">
-        <property name="toolTip">
-         <string>Joystick type</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>Kempston</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Sinclair / Interface 2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Cursor</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_7">
-      <item>
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>L</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QKeySequenceEdit" name="joystickLeft">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>30</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="maximumSequenceLength">
-         <longLong>1</longLong>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>R</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QKeySequenceEdit" name="joystickRight">
-        <property name="maximumSize">
-         <size>
-          <width>30</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="maximumSequenceLength">
-         <longLong>1</longLong>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>U</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QKeySequenceEdit" name="joystickUp">
-        <property name="maximumSize">
-         <size>
-          <width>30</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="maximumSequenceLength">
-         <longLong>1</longLong>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>D</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QKeySequenceEdit" name="joystickDown">
-        <property name="maximumSize">
-         <size>
-          <width>30</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="maximumSequenceLength">
-         <longLong>1</longLong>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_11">
-        <property name="text">
-         <string>F</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QKeySequenceEdit" name="joystickFire">
-        <property name="maximumSize">
-         <size>
-          <width>30</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="maximumSequenceLength">
-         <longLong>1</longLong>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QDialogButtonBox" name="buttonBox">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <property name="standardButtons">
-       <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   <property name="toolTip">
+    <string>Will AY sound be available</string>
+   </property>
+   <property name="text">
+    <string>AY8913</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="ulaTicks">
+   <property name="geometry">
+    <rect>
+     <x>354</x>
+     <y>105</y>
+     <width>133</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>How often ULA generate INT</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>69888 (48k)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>70908 (128k)</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>323</x>
+     <y>107</y>
+     <width>26</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>ULA</string>
+   </property>
+  </widget>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>41</x>
+     <y>313</y>
+     <width>152</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Orientation::Horizontal</enum>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="bdiRom">
+   <property name="geometry">
+    <rect>
+     <x>85</x>
+     <y>190</y>
+     <width>103</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>What version will be used</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>5.0.3</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>6.0.4</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QCheckBox" name="bdiEnable">
+   <property name="geometry">
+    <rect>
+     <x>41</x>
+     <y>195</y>
+     <width>46</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Enable Beta Disk Interface</string>
+   </property>
+   <property name="text">
+    <string>BDI</string>
+   </property>
+  </widget>
+  <widget class="QKeySequenceEdit" name="joystickRight">
+   <property name="geometry">
+    <rect>
+     <x>135</x>
+     <y>275</y>
+     <width>50</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>50</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
+   <property name="maximumSequenceLength">
+    <longLong>1</longLong>
+   </property>
+  </widget>
+  <widget class="QKeySequenceEdit" name="joystickUp">
+   <property name="geometry">
+    <rect>
+     <x>213</x>
+     <y>275</y>
+     <width>50</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>50</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
+   <property name="maximumSequenceLength">
+    <longLong>1</longLong>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>118</x>
+     <y>275</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>R</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_10">
+   <property name="geometry">
+    <rect>
+     <x>273</x>
+     <y>275</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>D</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>195</x>
+     <y>275</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>U</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_11">
+   <property name="geometry">
+    <rect>
+     <x>351</x>
+     <y>275</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>F</string>
+   </property>
+  </widget>
+  <widget class="QKeySequenceEdit" name="joystickFire">
+   <property name="geometry">
+    <rect>
+     <x>367</x>
+     <y>275</y>
+     <width>50</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>50</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
+   <property name="maximumSequenceLength">
+    <longLong>1</longLong>
+   </property>
+  </widget>
+  <widget class="QKeySequenceEdit" name="joystickDown">
+   <property name="geometry">
+    <rect>
+     <x>291</x>
+     <y>275</y>
+     <width>50</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>50</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
+   <property name="maximumSequenceLength">
+    <longLong>1</longLong>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>150</y>
+     <width>39</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>ROM 1</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>42</x>
+     <y>149</y>
+     <width>41</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>ROM 0</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="rom0">
+   <property name="geometry">
+    <rect>
+     <x>88</x>
+     <y>147</y>
+     <width>131</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>What will be userd as ROM 0</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>Original 48k</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Original 128k</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Retroleum</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QComboBox" name="rom1">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>140</y>
+     <width>131</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>What will be users as ROM 1</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>Original 128k</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>208</x>
+     <y>107</y>
+     <width>29</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>RAM</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="ramAmount">
+   <property name="geometry">
+    <rect>
+     <x>242</x>
+     <y>105</y>
+     <width>74</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Amount of RAM</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>48</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>128</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>42</x>
+     <y>107</y>
+     <width>27</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>CPU</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cpuSpeed">
+   <property name="geometry">
+    <rect>
+     <x>74</x>
+     <y>105</y>
+     <width>127</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Z80 clock</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>3,5 MHz</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>3,5469 MHz</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>7 MHz</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>14 MHz</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>28 MHz</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QCheckBox" name="windowCrop">
+   <property name="geometry">
+    <rect>
+     <x>134</x>
+     <y>75</y>
+     <width>106</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Crop full borders</string>
+   </property>
+   <property name="text">
+    <string>Window Crop</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="turboTape">
+   <property name="geometry">
+    <rect>
+     <x>41</x>
+     <y>75</y>
+     <width>92</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Enable tape turbo loading</string>
+   </property>
+   <property name="text">
+    <string>Turbo Tape</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="joystickSchema">
+   <property name="geometry">
+    <rect>
+     <x>97</x>
+     <y>232</y>
+     <width>200</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Schema for keys</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>Cursor Keys + Alt/Option</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Cursor Keys + Tab</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Own..</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QComboBox" name="joystickType">
+   <property name="geometry">
+    <rect>
+     <x>301</x>
+     <y>232</y>
+     <width>171</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Joystick type</string>
+   </property>
+   <item>
+    <property name="text">
+     <string>Kempston</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Sinclair / Interface 2</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Cursor</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>42</x>
+     <y>234</y>
+     <width>50</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Joystick</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="setAll128">
+   <property name="geometry">
+    <rect>
+     <x>185</x>
+     <y>33</y>
+     <width>134</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Set all settings from original 128 version</string>
+   </property>
+   <property name="text">
+    <string>ZX Spectrum 128</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="setAll48">
+   <property name="geometry">
+    <rect>
+     <x>42</x>
+     <y>33</y>
+     <width>129</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Set all settings from original 48 version</string>
+   </property>
+   <property name="text">
+    <string>ZX Spectrum 48</string>
+   </property>
+  </widget>
+  <widget class="QKeySequenceEdit" name="joystickLeft">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>276</y>
+     <width>50</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>50</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>true</bool>
+   </property>
+   <property name="maximumSequenceLength">
+    <longLong>1</longLong>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>54</x>
+     <y>276</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>L</string>
+   </property>
   </widget>
  </widget>
  <tabstops>
@@ -406,10 +601,12 @@
   <tabstop>windowCrop</tabstop>
   <tabstop>cpuSpeed</tabstop>
   <tabstop>ramAmount</tabstop>
+  <tabstop>ulaTicks</tabstop>
   <tabstop>rom0</tabstop>
   <tabstop>rom1</tabstop>
   <tabstop>bdiEnable</tabstop>
   <tabstop>bdiRom</tabstop>
+  <tabstop>enableAy</tabstop>
   <tabstop>joystickSchema</tabstop>
   <tabstop>joystickType</tabstop>
   <tabstop>joystickLeft</tabstop>
