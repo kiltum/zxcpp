@@ -473,11 +473,6 @@
      <string>Cursor Keys + Tab</string>
     </property>
    </item>
-   <item>
-    <property name="text">
-     <string>Own..</string>
-    </property>
-   </item>
   </widget>
   <widget class="QComboBox" name="joystickType">
    <property name="geometry">

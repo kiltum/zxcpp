@@ -18,6 +18,25 @@ public:
     void LoadSettings(void);
     void WriteSettings(void);
     QSettings *settings;
+    bool turboTape;
+    bool windowCrop;
+    int ram;
+    int cpu;
+    int ula;
+    int rom0;
+    int rom1;
+    bool bdi;
+    int bdiRom;
+    bool ay;
+    int joySchema;
+    int joyAssign;
+    QString joyLeft;
+    QString joyRight;
+    QString joyUp;
+    QString joyDown;
+    QString joyFire;
+
+
 
 private slots:
     void on_buttonBox_accepted();
