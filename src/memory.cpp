@@ -12,14 +12,7 @@
 
 Memory::Memory()
 {
-    // clear all 128k memory
-    for (int i = 0; i < 8; i++)
-    {
-        for (int b = 0; b < 16384; b++)
-        {
-            bank[i][b] = 0x00;
-        }
-    }
+    Clear();
     canWriteRom = false;
     is48 = true;
     bankMapping[0] = 0; // 0 ROM - specially, mapped to 0x0000-0x3fff
@@ -37,6 +30,18 @@ Memory::Memory()
     }
     canWriteRom = false;
     bankMapping[0] = 0;
+}
+
+void Memory::Clear(void)
+{
+    // clear all 128k memory
+    for (int i = 0; i < 8; i++)
+    {
+        for (int b = 0; b < 16384; b++)
+        {
+            bank[i][b] = 0x00;
+        }
+    }
 }
 
 void Memory::writePort(uint16_t port, uint8_t value)

@@ -40,6 +40,7 @@ public:
     bool canWriteRom;                             // Can we overwrite ROM, as in Baltika version? Its public, because test need it
     void enableTrDos(bool is);                    // enable trdos rom or not
     bool checkTrDos(void);
+    void Clear(void);
 };
 
 #endif // MEMORY_HPP

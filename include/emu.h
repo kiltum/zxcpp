@@ -23,6 +23,7 @@ public:
     void Reset(); // reset all emulator
     void setMemoryType(uint type);
     void setULAType(uint type);
+    uint32_t *getScreenBuffer();
 private:
     // Emulator hardware components (each represents a real ZX Spectrum chip or subsystem)
     std::unique_ptr<Memory> memory;     // RAM and ROM memory management

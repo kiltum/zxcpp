@@ -48,6 +48,7 @@ Emu::Emu() {
 void Emu::Reset() {
     ports->Clear();
     cpu->Reset();
+    memory->Clear();
     setMemoryType(memoryType);
     setULAType(ulaType);
     qDebug() << "Z80 speed:" << cpuSpeed << "bus delimeter:" << busDelimeter;
@@ -63,6 +64,10 @@ void Emu::Reset() {
                                 { sound->writePort(port, value); });
 
 
+}
+
+uint32_t *Emu::getScreenBuffer(void){
+    return ula->getScreenBuffer();
 }
 
 void Emu::setMemoryType(uint type)

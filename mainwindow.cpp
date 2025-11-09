@@ -112,6 +112,8 @@ void MainWindow::Reconfigure(void)
     }
 
     emu->Reset();
+    // Test. Screen must be black here
+    //memcpy(emuScreen.bits(),emu->getScreenBuffer(),(352 * 288)*sizeof(uint32_t));
 }
 
 void MainWindow::on_actionExit_triggered()
