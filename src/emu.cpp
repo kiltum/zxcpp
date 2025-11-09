@@ -129,14 +129,14 @@ bool Emu::mapKeyToSpectrum(int key, bool pressed, bool isRightShift)
     {
     // Row 0: CAPS SHIFT, Z, X, C, V
     case Qt::Key_Shift:
-        if (isRightShift)
-        {
-            if (pressed)
-                ula->setKeyDown(7, 1);
-            else
-                ula->setKeyUp(7, 1); // SYM SHIFT
-        }
-        else
+        // if (isRightShift)
+        // {
+        //     if (pressed)
+        //         ula->setKeyDown(7, 1);
+        //     else
+        //         ula->setKeyUp(7, 1); // SYM SHIFT
+        // }
+        // else
         {
             if (pressed)
                 ula->setKeyDown(0, 0);
@@ -236,30 +236,35 @@ bool Emu::mapKeyToSpectrum(int key, bool pressed, bool isRightShift)
 
     // Row 3: 1, 2, 3, 4, 5
     case Qt::Key_1:
+    case '!':
         if (pressed)
             ula->setKeyDown(3, 0);
         else
             ula->setKeyUp(3, 0); // 1
         break;
     case Qt::Key_2:
+    case '@':
         if (pressed)
             ula->setKeyDown(3, 1);
         else
             ula->setKeyUp(3, 1); // 2
         break;
     case Qt::Key_3:
+    case '#':
         if (pressed)
             ula->setKeyDown(3, 2);
         else
             ula->setKeyUp(3, 2); // 3
         break;
     case Qt::Key_4:
+    case '$':
         if (pressed)
             ula->setKeyDown(3, 3);
         else
             ula->setKeyUp(3, 3); // 4
         break;
     case Qt::Key_5:
+    case '%':
         if (pressed)
             ula->setKeyDown(3, 4);
         else
@@ -268,30 +273,35 @@ bool Emu::mapKeyToSpectrum(int key, bool pressed, bool isRightShift)
 
     // Row 4: 0, 9, 8, 7, 6
     case Qt::Key_0:
+    case ')':
         if (pressed)
             ula->setKeyDown(4, 0);
         else
             ula->setKeyUp(4, 0); // 0
         break;
     case Qt::Key_9:
+    case '(':
         if (pressed)
             ula->setKeyDown(4, 1);
         else
             ula->setKeyUp(4, 1); // 9
         break;
     case Qt::Key_8:
+    case '*':
         if (pressed)
             ula->setKeyDown(4, 2);
         else
             ula->setKeyUp(4, 2); // 8
         break;
     case Qt::Key_7:
+    case '&':
         if (pressed)
             ula->setKeyDown(4, 3);
         else
             ula->setKeyUp(4, 3); // 7
         break;
     case Qt::Key_6:
+    case '^':
         if (pressed)
             ula->setKeyDown(4, 4);
         else

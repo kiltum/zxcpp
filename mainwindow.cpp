@@ -194,7 +194,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     if (!emu->mapKeyToSpectrum(event->key(), true, rightShift)) {
         QWidget::keyPressEvent(event);
     }
-    printf("%d %d\n",event->key(),rightShift);
+
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event) {
