@@ -171,10 +171,10 @@ int ULA::oneTick()
     // Process one clock tick
     clock++;
 
-    // if (tape->isTapePlayed)
-    // { // if tape is playing something, set input bit
-    //     audioState = tape->getNextBit();
-    // }
+    if (tape->isTapePlayed)
+    { // if tape is playing something, set input bit
+        audioState = tape->getNextBit();
+    }
 
     if (clock <= clockFlyback)
     { // we are on flyback

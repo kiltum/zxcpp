@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "settingswindow.h"
+#include "emu.h"
 
 #include <QResizeEvent>
 #include <QPainter>
@@ -39,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
     screenResising = true;
 
     emu = new Emu;
+    Reconfigure();
 
 }
 
@@ -58,6 +60,59 @@ void MainWindow::on_actionSettings_triggered()
     sw->show();
 }
 
+void MainWindow::Reconfigure(void)
+{
+    switch(sw->cpu) {
+    case 0: // zx 48
+        emu->cpuSpeed = 3500000;
+        emu->busDelimeter = 1;
+        break;
+    case 1: // zx 128
+        emu->cpuSpeed = 3546900;
+        emu->busDelimeter = 1;
+        break;
+    case 2:
+        emu->cpuSpeed = 7000000;
+        emu->busDelimeter = 2;
+        break;
+    case 3:
+        emu->cpuSpeed = 14000000;
+        emu->busDelimeter = 4;
+        break;
+    case 4:
+        emu->cpuSpeed = 28000000;
+        emu->busDelimeter = 8;
+        break;
+    default:
+        emu->cpuSpeed = 3500000;
+        emu->busDelimeter = 1;
+        break;
+    }
+
+    switch (sw->ram) {
+    case 0: // 48
+        emu->setMemoryType(ZX_SPECTRUM_48);
+        break;
+    case 1: // 128
+        emu->setMemoryType(ZX_SPECTRUM_128);
+        break;
+    default:
+        break;
+    }
+
+    switch (sw->ula) {
+    case 0: // 48
+        emu->setULAType(ZX_SPECTRUM_48);
+        break;
+    case 1: // 128
+        emu->setULAType(ZX_SPECTRUM_128);
+        break;
+    default:
+        break;
+    }
+
+    emu->Reset();
+}
 
 void MainWindow::on_actionExit_triggered()
 {

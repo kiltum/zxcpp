@@ -35,6 +35,8 @@ public:
 
     // Read from a port (call the registered handler)
     uint8_t Read(uint16_t port);
+
+    void Clear(void);
 };
 
 #endif // PORT_HPP

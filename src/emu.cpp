@@ -1,5 +1,5 @@
 #include <QKeyEvent>
-
+#include <SDL3/SDL.h>
 #include "emu.h"
 
 Emu::Emu() {
@@ -10,19 +10,91 @@ Emu::Emu() {
     ula = std::make_unique<ULA>(memory.get(), tape.get());
     kempston = std::make_unique<Kempston>();
 
+    ports->RegisterReadHandler(0x1F, [this](uint16_t port) -> uint8_t
+                               { return kempston->readPort(port); });
+
+
+    if (!SDL_Init(SDL_INIT_AUDIO))
+    {
+        qDebug() << "SDL could not initialize! SDL_Error: " << SDL_GetError();
+        qDebug() << "SDL Error code: " << SDL_GetError();
+    }
+
+    sound = std::make_unique<Sound>();
+    if (!sound->initialize())
+    {
+        qDebug() << "Warning: Failed to initialize beeper system";
+    }
+
+    ay8912 = std::make_unique<AY8912>();
+    if (!ay8912->initialize())
+    {
+        qDebug() << "Warning: Failed to initialize AY8912 sound chip";
+    }
+
+    // Connect AY8912 to port 0xFD (shared with memory)
+    ports->RegisterWriteHandler(0xFD, [this](uint16_t port, uint8_t value)
+                                { ay8912->writePort(port, value); });
+    ports->RegisterReadHandler(0xFD, [this](uint16_t port) -> uint8_t
+                               { return ay8912->readPort(port); });
+
+    cpu->isNMOS = false;
+    cpuSpeed = 3500000;
+    busDelimeter = 1;
+    memoryType = 0;
+    ulaType = 0;
+}
+
+void Emu::Reset() {
+    ports->Clear();
+    cpu->Reset();
+    setMemoryType(memoryType);
+    setULAType(ulaType);
+    qDebug() << "Z80 speed:" << cpuSpeed << "bus delimeter:" << busDelimeter;
+    qDebug() << "Memory type:" << memoryType << "ULA type:" << ulaType;
+
+    // ULA always works
     ports->RegisterReadHandler(0xFE, [this](uint16_t port) -> uint8_t
                                { return ula->readPort(port); });
     ports->RegisterWriteHandler(0xFE, [this](uint16_t port, uint8_t value)
                                 { ula->writePort(port, value); });
+    // Beeper work always too
+    ports->RegisterWriteHandler(0xFE, [this](uint16_t port, uint8_t value)
+                                { sound->writePort(port, value); });
 
 
-    ports->RegisterReadHandler(0x1F, [this](uint16_t port) -> uint8_t
-                               { return kempston->readPort(port); });
+}
 
-    ports->RegisterWriteHandler(0xFD, [this](uint16_t port, uint8_t value)
-                                { return memory->writePort(port, value); });
+void Emu::setMemoryType(uint type)
+{
+    memoryType = type;
+    switch (type) {
+    case ZX_SPECTRUM_48:
+        memory->change48(true);
+        break;
+    case ZX_SPECTRUM_128:
+        memory->change48(false);
+        ports->RegisterWriteHandler(0xFD, [this](uint16_t port, uint8_t value)
+                                    { return memory->writePort(port, value); });
+        break;
+    default:
+        break;
+    }
+}
 
-    cpu->isNMOS = false;
+void Emu::setULAType(uint type)
+{
+    ulaType = type;
+    switch (type) {
+    case ZX_SPECTRUM_48:
+        ula->change48(true);
+        break;
+    case ZX_SPECTRUM_128:
+        ula->change48(false);
+        break;
+    default:
+        break;
+    }
 }
 
 bool Emu::mapKeyToSpectrum(int key, bool pressed, bool isRightShift)

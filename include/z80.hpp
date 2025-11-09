@@ -124,6 +124,8 @@ public:
     // Constructor
     Z80(Memory *mem, Port *port);
 
+    void Reset(void);
+
     // Execute one instruction and return number of ticks consumed
     int ExecuteOneInstruction();
 

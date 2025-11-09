@@ -39,5 +39,6 @@ private:
     QImage emuScreen;
     bool screenResising;
     Emu *emu;
+    void Reconfigure(void);
 };
 #endif // MAINWINDOW_H

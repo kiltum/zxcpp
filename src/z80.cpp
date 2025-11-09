@@ -7,8 +7,12 @@ Z80::Z80(Memory *mem, Port *port)
     // Store the memory and port pointers
     memory = mem;
     this->port = port;
+    Reset();
+}
 
-    // Initialize main registers to zero
+void Z80::Reset(void)
+{
+// Initialize main registers to zero
     AF = 0;
     BC = 0;
     DE = 0;

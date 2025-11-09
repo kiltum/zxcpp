@@ -20,14 +20,15 @@ qt_add_executable(zxcpp
     src/z80_fdcb_opcodes.cpp
     src/z80_opcodes.cpp
     src/z80.cpp
-#    src/ay8912.cpp
+    src/ay8912.cpp
     src/kempston.cpp
     src/memory.cpp
     src/port.cpp
-#    src/sound.cpp
+    src/sound.cpp
     src/tape.cpp
     src/ula.cpp
     include/emu.h src/emu.cpp
+    lib/vgm_decoder/src/chips/ay-3-8910.cpp
 )
 
 qt_add_translations(
@@ -39,13 +40,19 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/vgm_decoder/include
+)
+
 find_package(libzip CONFIG REQUIRED)
+find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 
 target_link_libraries(zxcpp
     PRIVATE
         Qt::Core
         Qt::Widgets
         libzip::zip
+        SDL3::SDL3
 )
 
 include(GNUInstallDirs)

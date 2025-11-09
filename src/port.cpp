@@ -5,6 +5,12 @@ Port::Port()
     // Constructor implementation
 }
 
+void Port::Clear(void)
+{
+    writeHandlers.clear();
+    readHandlers.clear();
+}
+
 void Port::RegisterWriteHandler(uint16_t port, WriteHandler handler)
 {
     // Add the handler to the vector for this port
