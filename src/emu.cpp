@@ -77,9 +77,11 @@ void Emu::setMemoryType(uint type)
     switch (type) {
     case ZX_SPECTRUM_48:
         memory->change48(true);
+        memory->Read48();
         break;
     case ZX_SPECTRUM_128:
         memory->change48(false);
+        memory->Read128();
         ports->RegisterWriteHandler(0xFD, [this](uint16_t port, uint8_t value)
                                     { return memory->writePort(port, value); });
         break;
@@ -410,15 +412,17 @@ void Emu::Run(void)
                                           // Execute one instruction and get the number of CPU cycles it took
                                           int ticks = cpu->ExecuteOneInstruction();
                                           // TR-DOS enable/disable block
-                                          if(cpu->PC >= 0x3d00 && cpu->PC <= 0x3dff && memory->checkTrDos() == false) {
-                                              memory->enableTrDos(true);
-                                              //printf("TRDOS enable\n");
-                                          }
-                                          if(cpu->PC > 0x3fff && memory->checkTrDos() == true)
-                                          {
-                                              memory->enableTrDos(false);
-                                              //printf("TRDOS disable\n");
-                                          }
+                                          // if(cpu->PC >= 0x3d00 && cpu->PC <= 0x3dff && memory->checkTrDos() == false) {
+                                          //     memory->enableTrDos(true);
+                                          //     //printf("TRDOS enable\n");
+                                          // }
+                                          // if(cpu->PC > 0x3fff && memory->checkTrDos() == true)
+                                          // {
+                                          //     memory->enableTrDos(false);
+                                          //     //printf("TRDOS disable\n");
+                                          // }
+
+                                          //printf("%x ",cpu->PC);
 
                                           // Update our cycle counters
                                           totalTicks += ticks;
