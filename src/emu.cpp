@@ -40,6 +40,7 @@ Emu::Emu() {
 
     cpu->isNMOS = false;
     cpuSpeed = 3500000;
+    CHECK_INTERVAL = cpuSpeed / 10000;
     busDelimeter = 1;
     memoryType = 0;
     ulaType = 0;
@@ -383,4 +384,153 @@ bool Emu::mapKeyToSpectrum(int key, bool pressed, bool isRightShift)
         handled = false;
     }
     return handled;
+}
+
+void Emu::Run(void)
+{
+    // Signal that the emulation thread should be running
+    threadRunning = true;
+
+    // Create a new thread to run the CPU emulation
+    // This allows the UI to remain responsive while the CPU emulation runs
+    emulationThread = std::thread([this]()
+                                  {
+                                      // Timing variables for maintaining accurate CPU speed
+                                      auto startTime = std::chrono::high_resolution_clock::now();
+                                      long long totalTicks = 0; // Total CPU cycles executed
+                                      long long checkTicks = 0; // Cycles since last timing check
+
+                                      // Track previous tape state to detect when turbo mode turns off
+                                      bool prevTapePlayed = false;
+                                      bool prevTapeTurbo = false;
+
+                                      // Main emulation loop - runs until threadRunning is set to false
+                                      while (threadRunning.load())
+                                      {
+                                          // Execute one instruction and get the number of CPU cycles it took
+                                          int ticks = cpu->ExecuteOneInstruction();
+                                          // TR-DOS enable/disable block
+                                          if(cpu->PC >= 0x3d00 && cpu->PC <= 0x3dff && memory->checkTrDos() == false) {
+                                              memory->enableTrDos(true);
+                                              //printf("TRDOS enable\n");
+                                          }
+                                          if(cpu->PC > 0x3fff && memory->checkTrDos() == true)
+                                          {
+                                              memory->enableTrDos(false);
+                                              //printf("TRDOS disable\n");
+                                          }
+
+                                          // Update our cycle counters
+                                          totalTicks += ticks;
+                                          checkTicks += ticks;
+
+                                          // Update sound system with current cycle count
+                                          // This ensures audio stays synchronized with the CPU
+                                          sound->ticks = totalTicks;
+
+                                          // Update screen for each CPU tick
+                                          // The ULA (graphics chip) needs to be updated for each cycle
+                                          for (int i = 0; i < ticks; i++)
+                                          {
+                                              // oneTick() returns 0 when the screen is fully drawn
+                                              int ref = ula->oneTick();
+                                              if (ref == 0)
+                                              {
+                                                  // Screen has been updated - notify the main thread
+                                                  {
+                                                      // Rate limiting for screen updates during tape turbo mode
+                                                      // This prevents the UI from being overwhelmed during fast tape loading
+                                                      if (!tape->isTapePlayed || !tape->isTapeTurbo)
+                                                      {
+                                                          // Normal operation - update screen immediately
+                                                          updateScreen();
+                                                      }
+                                                      else
+                                                      {
+                                                          // Turbo mode - limit screen updates to prevent UI lag
+                                                          auto now = std::chrono::high_resolution_clock::now();
+                                                          auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastScreenUpdate);
+                                                          if (elapsed >= minScreenUpdateInterval)
+                                                          {
+                                                              updateScreen();
+                                                              lastScreenUpdate = now;
+                                                          }
+                                                      }
+
+                                                      // Signal that an interrupt should be triggered
+                                                      // This is part of the ZX Spectrum's timing system
+                                                      cpu->InterruptPending = true;
+                                                  }
+                                              }
+                                          }
+
+                                          // Detect transition from turbo mode to normal mode
+                                          // When this happens, we need to reset our timing calculations
+                                          if ((prevTapePlayed != tape->isTapePlayed || prevTapeTurbo != tape->isTapeTurbo) &&
+                                              (!tape->isTapePlayed || !tape->isTapeTurbo))
+                                          {
+                                              // Reset timing when transitioning to normal mode
+                                              startTime = std::chrono::high_resolution_clock::now();
+                                              totalTicks = 0;
+                                              checkTicks = 0;
+                                              qDebug() << "Speed limiter re-enabled after tape play";
+                                          }
+
+                                          // Update previous states for next iteration
+                                          prevTapePlayed = tape->isTapePlayed;
+                                          prevTapeTurbo = tape->isTapeTurbo;
+
+                                          // Determine if we should apply speed limiting
+                                          // Speed limiting is disabled during tape turbo mode for faster loading
+                                          bool shouldDisableLimiter = !tape->isTapePlayed || !tape->isTapeTurbo;
+
+                                          // Apply speed limiting to maintain accurate CPU frequency
+                                          // Without this, the emulator would run as fast as possible
+                                          if (shouldDisableLimiter)
+                                          {
+                                              // Check timing periodically (every CHECK_INTERVAL cycles)
+                                              if (checkTicks >= CHECK_INTERVAL)
+                                              {
+                                                  checkTicks = 0;
+
+                                                  // Calculate how much time has actually passed
+                                                  auto currentTime = std::chrono::high_resolution_clock::now();
+                                                  auto elapsedTime = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - startTime).count();
+
+                                                  // Calculate how much time should have passed for the number of cycles executed
+                                                  long long expectedTime = (totalTicks * 1000000000LL) / cpuSpeed;
+
+                                                  // If we're ahead of schedule, we need to wait
+                                                  if (expectedTime > elapsedTime)
+                                                  {
+                                                      // Calculate how long to wait (in microseconds)
+                                                      long long sleepTime = (expectedTime - elapsedTime) / 1000;
+
+                                                      if (sleepTime > 1000)
+                                                      {
+                                                          // For longer delays, use sleep (less precise but CPU-friendly)
+                                                          std::this_thread::sleep_for(std::chrono::microseconds(sleepTime - 500));
+                                                          // Fine-tune with busy waiting for accuracy
+                                                          while (std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                                                     std::chrono::high_resolution_clock::now() - startTime)
+                                                                     .count() < expectedTime)
+                                                          {
+                                                              std::this_thread::yield();
+                                                          }
+                                                      }
+                                                      else if (sleepTime > 0)
+                                                      {
+                                                          // For short delays, use busy waiting for precision
+                                                          while (std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                                                     std::chrono::high_resolution_clock::now() - startTime)
+                                                                     .count() < expectedTime)
+                                                          {
+                                                              std::this_thread::yield();
+                                                          }
+                                                      }
+                                                  }
+                                              }
+                                          }
+                                      } // End of main emulation loop
+                                  }); // End of thread creation
 }

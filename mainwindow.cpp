@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     emu = new Emu;
     Reconfigure();
 
+    QObject::connect(emu, &Emu::updateScreen,this, &MainWindow::screenUpdate);
 }
 
 MainWindow::~MainWindow()
@@ -112,8 +113,14 @@ void MainWindow::Reconfigure(void)
     }
 
     emu->Reset();
+    emu->Run();
     // Test. Screen must be black here
     //memcpy(emuScreen.bits(),emu->getScreenBuffer(),(352 * 288)*sizeof(uint32_t));
+}
+
+void MainWindow::screenUpdate(void)
+{
+   memcpy(emuScreen.bits(),emu->getScreenBuffer(),(352 * 288)*sizeof(uint32_t));
 }
 
 void MainWindow::on_actionExit_triggered()

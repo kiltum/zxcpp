@@ -31,6 +31,8 @@ private slots:
 
     void on_actionScale_3x_triggered();
 
+    void screenUpdate(void);
+
 private:
     Ui::MainWindow *ui;
     void resizeEvent(QResizeEvent*) override;
