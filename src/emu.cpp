@@ -2,7 +2,8 @@
 #include <SDL3/SDL.h>
 #include "emu.h"
 
-Emu::Emu() {
+Emu::Emu()
+{
     memory = std::make_unique<Memory>();
     ports = std::make_unique<Port>();
     cpu = std::make_unique<Z80>(memory.get(), ports.get());
@@ -12,7 +13,6 @@ Emu::Emu() {
 
     ports->RegisterReadHandler(0x1F, [this](uint16_t port) -> uint8_t
                                { return kempston->readPort(port); });
-
 
     if (!SDL_Init(SDL_INIT_AUDIO))
     {
@@ -46,7 +46,8 @@ Emu::Emu() {
     ulaType = 0;
 }
 
-void Emu::Reset() {
+void Emu::Reset()
+{
     ports->Clear();
     cpu->Reset();
     memory->Clear();
@@ -63,18 +64,18 @@ void Emu::Reset() {
     // Beeper work always too
     ports->RegisterWriteHandler(0xFE, [this](uint16_t port, uint8_t value)
                                 { sound->writePort(port, value); });
-
-
 }
 
-uint32_t *Emu::getScreenBuffer(void){
+uint32_t *Emu::getScreenBuffer(void)
+{
     return ula->getScreenBuffer();
 }
 
 void Emu::setMemoryType(uint type)
 {
     memoryType = type;
-    switch (type) {
+    switch (type)
+    {
     case ZX_SPECTRUM_48:
         memory->change48(true);
         memory->Read48();
@@ -93,7 +94,8 @@ void Emu::setMemoryType(uint type)
 void Emu::setULAType(uint type)
 {
     ulaType = type;
-    switch (type) {
+    switch (type)
+    {
     case ZX_SPECTRUM_48:
         ula->change48(true);
         break;
@@ -127,16 +129,19 @@ bool Emu::mapKeyToSpectrum(int key, bool pressed, bool isRightShift)
     {
     // Row 0: CAPS SHIFT, Z, X, C, V
     case Qt::Key_Shift:
-        if(isRightShift) {
+        if (isRightShift)
+        {
             if (pressed)
                 ula->setKeyDown(7, 1);
             else
                 ula->setKeyUp(7, 1); // SYM SHIFT
-        } else {
-        if (pressed)
-            ula->setKeyDown(0, 0);
+        }
         else
-            ula->setKeyUp(0, 0); // CAPS SHIFT
+        {
+            if (pressed)
+                ula->setKeyDown(0, 0);
+            else
+                ula->setKeyUp(0, 0); // CAPS SHIFT
         }
         break;
 
@@ -326,7 +331,7 @@ bool Emu::mapKeyToSpectrum(int key, bool pressed, bool isRightShift)
         break;
 
     // Row 6: ENTER, L, K, J, H
-    case Qt::Key_Enter:
+    case Qt::Key_Return:
         if (pressed)
             ula->setKeyDown(6, 0);
         else
@@ -422,7 +427,7 @@ void Emu::Run(void)
                                           //     //printf("TRDOS disable\n");
                                           // }
 
-                                          //printf("%x ",cpu->PC);
+                                          // printf("%x ",cpu->PC);
 
                                           // Update our cycle counters
                                           totalTicks += ticks;
