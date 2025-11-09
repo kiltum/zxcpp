@@ -1,5 +1,4 @@
 #include "port.hpp"
-#include <stdexcept>
 
 Port::Port()
 {

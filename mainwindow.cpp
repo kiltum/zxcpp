@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     screenResising = true;
 
+    emu = new Emu;
 
 }
 
@@ -92,8 +93,6 @@ void MainWindow::on_actionScale_1x_triggered()
     g.setWidth(emuPix.width());
     g.setHeight(emuPix.height());
     setGeometry(g);
-
-
 }
 
 
@@ -120,3 +119,23 @@ void MainWindow::on_actionScale_3x_triggered()
     setGeometry(g);
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    bool rightShift = false;
+    if(event->key() == Qt::Key_Shift && event->nativeVirtualKey()==60) {
+        rightShift = true;
+    }
+    if (!emu->mapKeyToSpectrum(event->key(), true, rightShift)) {
+        QWidget::keyPressEvent(event);
+    }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event) {
+    bool rightShift = false;
+    if(event->key() == Qt::Key_Shift && event->nativeVirtualKey()==60) {
+        rightShift = true;
+    }
+    if (!emu->mapKeyToSpectrum(event->key(), false, rightShift)) {
+        QWidget::keyReleaseEvent(event);
+    }
+}

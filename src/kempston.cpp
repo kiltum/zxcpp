@@ -1,5 +1,4 @@
 #include "kempston.hpp"
-#include <iostream>
 
 // Constructor
 Kempston::Kempston()

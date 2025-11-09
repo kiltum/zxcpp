@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "settingswindow.h"
+#include "emu.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -32,9 +33,11 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    void resizeEvent(QResizeEvent*);
+    void resizeEvent(QResizeEvent*) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
     QImage emuScreen;
     bool screenResising;
-
+    Emu *emu;
 };
 #endif // MAINWINDOW_H

@@ -12,6 +12,22 @@ qt_add_executable(zxcpp
     mainwindow.h
     mainwindow.ui
     settingswindow.h settingswindow.cpp settingswindow.ui
+    src/z80_cb_opcodes.cpp
+    src/z80_dd_opcodes.cpp
+    src/z80_ddcb_opcodes.cpp
+    src/z80_ed_opcodes.cpp
+    src/z80_fd_opcodes.cpp
+    src/z80_fdcb_opcodes.cpp
+    src/z80_opcodes.cpp
+    src/z80.cpp
+#    src/ay8912.cpp
+    src/kempston.cpp
+    src/memory.cpp
+    src/port.cpp
+#    src/sound.cpp
+    src/tape.cpp
+    src/ula.cpp
+    include/emu.h src/emu.cpp
 )
 
 qt_add_translations(
@@ -19,10 +35,17 @@ qt_add_translations(
     TS_FILES zxcpp_ru_RU.ts
 )
 
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+find_package(libzip CONFIG REQUIRED)
+
 target_link_libraries(zxcpp
     PRIVATE
         Qt::Core
         Qt::Widgets
+        libzip::zip
 )
 
 include(GNUInstallDirs)
