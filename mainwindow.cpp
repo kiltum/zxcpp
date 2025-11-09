@@ -121,6 +121,8 @@ void MainWindow::Reconfigure(void)
 void MainWindow::screenUpdate(void)
 {
    memcpy(emuScreen.bits(),emu->getScreenBuffer(),(352 * 288)*sizeof(uint32_t));
+    QPixmap emuPix = QPixmap::fromImage(emuScreen);
+    ui->emuWindow->setPixmap(emuPix);
 }
 
 void MainWindow::on_actionExit_triggered()

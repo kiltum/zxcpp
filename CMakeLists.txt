@@ -63,6 +63,13 @@ install(TARGETS zxcpp
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -g -fno-omit-frame-pointer")
+
+# Enable ASan for linking executables
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+
+
 qt_generate_deploy_app_script(
     TARGET zxcpp
     OUTPUT_SCRIPT deploy_script
