@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
     int he = sw->settings->value("main/h",400).toInt();
 
     setGeometry(x, y, wi, he);
+    scaledWight = wi;
+    scaledHeight = he;
 
     // Here is stub for future emu screen
     emuScreen = QImage(352, 288, QImage::Format_ARGB32);
@@ -34,8 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     painter.drawLine(176, 0, 176, 288);
     painter.end();
 
-    QPixmap emuPix = QPixmap::fromImage(emuScreen);
-    ui->emuWindow->setPixmap(emuPix);
+    ScaleMainWindow(wi,he);
 
     screenResising = true;
 
@@ -121,8 +122,8 @@ void MainWindow::Reconfigure(void)
 void MainWindow::screenUpdate(void)
 {
    memcpy(emuScreen.bits(),emu->getScreenBuffer(),(352 * 288)*sizeof(uint32_t));
-    QPixmap emuPix = QPixmap::fromImage(emuScreen);
-    ui->emuWindow->setPixmap(emuPix);
+    ScaleMainWindow(scaledWight,scaledHeight);
+
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -130,13 +131,27 @@ void MainWindow::on_actionExit_triggered()
     QApplication::quit();
 }
 
+void MainWindow::ScaleMainWindow(uint wi,uint he)
+{
+    QPixmap emuPix = QPixmap::fromImage(emuScreen.scaled(wi,he,Qt::KeepAspectRatio));
+    ui->emuWindow->setPixmap(emuPix);
+    screenResising = false;
+    QRect g = geometry();
+    if( g.width()!=wi || g.height() != he) {
+        g.setWidth(emuPix.width());
+        g.setHeight(emuPix.height());
+        setGeometry(g);
+    }
+    scaledWight = wi;
+    scaledHeight = he;
+}
+
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
 
     if(screenResising) {
-    QPixmap emuPix = QPixmap::fromImage(emuScreen.scaled(ui->centralwidget->width()-6,ui->centralwidget->height()-6,Qt::KeepAspectRatio));
-    ui->emuWindow->setPixmap(emuPix);
+        ScaleMainWindow(ui->centralwidget->width()-6,ui->centralwidget->height()-6);
     }
     screenResising = true;
     //printf("%d %d %d %d\n",s.width(), s.height(),ui->centralwidget->width(),ui->centralwidget->height());
@@ -152,37 +167,20 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 void MainWindow::on_actionScale_1x_triggered()
 {
-    QPixmap emuPix = QPixmap::fromImage(emuScreen);
-    ui->emuWindow->setPixmap(emuPix);
-    screenResising = false;
-    QRect g = geometry();
-    g.setWidth(emuPix.width());
-    g.setHeight(emuPix.height());
-    setGeometry(g);
+    ScaleMainWindow(emuScreen.width()*1,emuScreen.height()*1);
+
 }
 
 
 void MainWindow::on_actionScale_2x_triggered()
 {
-    QPixmap emuPix = QPixmap::fromImage(emuScreen.scaled(emuScreen.width()*2,emuScreen.height()*2,Qt::KeepAspectRatio));
-    ui->emuWindow->setPixmap(emuPix);
-    screenResising = false;
-    QRect g = geometry();
-    g.setWidth(emuPix.width());
-    g.setHeight(emuPix.height());
-    setGeometry(g);
+    ScaleMainWindow(emuScreen.width()*2,emuScreen.height()*2);
 }
 
 
 void MainWindow::on_actionScale_3x_triggered()
 {
-    QPixmap emuPix = QPixmap::fromImage(emuScreen.scaled(emuScreen.width()*3,emuScreen.height()*3,Qt::KeepAspectRatio));
-    ui->emuWindow->setPixmap(emuPix);
-    screenResising = false;
-    QRect g = geometry();
-    g.setWidth(emuPix.width());
-    g.setHeight(emuPix.height());
-    setGeometry(g);
+    ScaleMainWindow(emuScreen.width()*3,emuScreen.height()*3);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

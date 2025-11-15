@@ -42,5 +42,8 @@ private:
     bool screenResising;
     Emu *emu;
     void Reconfigure(void);
+    uint scaledWight;
+    uint scaledHeight;
+    void ScaleMainWindow(uint wi, uint he);
 };
 #endif // MAINWINDOW_H
